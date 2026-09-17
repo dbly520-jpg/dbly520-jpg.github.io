@@ -1,0 +1,365 @@
+{
+  "week": 4,
+  "month": 1,
+  "title": "第4周：指针、结构体、位运算",
+  "goal": "掌握指针基础、结构体和位运算，为嵌入式寄存器操作打基础。",
+  "days": [
+    {
+      "day": 1,
+      "title": "指针基础",
+      "goal": "理解指针概念，掌握指针的定义、取地址和解引用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "指针概念",
+          "content": "指针是存储内存地址的变量。每个变量在内存中有地址，通过&取地址。指针变量定义：类型* 变量名;如int* p;。通过*解引用访问指针指向的变量。指针本身也有地址和大小（32位系统4字节，64位系统8字节）。指针是C语言最强大也最危险的特性。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int a = 10;\n    int* p = &a;\n    printf(\"a的地址:%p\\n\", (void*)&a);\n    printf(\"p的值:%p\\n\", (void*)p);\n    printf(\"p指向的值:%d\\n\", *p);  // 10\n    *p = 20;  // 通过指针修改a\n    printf(\"a=%d\\n\", a);          // 20\n    return 0;\n}"
+        },
+        {
+          "title": "空指针和野指针",
+          "content": "空指针NULL不指向任何有效地址。指针定义后未初始化是野指针，解引用野指针是未定义行为。良好的习惯是定义指针时初始化为NULL，使用前检查。嵌入式开发中常通过指针访问寄存器地址。",
+          "codeExample": "int* p = NULL;      // 空指针\nif (p != NULL) {\n    *p = 10;           // 安全检查\n}\n\n// 嵌入式寄存器访问\nvolatile unsigned int* reg = (unsigned int*)0x40010800;\n*reg = 0x01;           // 向寄存器写值\nunsigned int val = *reg;  // 读寄存器"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "int a=5;int* p=&a;则*p的值是？",
+          "options": ["5", "a的地址", "p的地址", "不确定"],
+          "answer": 0,
+          "explanation": "p存储a的地址，*p解引用得到a的值5。"
+        },
+        {
+          "type": "choice",
+          "question": "以下哪种指针使用是安全的？",
+          "options": ["int* p; *p=10;", "int* p=NULL; *p=10;", "int a=5;int* p=&a; *p=10;", "int* p=0x1234; *p=10;"],
+          "answer": 2,
+          "explanation": "A是野指针，B是空指针解引用，D是任意地址访问，都不安全。C中p指向有效变量a，安全。"
+        },
+        {
+          "type": "fill",
+          "question": "取变量地址的运算符是____。",
+          "answer": "&",
+          "explanation": "&是取地址运算符，如&a得到变量a的地址。"
+        },
+        {
+          "type": "code",
+          "question": "定义int变量a=10和指针p指向a，通过指针修改a为20，并输出a的值。",
+          "keywords": ["int", "*", "p", "=", "&", "a", "*", "p", "=", "20", "printf"],
+          "explanation": "参考答案：int a=10; int* p=&a; *p=20; printf(\"%d\",a);"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "指针与数组",
+      "goal": "理解指针运算，掌握数组名与指针的关系",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "指针运算",
+          "content": "指针支持加减整数运算，移动的是元素大小。p+1指向下一个元素，而非下一个字节。指针相减得到元素个数（仅同数组内）。p++使指针后移一个元素。不同类型指针移动的字节数不同。",
+          "codeExample": "int a[5] = {10,20,30,40,50};\nint* p = a;           // 等价p=&a[0]\nprintf(\"%d\\n\", *p);    // 10\nprintf(\"%d\\n\", *(p+1)); // 20\np++;                  // p指向a[1]\nprintf(\"%d\\n\", *p);    // 20"
+        },
+        {
+          "title": "数组名与指针",
+          "content": "数组名是首元素地址（除sizeof和&外），可赋给指针。a[i]等价于*(a+i)，p[i]等价于*(p+i)。但数组名不是指针变量，不能修改（如a++非法）。指针可作为数组使用。",
+          "codeExample": "int a[5] = {1,2,3,4,5};\nint* p = a;\n// 以下等价\nprintf(\"%d %d\\n\", a[2], p[2]);    // 3 3\nprintf(\"%d %d\\n\", *(a+2), *(p+2)); // 3 3\n// a++ 非法，p++ 合法"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "int a[5];int* p=a;则*(p+2)等价于？",
+          "options": ["a[0]", "a[1]", "a[2]", "a[3]"],
+          "answer": 2,
+          "explanation": "p指向a[0]，p+2指向a[2]，*(p+2)即a[2]。指针+2移动2个int位置。"
+        },
+        {
+          "type": "choice",
+          "question": "以下说法正确的是？",
+          "options": ["数组名可以自增", "数组名是指针变量", "数组名是常量，不可修改", "数组名不是地址"],
+          "answer": 2,
+          "explanation": "数组名是常量地址，不可修改（a++非法），但可赋给指针变量。"
+        },
+        {
+          "type": "fill",
+          "question": "表达式a[i]等价于____（用指针表示）。",
+          "answer": "*(a+i)",
+          "explanation": "a[i]在编译时转换为*(a+i)，所以指针p的p[i]等价于*(p+i)。"
+        },
+        {
+          "type": "code",
+          "question": "用指针遍历数组int a[5]={1,2,3,4,5}，输出所有元素。",
+          "keywords": ["int*", "p", "=", "a", "for", "printf", "*", "p", "p++"],
+          "explanation": "参考答案：int* p=a; for(int i=0;i<5;i++){printf(\"%d \",*p);p++;}"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "指针与函数",
+      "goal": "掌握传址调用、函数指针概念",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "传址调用",
+          "content": "通过传递变量地址给函数，函数内通过解引用修改实参。这是C语言模拟引用的方式。函数参数为指针类型。常用于：交换变量、修改多个值、避免大数组拷贝。",
+          "codeExample": "#include <stdio.h>\n\nvoid swap(int* a, int* b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n\nvoid getMinMax(int arr[], int n, int* min, int* max) {\n    *min = *max = arr[0];\n    for (int i = 1; i < n; i++) {\n        if (arr[i] < *min) *min = arr[i];\n        if (arr[i] > *max) *max = arr[i];\n    }\n}\n\nint main() {\n    int x=3, y=5;\n    swap(&x, &y);\n    printf(\"%d %d\\n\", x, y);  // 5 3\n    return 0;\n}"
+        },
+        {
+          "title": "函数指针",
+          "content": "函数指针指向函数的地址。定义：返回类型(*指针名)(参数类型);如int(*fp)(int,int);。函数名是函数地址。可用来实现回调函数、状态机、命令分发表。嵌入式开发中中断向量表就是函数指针数组。",
+          "codeExample": "#include <stdio.h>\n\nint add(int a, int b) { return a+b; }\nint sub(int a, int b) { return a-b; }\n\nint main() {\n    int (*fp)(int,int);\n    fp = add;\n    printf(\"%d\\n\", fp(3,5));   // 8\n    fp = sub;\n    printf(\"%d\\n\", fp(3,5));   // -2\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "要在函数内修改实参，参数应使用？",
+          "options": ["值传递", "指针传递", "数组传递", "全局变量"],
+          "answer": 1,
+          "explanation": "传递变量地址（指针），函数内解引用修改。值传递无法修改实参。"
+        },
+        {
+          "type": "choice",
+          "question": "函数指针的定义语法是？",
+          "options": ["int *fp(int,int);", "int (*fp)(int,int);", "int fp(int,int)*;", "int (fp*)(int,int);"],
+          "answer": 1,
+          "explanation": "函数指针定义：返回类型(*指针名)(参数列表)。注意括号不能少，否则是返回指针的函数。"
+        },
+        {
+          "type": "fill",
+          "question": "调用swap函数交换x和y，应写为swap(____,____)。",
+          "answer": "&x,&y",
+          "explanation": "传址调用需传变量地址，用&x和&y。"
+        },
+        {
+          "type": "code",
+          "question": "定义函数void getSumAndDiff(int a,int b,int* sum,int* diff)同时计算和与差，在main中调用并输出。",
+          "keywords": ["*", "sum", "=", "a", "+", "b", "*", "diff", "=", "a", "-", "b", "&"],
+          "explanation": "参考答案：void get(int a,int b,int* s,int* d){*s=a+b;*d=a-d;} 调用：get(5,3,&s,&d);"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "结构体",
+      "goal": "掌握结构体定义、初始化、成员访问",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "结构体定义和使用",
+          "content": "结构体是将不同类型数据组合的自定义类型。定义语法：struct 类型名{成员列表};。定义变量：struct Student s1;。成员访问用点运算符s1.name，指针访问用->运算符p->name。结构体常用于描述实体数据。",
+          "codeExample": "#include <stdio.h>\n#include <string.h>\n\nstruct Student {\n    int id;\n    char name[20];\n    float score;\n};\n\nint main() {\n    struct Student s1 = {1, \"张三\", 90.5f};\n    printf(\"%d %s %.1f\\n\", s1.id, s1.name, s1.score);\n    \n    struct Student* p = &s1;\n    p->score = 95.0f;\n    printf(\"%d %s %.1f\\n\", p->id, p->name, p->score);\n    return 0;\n}"
+        },
+        {
+          "title": "typedef简化",
+          "content": "typedef可为结构体类型定义别名，简化使用。typedef struct{...}Student;之后可直接用Student s1;。嵌入式HAL库中大量使用typedef定义外设句柄类型，如GPIO_InitTypeDef。",
+          "codeExample": "typedef struct {\n    int id;\n    char name[20];\n    float score;\n} Student;\n\nStudent s1 = {1, \"李四\", 88.0f};\n\n// 嵌入式示例\ntypedef struct {\n    volatile unsigned int* reg;\n    unsigned int mask;\n    unsigned char mode;\n} GPIO_Config;"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "通过结构体指针p访问成员name，应使用？",
+          "options": ["p.name", "p->name", "p->*name", "*p.name"],
+          "answer": 1,
+          "explanation": "指针访问成员用->运算符，p->name等价于(*p).name。"
+        },
+        {
+          "type": "choice",
+          "question": "定义struct Point{int x,y;};后，以下初始化正确的是？",
+          "options": ["Point p={1,2};", "struct Point p={1,2};", "struct Point p=(1,2);", "Point p=(1,2);"],
+          "answer": 1,
+          "explanation": "C语言中结构体变量前需加struct关键字，除非用了typedef。B正确。"
+        },
+        {
+          "type": "fill",
+          "question": "结构体成员访问运算符有.和____。",
+          "answer": "->",
+          "explanation": ".用于结构体变量访问成员，->用于结构体指针访问成员。"
+        },
+        {
+          "type": "code",
+          "question": "定义结构体Point含x,y坐标，定义变量p初始化为(3,4)，输出坐标值。",
+          "keywords": ["struct", "Point", "int", "x", "int", "y", "p", "=", "printf"],
+          "explanation": "参考答案：struct Point{int x,y;}; struct Point p={3,4}; printf(\"%d,%d\",p.x,p.y);"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "位运算（嵌入式重点）",
+      "goal": "掌握&、|、^、~、<<、>>六种位运算符",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "位运算符",
+          "content": "位运算直接操作二进制位：&(与，都1才1)、|(或，有1则1)、^(异或，不同为1)、~(取反)、<<(左移)、>>(右移)。位运算是嵌入式开发的核心，用于寄存器配置、标志位管理。左移n位相当于乘2^n，右移相当于除2^n（对正数）。",
+          "codeExample": "unsigned char a = 0b11001010;  // 二进制写法\nunsigned char b = 0b10110101;\nprintf(\"%02x\\n\", a & b);   // 10000000 = 0x80\nprintf(\"%02x\\n\", a | b);   // 11101111 = 0xef\nprintf(\"%02x\\n\", a ^ b);   // 01101111 = 0x6f\nprintf(\"%02x\\n\", ~a);      // 00110101 = 0x35\nprintf(\"%02x\\n\", a << 2);  // 10101000 = 0xa8\nprintf(\"%02x\\n\", a >> 2);  // 00110010 = 0x32"
+        },
+        {
+          "title": "位运算应用",
+          "content": "位运算在嵌入式中的典型应用：1.置位（置1）：reg |= (1<<n)；2.清零（置0）：reg &= ~(1<<n)；3.取反：reg ^= (1<<n)；4.读取某位：(reg>>n)&1；5.读取多位：(reg>>n)&mask。这些是配置STM32寄存器的基础。",
+          "codeExample": "// 操作寄存器reg的第n位\nunsigned int reg = 0x00;\nint n = 3;\n\nreg |= (1 << n);       // 置第n位为1\nreg &= ~(1 << n);      // 清第n位为0\nreg ^= (1 << n);       // 翻转第n位\nint bit = (reg >> n) & 1;  // 读取第n位\n\n// 设置多个位\nreg |= (0x03 << 4);    // 同时置位4和5\nreg &= ~(0x03 << 4);   // 同时清零4和5"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "0xF0 & 0x0F的结果是？",
+          "options": ["0xFF", "0x00", "0xF0", "0x0F"],
+          "answer": 1,
+          "explanation": "0xF0=11110000, 0x0F=00001111，与运算后为00000000=0x00。"
+        },
+        {
+          "type": "choice",
+          "question": "将变量reg的第3位置1，应使用？",
+          "options": ["reg |= (1<<3)", "reg &= (1<<3)", "reg ^= (1<<3)", "reg = 1<<3"],
+          "answer": 0,
+          "explanation": "reg |= (1<<3)用或运算置1，不影响其他位。|=是置位的标准写法。"
+        },
+        {
+          "type": "fill",
+          "question": "1<<4的十进制值是____。",
+          "answer": "16",
+          "explanation": "1左移4位即2^4=16，二进制10000。"
+        },
+        {
+          "type": "code",
+          "question": "编写代码，将变量reg的第2位置1，第4位清零。",
+          "keywords": ["reg", "|=", "1", "<<", "2", "reg", "&=", "~", "1", "<<", "4"],
+          "explanation": "参考答案：reg|=(1<<2); reg&=~(1<<4);"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "位域与寄存器操作概念",
+      "goal": "理解位域的概念和寄存器操作",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "位域",
+          "content": "位域是结构体中按位分配空间的成员。定义：struct{unsigned int a:1;unsigned int b:3;};冒号后数字表示占多少位。位域常用于紧凑存储标志位，但可移植性差（字节序、对齐）。嵌入式开发中更常用位运算操作寄存器。",
+          "codeExample": "struct Flags {\n    unsigned int enable  : 1;   // 1位\n    unsigned int mode    : 3;   // 3位(0-7)\n    unsigned int speed   : 2;   // 2位(0-3)\n    unsigned int reserved: 2;\n};\n\nstruct Flags f = {0};\nf.enable = 1;\nf.mode = 5;\nprintf(\"%u %u\\n\", f.enable, f.mode);"
+        },
+        {
+          "title": "寄存器操作",
+          "content": "嵌入式开发中通过指针直接访问寄存器地址。寄存器地址是固定的，通过volatile关键字防止编译器优化。常用宏定义简化。STM32的寄存器操作通过HAL库封装，但理解底层原理很重要。",
+          "codeExample": "// STM32 GPIOA_BSRR寄存器（置位/复位）\n#define GPIOA_BASE     0x40010800\n#define GPIOA_BSRR     (*(volatile unsigned int*)(GPIOA_BASE + 0x10))\n\n// 置位PA5（输出高）\nGPIOA_BSRR = (1 << 5);\n// 复位PA5（输出低）\nGPIOA_BSRR = (1 << (5 + 16));\n\n// 读取IDR（输入数据寄存器）\n#define GPIOA_IDR      (*(volatile unsigned int*)(GPIOA_BASE + 0x08))\nint pa0 = (GPIOA_IDR >> 0) & 1;"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "位域unsigned int a:3;中a能存储的最大值是？",
+          "options": ["3", "7", "8", "15"],
+          "answer": 1,
+          "explanation": "3位二进制最大111=7。n位可表示0~2^n-1。"
+        },
+        {
+          "type": "choice",
+          "question": "嵌入式开发中访问寄存器地址时为何用volatile？",
+          "options": ["提高速度", "防止编译器优化", "节省内存", "线程安全"],
+          "answer": 1,
+          "explanation": "volatile告诉编译器该变量可能被硬件改变，每次都要从内存读取，不优化到寄存器。"
+        },
+        {
+          "type": "fill",
+          "question": "位域定义中冒号后的数字表示该成员占用的____数。",
+          "answer": "位",
+          "explanation": "struct{unsigned int a:4;}中4表示a占4个二进制位。"
+        },
+        {
+          "type": "code",
+          "question": "定义一个宏REG，通过volatile指针访问地址0x40020000的32位寄存器。",
+          "keywords": ["#define", "REG", "*", "(", "volatile", "unsigned", "int", "*", ")", "0x40020000"],
+          "explanation": "参考答案：#define REG (*(volatile unsigned int*)0x40020000)"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+综合练习（位操作设置/清除/翻转特定位）",
+      "goal": "综合运用位运算完成寄存器位操作",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本月知识回顾",
+          "content": "第1个月学习了C语言基础：1.变量、数据类型、运算符、输入输出；2.控制流（if/else、for、while、switch）；3.函数、数组、字符串；4.指针、结构体、位运算。这些知识足以编写嵌入式底层驱动。指针和位运算是嵌入式核心，下月将进入STM32实战。",
+          "codeExample": "// 综合应用：函数指针+结构体+位运算\n#include <stdio.h>\n\ntypedef struct {\n    volatile unsigned int* reg;\n    void (*setBit)(volatile unsigned int*, int);\n} GPIO_Handler;\n\nvoid setBitImpl(volatile unsigned int* reg, int n) {\n    *reg |= (1 << n);\n}\n\nint main() {\n    unsigned int mockReg = 0;\n    GPIO_Handler h = {&mockReg, setBitImpl};\n    h.setBit(h.reg, 3);\n    printf(\"reg=0x%x\\n\", mockReg);  // 0x8\n    return 0;\n}"
+        },
+        {
+          "title": "位操作综合练习",
+          "content": "封装位操作的常用函数：置位、清零、翻转、读取。理解这些操作对后续STM32 GPIO控制至关重要。可定义宏或函数实现，注意参数类型和边界检查。",
+          "codeExample": "// 位操作函数封装\n#define SET_BIT(reg, n)    ((reg) |= (1U << (n)))\n#define CLR_BIT(reg, n)    ((reg) &= ~(1U << (n)))\n#define TOG_BIT(reg, n)    ((reg) ^= (1U << (n)))\n#define GET_BIT(reg, n)    (((reg) >> (n)) & 1U)\n\n#include <stdio.h>\nint main() {\n    unsigned int reg = 0x00;\n    SET_BIT(reg, 5);       // reg=0x20\n    SET_BIT(reg, 3);       // reg=0x28\n    CLR_BIT(reg, 5);       // reg=0x08\n    TOG_BIT(reg, 3);       // reg=0x00\n    printf(\"bit3=%d\\n\", GET_BIT(reg, 3));  // 0\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "要将reg的第n位翻转，应使用？",
+          "options": ["reg |= (1<<n)", "reg &= ~(1<<n)", "reg ^= (1<<n)", "reg = (1<<n)"],
+          "answer": 2,
+          "explanation": "^=是翻转位的运算。0^1=1, 1^1=0，实现翻转。"
+        },
+        {
+          "type": "choice",
+          "question": "读取reg第n位的值，表达式(reg>>n)&1的结果是？",
+          "options": ["0或1", "0或n", "1或n", "reg的值"],
+          "answer": 0,
+          "explanation": "右移n位将第n位移到最低位，再&1取出该位，结果0或1。"
+        },
+        {
+          "type": "fill",
+          "question": "宏SET_BIT(reg,n)的实现是(reg)____(1U<<n)。",
+          "answer": "|=",
+          "explanation": "置位用或运算|=，1U表示无符号1避免符号扩展问题。"
+        },
+        {
+          "type": "code",
+          "question": "定义4个宏：SET_BIT、CLR_BIT、TOG_BIT、GET_BIT，实现对reg的位操作。",
+          "keywords": ["#define", "|=", "&=", "~", "^=", ">>", "&1"],
+          "explanation": "参考答案：#define SET_BIT(r,n) (r|=(1U<<n)) #define CLR_BIT(r,n) (r&=~(1U<<n)) #define TOG_BIT(r,n) (r^=(1U<<n)) #define GET_BIT(r,n) (((r)>>n)&1U)"
+        }
+      ]
+    }
+  ]
+}

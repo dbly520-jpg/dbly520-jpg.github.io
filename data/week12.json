@@ -1,0 +1,365 @@
+{
+  "week": 12,
+  "month": 3,
+  "title": "第12周：LCD/OLED显示+传感器",
+  "goal": "掌握OLED显示驱动、DHT11温湿度传感器读取，完成温湿度监测仪。",
+  "days": [
+    {
+      "day": 1,
+      "title": "OLED显示原理",
+      "goal": "了解SSD1306驱动芯片和OLED显示原理",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "OLED与SSD1306",
+          "content": "OLED(有机发光二极管)显示屏自发光、对比度高、功耗低。0.96寸OLED常用SSD1306驱动，128x64像素，I2C接口。显示原理：每个像素对应显存1位(1亮0灭)。显存按页(Page 0-7)和列(Column 0-127)组织，每页8行像素。一次写8个垂直像素。",
+          "codeExample": "/* OLED SSD1306\n\n尺寸: 0.96寸\n分辨率: 128x64\n驱动: SSD1306\n接口: I2C(地址0x3C)或SPI\n\n显存组织：\n  Page 0-7 (每页8行)\n  Column 0-127\n  共8*128=1024字节\n\n显示原理：\n  显存数据1 → 像素亮\n  显存数据0 → 像素灭\n  一次写8行(垂直)\n\nI2C地址：\n  0x3C (SA0=0)\n  0x3D (SA0=1)\n*/"
+        },
+        {
+          "title": "SSD1306命令",
+          "content": "SSD1306通过I2C发送命令或数据。命令0x00前缀，数据0x40前缀。常用命令：设置页地址(0xB0-0xB7)、列地址低(0x00-0x0F)、列地址高(0x10-0x1F)、显示开(0xAF)、显示关(0xAE)。初始化序列约20条命令。",
+          "codeExample": "/* SSD1306 常用命令\n\n0xAE: 显示关\n0xAF: 显示开\n0xB0-0xB7: 设置页地址(0-7)\n0x00-0x0F: 列地址低4位\n0x10-0x1F: 列地址高4位\n0x20: 设置内存地址模式\n0xA0/A1: 段重映射\n0xC0/C8: 扫描方向\n0x81: 设置对比度\n0xD3: 设置显示偏移\n0x8D: 电荷泵设置\n\nI2C数据格式：\n  命令: 0x00 + 命令字节\n  数据: 0x40 + 数据字节\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "0.96寸OLED的分辨率是？",
+          "options": ["128x32", "128x64", "64x48", "256x64"],
+          "answer": 1,
+          "explanation": "0.96寸OLED通常是128x64像素。也有128x32版本。"
+        },
+        {
+          "type": "choice",
+          "question": "SSD1306的I2C地址通常是？",
+          "options": ["0x3C", "0x50", "0x68", "0xA0"],
+          "answer": 0,
+          "explanation": "SSD1306 I2C地址0x3C(SA0=0)或0x3D(SA0=1)。"
+        },
+        {
+          "type": "fill",
+          "question": "OLED显存共____字节(128x64/8)。",
+          "answer": "1024",
+          "explanation": "128列*8页=1024字节，每字节8个像素。"
+        },
+        {
+          "type": "code",
+          "question": "写出OLED的分辨率和驱动芯片。",
+          "keywords": ["128x64", "SSD1306"],
+          "explanation": "128x64分辨率，SSD1306驱动芯片。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "OLED驱动移植",
+      "goal": "移植OLED驱动，显示字符",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "OLED初始化",
+          "content": "OLED初始化发送一系列命令配置显示参数：电荷泵开启、显示模式、对比度、地址模式等。初始化后清屏(写0到所有显存)。常用现成驱动库(oled.c/oled.h)，移植只需修改I2C句柄。",
+          "codeExample": "// OLED初始化命令序列\nconst uint8_t initCmds[] = {\n    0xAE,  // 显示关\n    0x20, 0x00,  // 地址模式水平\n    0xB0,  // 起始页0\n    0xC8,  // 翻转扫描\n    0x00,  // 低列地址\n    0x10,  // 高列地址\n    0x40,  // 起始行\n    0x81, 0xFF,  // 对比度\n    0xA1,  // 段重映射\n    0xA6,  // 正常显示\n    0xA8, 0x3F,  // 多路比1/64\n    0xA4,  // 输出RAM\n    0xD3, 0x00,  // 显示偏移\n    0xD5, 0x80,  // 时钟分频\n    0xD9, 0x22,  // 充电周期\n    0xDA, 0x12,  // 引脚配置\n    0xDB, 0x20,  // VCOM电压\n    0x8D, 0x14,  // 电荷泵开\n    0xAF   // 显示开\n};"
+        },
+        {
+          "title": "字库和显示字符",
+          "content": "显示字符需要字库(字模数据)。每个ASCII字符8x16像素占16字节。常用字库F8x16。显示字符：计算显存位置→取字模→写入显存。中文字库较大(12x12或16x16)，可按需取模。也可显示字符串和数字。",
+          "codeExample": "// 8x16 ASCII字库(部分)\nconst uint8_t F8X16[][16] = {\n    {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,  // ' '\n     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},\n    {0x00,0x00,0x3C,0x42,0x42,0x42,0x3C,0x00,  // '0'\n     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},\n    // ...更多字符\n};\n\n// 显示1个字符\nvoid oledShowChar(uint8_t x, uint8_t y, char ch) {\n    if (ch < 32 || ch > 127) ch = ' ';\n    uint8_t c = ch - 32;\n    // 设置位置\n    oledSetPos(x, y);\n    // 写上半8字节\n    for (int i = 0; i < 8; i++)\n        oledWriteData(F8X16[c][i]);\n    // 设置下一页\n    oledSetPos(x, y + 1);\n    // 写下半8字节\n    for (int i = 0; i < 8; i++)\n        oledWriteData(F8X16[c][i + 8]);\n}\n\n// 显示字符串\nvoid oledShowString(uint8_t x, uint8_t y, char* str) {\n    while (*str) {\n        oledShowChar(x, y, *str);\n        x += 8;\n        str++;\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "OLED初始化最后发送的命令是？",
+          "options": ["0xAE(显示关)", "0xAF(显示开)", "0xA5(全亮)", "0x00(空)"],
+          "answer": 1,
+          "explanation": "初始化最后发送0xAF开启显示，才能看到内容。"
+        },
+        {
+          "type": "choice",
+          "question": "8x16字符字库每个字符占多少字节？",
+          "options": ["8", "16", "32", "64"],
+          "answer": 1,
+          "explanation": "8x16像素每像素1位，8列*16行/8=16字节，共8x16/8=16字节。"
+        },
+        {
+          "type": "fill",
+          "question": "显示字符需要____数据提供字符像素图案。",
+          "answer": "字模",
+          "explanation": "字模(字库)存储每个字符的像素点阵数据。"
+        },
+        {
+          "type": "code",
+          "question": "写oledShowString函数显示字符串。",
+          "keywords": ["while", "*str", "oledShowChar", "x", "+=", "8", "str++"],
+          "explanation": "参考答案：while(*str){oledShowChar(x,y,*str);x+=8;str++;}"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "OLED显示图形",
+      "goal": "实现画点、画线、显示图片",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "画点操作",
+          "content": "画点是图形显示的基础。坐标(x,y)对应显存：页=y/8，页内行=y%8。置位(画点)：显存[页][列]|=(1<<(y%8))；清位(擦点)：显存[页][列]&=~(1<<(y%8))。用显存缓冲区(GRAM)先修改再整体刷新，避免闪烁。",
+          "codeExample": "// OLED显存缓冲区\nuint8_t oledGRAM[8][128];  // 8页128列\n\n// 画点\nvoid oledDrawPoint(uint8_t x, uint8_t y, uint8_t color) {\n    if (x >= 128 || y >= 64) return;\n    uint8_t page = y / 8;\n    uint8_t bit = y % 8;\n    if (color)\n        oledGRAM[page][x] |= (1 << bit);   // 画点\n    else\n        oledGRAM[page][x] &= ~(1 << bit);  // 擦点\n}\n\n// 刷新显存到OLED\nvoid oledRefresh(void) {\n    for (uint8_t i = 0; i < 8; i++) {\n        oledSetPos(0, i);\n        for (uint8_t j = 0; j < 128; j++)\n            oledWriteData(oledGRAM[i][j]);\n    }\n}"
+        },
+        {
+          "title": "画线和图片",
+          "content": "画线用Bresenham算法或简单DDA。水平线、垂直线简单。斜线需算法。显示图片：图片转点阵数据(取模)，按位置写入显存。图片取模工具：PCtoLCD、img2lcd等。",
+          "codeExample": "// 画线(Bresenham算法)\nvoid oledDrawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {\n    int dx = x2 - x1, dy = y2 - y1;\n    int steps = abs(dx) > abs(dy) ? abs(dx) : abs(dy);\n    float xInc = (float)dx / steps;\n    float yInc = (float)dy / steps;\n    float x = x1, y = y1;\n    for (int i = 0; i <= steps; i++) {\n        oledDrawPoint((uint8_t)x, (uint8_t)y, 1);\n        x += xInc;\n        y += yInc;\n    }\n}\n\n// 显示图片(128x64)\nvoid oledShowImage(uint8_t x, uint8_t y, const uint8_t* img, \n                  uint8_t w, uint8_t h) {\n    for (uint8_t i = 0; i < (h+7)/8; i++) {\n        for (uint8_t j = 0; j < w; j++) {\n            oledGRAM[y/8 + i][x + j] = img[i*w + j];\n        }\n    }\n    oledRefresh();\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "OLED画点时坐标(10,20)位于第几页？",
+          "options": ["0", "1", "2", "3"],
+          "answer": 2,
+          "explanation": "页=y/8=20/8=2(第2页)。页内行=y%8=20%8=4。"
+        },
+        {
+          "type": "choice",
+          "question": "使用显存缓冲区的好处是？",
+          "options": ["节省内存", "避免闪烁", "提高速度", "降低功耗"],
+          "answer": 1,
+          "explanation": "先在缓冲区修改再整体刷新，避免逐字节写导致的闪烁。"
+        },
+        {
+          "type": "fill",
+          "question": "画点置位用____运算(置1)。",
+          "answer": "|=",
+          "explanation": "|=(1<<bit)置1对应像素，&=~(1<<bit)擦除像素。"
+        },
+        {
+          "type": "code",
+          "question": "写oledDrawPoint函数，参数x,y,color。",
+          "keywords": ["uint8_t", "page", "=", "y", "/", "8", "uint8_t", "bit", "=", "y", "%", "8", "|=", "1", "<<", "bit"],
+          "explanation": "参考答案：void oledDrawPoint(uint8_t x,uint8_t y,uint8_t c){uint8_t p=y/8,b=y%8; if(c)oledGRAM[p][x]|=(1<<b); else oledGRAM[p][x]&=~(1<<b);}"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "温湿度传感器",
+      "goal": "读取DHT11/DHT22温湿度数据",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "DHT11传感器",
+          "content": "DHT11是数字温湿度传感器，单总线通信。测量范围：温度0-50℃±2℃，湿度20-90%±5%。40位数据(湿度整数+小数+温度整数+小数+校验)。通信时序：主机拉低18ms启动→拉高等待→DHT响应80us低+80us高→40位数据。位0:50us高，位1:70us高。",
+          "codeExample": "/* DHT11参数\n\n温度: 0-50℃ ±2℃\n湿度: 20-90% ±5%\n精度: 1℃/1%\n\n数据格式(40位)：\n  湿度整数(8位)\n  湿度小数(8位,常0)\n  温度整数(8位)\n  温度小数(8位,常0)\n  校验和(8位)\n\n通信时序：\n1. 主机拉低18ms启动\n2. 主机拉高20-40us\n3. DHT响应: 80us低+80us高\n4. 40位数据(每位50us低+数据高)\n5. 位0: 26us高\n6. 位1: 70us高\n*/"
+        },
+        {
+          "title": "DHT11读取实现",
+          "content": "DHT11读取需精确时序控制。主机发送启动信号→等待响应→读取40位数据。通过测量高电平持续时间判断0或1。需配置GPIO为开漏输出(双向)。读取后校验和验证数据正确性。",
+          "codeExample": "// DHT11读取(简化)\n#define DHT_PIN  GPIO_PIN_0\n#define DHT_PORT GPIOA\n\nuint8_t dht11Read(uint8_t* temp, uint8_t* humi) {\n    uint8_t data[5] = {0};\n    // 启动信号\n    HAL_GPIO_WritePin(DHT_PORT, DHT_PIN, GPIO_PIN_RESET);\n    HAL_Delay(20);  // 拉低20ms\n    HAL_GPIO_WritePin(DHT_PORT, DHT_PIN, GPIO_PIN_SET);\n    // 等待响应和读取(时序略)\n    // ...\n    // 校验\n    if (data[4] == (data[0]+data[1]+data[2]+data[3])) {\n        *humi = data[0];\n        *temp = data[2];\n        return 0;  // 成功\n    }\n    return 1;  // 失败\n}\n\n// 使用\nuint8_t temp, humi;\nif (dht11Read(&temp, &humi) == 0) {\n    printf(\"温度:%d℃ 湿度:%d%%\\r\\n\", temp, humi);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "DHT11通信方式是？",
+          "options": ["I2C", "SPI", "单总线", "UART"],
+          "answer": 2,
+          "explanation": "DHT11是单总线通信，一根数据线双向传输。"
+        },
+        {
+          "type": "choice",
+          "question": "DHT11的数据共多少位？",
+          "options": ["8位", "16位", "32位", "40位"],
+          "answer": 3,
+          "explanation": "DHT11发送40位数据：湿度16+温度16+校验8。"
+        },
+        {
+          "type": "fill",
+          "question": "DHT11启动信号需拉低数据线____ms。",
+          "answer": "18",
+          "explanation": "主机拉低至少18ms启动DHT11通信。"
+        },
+        {
+          "type": "code",
+          "question": "写DHT11校验和验证代码。",
+          "keywords": ["data[4]", "==", "data[0]", "+", "data[1]", "+", "data[2]", "+", "data[3]"],
+          "explanation": "参考答案：if(data[4]==(data[0]+data[1]+data[2]+data[3])){/*正确*/}"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "OLED显示传感器数据",
+      "goal": "将传感器数据显示到OLED",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "数据显示布局",
+          "content": "OLED显示传感器数据需设计界面布局：标题、数值、单位。用sprintf格式化数字为字符串，再用oledShowString显示。注意刷新频率，1秒更新一次即可，太频繁会闪烁。可加图标(温度计、水滴)增强可读性。",
+          "codeExample": "// OLED显示温湿度\nvoid displayTempHumi(uint8_t temp, uint8_t humi) {\n    char buf[20];\n    \n    oledClear();\n    oledShowString(0, 0, \"Weather Station\");\n    oledShowString(0, 2, \"Temp:\");\n    sprintf(buf, \"%d C\", temp);\n    oledShowString(48, 2, buf);\n    \n    oledShowString(0, 4, \"Humi:\");\n    sprintf(buf, \"%d %%\", humi);\n    oledShowString(48, 4, buf);\n    \n    oledRefresh();\n}\n\n// 主循环\nwhile (1) {\n    uint8_t temp, humi;\n    if (dht11Read(&temp, &humi) == 0) {\n        displayTempHumi(temp, humi);\n        printf(\"T:%d H:%d\\r\\n\", temp, humi);\n    }\n    HAL_Delay(2000);  // 2秒更新\n}"
+        },
+        {
+          "title": "数据格式化技巧",
+          "content": "显示浮点数需用sprintf转换为字符串。如温度25.6°C：sprintf(buf,\"%.1f\",temp)。OLED字库可能不含中文，需用字模工具生成中文字库。也可用图标(取模图片)替代文字。",
+          "codeExample": "// 显示浮点数据\nvoid showFloatData(uint8_t x, uint8_t y, char* label, float val, char* unit) {\n    char buf[20];\n    oledShowString(x, y, label);\n    sprintf(buf, \"%.1f%s\", val, unit);\n    oledShowString(x + 40, y, buf);\n}\n\n// 使用\nshowFloatData(0, 2, \"T:\", 25.6f, \"C\");\nshowFloatData(0, 4, \"H:\", 60.5f, \"%\");\nshowFloatData(0, 6, \"L:\", 850.0f, \"lx\");"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "OLED显示数字需用什么函数转换？",
+          "options": ["itoa", "sprintf", "printf", "strcat"],
+          "answer": 1,
+          "explanation": "sprintf将数字格式化为字符串，再oledShowString显示。"
+        },
+        {
+          "type": "choice",
+          "question": "OLED刷新频率建议是？",
+          "options": ["100ms", "1-2秒", "10ms", "即时"],
+          "answer": 1,
+          "explanation": "传感器数据1-2秒更新一次即可，太频繁会闪烁且没必要。"
+        },
+        {
+          "type": "fill",
+          "question": "OLED显示中文需要____字模数据。",
+          "answer": "中文",
+          "explanation": "OLED字库通常只有ASCII，显示中文需用取模工具生成中文字模。"
+        },
+        {
+          "type": "code",
+          "question": "写displayTempHumi函数，在OLED显示温度和湿度。",
+          "keywords": ["oledShowString", "sprintf", "buf", "temp", "humi", "oledRefresh"],
+          "explanation": "参考答案：void displayTempHumi(uint8_t t,uint8_t h){char b[20]; oledShowString(0,0,\"Temp:\"); sprintf(b,\"%dC\",t); oledShowString(48,0,b); oledShowString(0,2,\"Humi:\"); sprintf(b,\"%d%%\",h); oledShowString(48,2,b); oledRefresh();}"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "综合小项目：温湿度监测仪",
+      "goal": "整合OLED+DHT11+串口完成监测仪",
+      "timeAllocation": [
+        {"task": "项目规划", "minutes": 30},
+        {"task": "代码编写", "minutes": 90},
+        {"task": "测试调试", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "项目需求",
+          "content": "温湿度监测仪功能：1.DHT11读取温湿度；2.OLED显示数据；3.串口上报数据；4.按键切换显示界面；5.温度超限报警(LED闪烁)。硬件：STM32+DHT11+OLED+LED+按键。整合前几周所学。",
+          "codeExample": "/* 温湿度监测仪\n\n硬件：\n  STM32F103\n  DHT11  → PA0(单总线)\n  OLED   → I2C1(PB6/PB7)\n  LED    → PC13\n  按键   → PA1(中断)\n  USART1 → PA9/PA10\n\n功能：\n  1. 2秒采集温湿度\n  2. OLED显示\n  3. 串口上报\n  4. 按键切换界面\n  5. 温度>35℃报警\n*/"
+        },
+        {
+          "title": "项目实现",
+          "content": "整合DHT11读取、OLED显示、串口输出、按键中断。主循环：读取传感器→显示→串口上报→报警判断。用定时器实现2秒周期采集。按键中断切换显示界面。",
+          "codeExample": "// 温湿度监测仪主程序\n#include \"main.h\"\n\nvolatile uint8_t updateFlag = 0;\nuint8_t displayMode = 0;\n\nvoid HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {\n    if (htim->Instance == TIM2) {\n        updateFlag = 1;  // 2秒定时\n    }\n}\n\nvoid HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {\n    if (GPIO_Pin == GPIO_PIN_1) {\n        displayMode = !displayMode;  // 切换界面\n    }\n}\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_I2C1_Init();\n    MX_USART1_UART_Init();\n    MX_TIM2_Init();\n    HAL_TIM_Base_Start_IT(&htim2);\n    \n    oledInit();\n    oledClear();\n    \n    while (1) {\n        if (updateFlag) {\n            updateFlag = 0;\n            uint8_t temp, humi;\n            if (dht11Read(&temp, &humi) == 0) {\n                // OLED显示\n                if (displayMode == 0) {\n                    displayTempHumi(temp, humi);\n                } else {\n                    displayChart(temp, humi);  // 图表界面\n                }\n                // 串口上报\n                printf(\"T:%d H:%d\\r\\n\", temp, humi);\n                // 报警\n                if (temp > 35) {\n                    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n                }\n            }\n        }\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "温湿度监测仪的采集周期建议是？",
+          "options": ["100ms", "2秒", "10秒", "1分钟"],
+          "answer": 1,
+          "explanation": "DHT11响应慢，2秒采集一次即可，太快读取会失败。"
+        },
+        {
+          "type": "choice",
+          "question": "温度报警功能用什么实现？",
+          "options": ["OLED显示", "串口输出", "LED闪烁", "蜂鸣器"],
+          "answer": 2,
+          "explanation": "温度超限时LED闪烁报警，直观明显。也可加蜂鸣器。"
+        },
+        {
+          "type": "fill",
+          "question": "按键切换显示界面用____中断实现。",
+          "answer": "外部",
+          "explanation": "按键用EXTI外部中断，在回调中切换displayMode变量。"
+        },
+        {
+          "type": "code",
+          "question": "写温度报警判断代码(温度>35报警)。",
+          "keywords": ["if", "temp", ">", "35", "HAL_GPIO_TogglePin", "GPIOC", "GPIO_PIN_13"],
+          "explanation": "参考答案：if(temp>35)HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+练习",
+      "goal": "总结本周知识，巩固OLED和传感器",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.OLED显示原理(SSD1306)；2.OLED驱动移植(字库/字符显示)；3.OLED图形显示(画点/画线/图片)；4.DHT11温湿度传感器；5.OLED显示传感器数据；6.综合项目温湿度监测仪。OLED显示和传感器是嵌入式人机交互的核心。",
+          "codeExample": "// 综合复习\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_I2C1_Init();\n    MX_USART1_UART_Init();\n    \n    oledInit();\n    oledShowString(0, 0, \"STM32 OLED\");\n    oledShowString(0, 2, \"Hello World\");\n    oledRefresh();\n    \n    while (1) {\n        uint8_t t, h;\n        if (dht11Read(&t, &h) == 0) {\n            char buf[20];\n            sprintf(buf, \"T:%d H:%d\", t, h);\n            oledShowString(0, 4, buf);\n            oledRefresh();\n            HAL_Delay(2000);\n        }\n    }\n}"
+        },
+        {
+          "title": "人机交互应用",
+          "content": "OLED+传感器的典型应用：1.环境监测(温湿度/空气质量)；2.电子时钟(NTP+RTC)；3.健康监测(心率/血氧)；4.物联网仪表(电表/水表)；5.设备状态显示(工业控制)；6.游戏机(简易游戏)。显示是嵌入式与用户交互的窗口。",
+          "codeExample": "/* 人机交互应用\n1. 环境监测 → 温湿度/PM2.5/CO2\n2. 电子时钟 → RTC+NTP对时\n3. 健康监测 → 心率/血氧/计步\n4. 物联网仪表 → 电表/水表/气表\n5. 工业控制 → 设备状态/报警\n6. 消费电子 → 电子相框/游戏\n\n显示设备：\n  OLED 0.96/1.3寸(I2C/SPI)\n  TFT LCD 1.8/2.4/2.8寸(SPI)\n  墨水屏(低功耗)\n  数码管(简单数字)\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下哪个不是OLED的优势？",
+          "options": ["自发光", "对比度高", "功耗低", "尺寸大"],
+          "answer": 3,
+          "explanation": "OLED小尺寸优势明显，大尺寸成本高。适合嵌入式小屏。"
+        },
+        {
+          "type": "choice",
+          "question": "DHT11读取失败的可能原因？",
+          "options": ["时序不对", "I2C地址错", "电压高", "速度快"],
+          "answer": 0,
+          "explanation": "DHT11单总线时序严格，时序不对会读取失败。需精确延时。"
+        },
+        {
+          "type": "fill",
+          "question": "OLED显示数字需用sprintf格式化为____。",
+          "answer": "字符串",
+          "explanation": "OLED显示字符串，数字需sprintf转为字符串再显示。"
+        },
+        {
+          "type": "code",
+          "question": "写主循环：2秒读DHT11并显示到OLED。",
+          "keywords": ["dht11Read", "displayTempHumi", "HAL_Delay", "2000"],
+          "explanation": "参考答案：while(1){uint8_t t,h; if(dht11Read(&t,&h)==0)displayTempHumi(t,h); HAL_Delay(2000);}"
+        }
+      ]
+    }
+  ]
+}

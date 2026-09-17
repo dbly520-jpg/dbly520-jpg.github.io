@@ -1,0 +1,365 @@
+{
+  "week": 11,
+  "month": 3,
+  "title": "第11周：I2C/SPI通信",
+  "goal": "掌握I2C和SPI通信协议原理及STM32配置，能读写EEPROM和Flash。",
+  "days": [
+    {
+      "day": 1,
+      "title": "I2C协议基础",
+      "goal": "理解SCL/SDA、地址、读写时序",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "I2C基本概念",
+          "content": "I2C(Inter-Integrated Circuit)是两线串行通信协议：SCL(时钟线)、SDA(数据线)。特点：1.两线制简单；2.支持多主机多从机；3.每个从机有7位地址；4.标准模式100kHz、快速模式400kHz。开漏输出需上拉电阻(4.7k)。常用于EEPROM、OLED、传感器。",
+          "codeExample": "/* I2C通信\n\n信号线：\n  SCL: 时钟线(主机输出)\n  SDA: 数据线(双向)\n  都需上拉电阻4.7k\n\n从机地址：7位\n  如AT24C02: 0x50\n  OLED SSD1306: 0x3C\n\n通信时序：\n  开始: SCL高时SDA由高变低\n  停止: SCL高时SDA由低变高\n  数据: SCL低时改变SDA\n  应答: 接收方拉低SDA表示ACK\n\n速率：\n  标准: 100kHz\n  快速: 400kHz\n*/"
+        },
+        {
+          "title": "I2C读写时序",
+          "content": "I2C写时序：START→地址+W→ACK→寄存器地址→ACK→数据→ACK→STOP。读时序：START→地址+W→ACK→寄存器→ACK→RESTART→地址+R→ACK→数据→NACK→STOP。注意读操作需先写寄存器地址再重启读。",
+          "codeExample": "/* I2C写时序(写1字节到寄存器)\n\nSTART\n  → 7位地址 + W(0) → ACK\n  → 8位寄存器地址 → ACK\n  → 8位数据 → ACK\nSTOP\n\nI2C读时序(读1字节)\n\nSTART\n  → 7位地址 + W(0) → ACK\n  → 8位寄存器地址 → ACK\nRESTART\n  → 7位地址 + R(1) → ACK\n  → 8位数据 → NACK(主机)\nSTOP\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "I2C通信需要几根线？",
+          "options": ["1根", "2根", "3根", "4根"],
+          "answer": 1,
+          "explanation": "I2C只需2根线：SCL时钟线和SDA数据线，还需共地。"
+        },
+        {
+          "type": "choice",
+          "question": "I2C总线上拉电阻的作用是？",
+          "options": ["限流", "保证空闲高电平", "分压", "滤波"],
+          "answer": 1,
+          "explanation": "I2C开漏输出需上拉电阻，保证总线空闲时为高电平。"
+        },
+        {
+          "type": "fill",
+          "question": "I2C快速模式速率为____kHz。",
+          "answer": "400",
+          "explanation": "I2C标准模式100kHz，快速模式400kHz。"
+        },
+        {
+          "type": "code",
+          "question": "写出I2C两根信号线的名称。",
+          "keywords": ["SCL", "SDA"],
+          "explanation": "SCL是时钟线，SDA是数据线。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "STM32 I2C配置",
+      "goal": "在CubeMX中配置I2C外设",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX配置I2C",
+          "content": "CubeMX配置I2C步骤：1.选择I2C1，模式选I2C；2.参数设置：速率100kHz或400kHz；3.引脚自动分配PB6(SCL)PB7(SDA)；4.生成代码。CubeMX生成hi2c1句柄和MX_I2C1_Init函数。",
+          "codeExample": "/* CubeMX I2C1配置\n1. Connectivity → I2C1\n2. 模式: I2C\n3. Parameter Settings:\n   - I2C Speed Mode: Fast Mode (400kHz)\n   - 或 Standard Mode (100kHz)\n4. 引脚自动分配：\n   PB6: SCL\n   PB7: SDA\n5. 生成代码\n\nCubeMX生成：\n  MX_I2C1_Init() 初始化\n  hi2c1 句柄\n*/"
+        },
+        {
+          "title": "I2C读写函数",
+          "content": "HAL库I2C读写函数：HAL_I2C_Master_Transmit发送、HAL_I2C_Master_Receive接收、HAL_I2C_Mem_Write写寄存器、HAL_I2C_Mem_Read读寄存器。Mem系列适合读写有寄存器地址的从设备(如EEPROM、传感器)。",
+          "codeExample": "// I2C写EEPROM(寄存器方式)\nuint8_t data = 0x55;\nHAL_I2C_Mem_Write(&hi2c1, 0xA0, 0x00, I2C_MEMADD_SIZE_8BIT, \n                   &data, 1, 100);\n\n// I2C读EEPROM\nuint8_t val;\nHAL_I2C_Mem_Read(&hi2c1, 0xA0, 0x00, I2C_MEMADD_SIZE_8BIT, \n                 &val, 1, 100);\n\n// 注意：EEPROM写后有5ms写周期\n// 连续写需等待\nHAL_Delay(5);\n\n// 主机方式(无寄存器地址)\nuint8_t buf[] = {0x01, 0x02};\nHAL_I2C_Master_Transmit(&hi2c1, 0x40, buf, 2, 100);"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "I2C1默认的SCL和SDA引脚是？",
+          "options": ["PA0/PA1", "PB6/PB7", "PC0/PC1", "PB10/PB11"],
+          "answer": 1,
+          "explanation": "I2C1默认SCL=PB6，SDA=PB7。I2C2是PB10/PB11。"
+        },
+        {
+          "type": "choice",
+          "question": "读写EEPROM应使用哪个HAL函数？",
+          "options": ["HAL_I2C_Master_Transmit", "HAL_I2C_Mem_Write", "HAL_I2C_Slave_Transmit", "HAL_I2C_Master_Receive"],
+          "answer": 1,
+          "explanation": "HAL_I2C_Mem_Write/Read支持寄存器地址，适合EEPROM读写。"
+        },
+        {
+          "type": "fill",
+          "question": "AT24C02的I2C地址通常是____（7位）。",
+          "answer": "0x50",
+          "explanation": "AT24C02地址0x50，HAL传参需左移1位为0xA0(写)/0xA1(读)。"
+        },
+        {
+          "type": "code",
+          "question": "写代码向EEPROM地址0x00写入数据0x55。",
+          "keywords": ["HAL_I2C_Mem_Write", "&hi2c1", "0xA0", "0x00", "I2C_MEMADD_SIZE_8BIT", "&data", "1", "100"],
+          "explanation": "参考答案：uint8_t data=0x55; HAL_I2C_Mem_Write(&hi2c1,0xA0,0x00,I2C_MEMADD_SIZE_8BIT,&data,1,100);"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "I2C读写EEPROM",
+      "goal": "实现AT24C02 EEPROM的读写",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "AT24C02 EEPROM",
+          "content": "AT24C02是2Kbit(256字节)I2C EEPROM。地址0x50(A0-A2接地)。特点：1.掉电保存(100年)；2.写次数10万次；3.页写8字节；4.写周期5ms。常用于存储配置参数、校准数据。读写需注意写周期等待。",
+          "codeExample": "/* AT24C02 参数\n容量: 256字节\n地址: 0x50 (7位)\n页大小: 8字节\n写周期: 5ms\n寿命: 10万次写\n保存: 100年\n\n地址计算：\n  设备地址: 1010 A2A1A0 R/W\n  如A0-A2接地: 1010 000 = 0x50\n  HAL传参左移: 0x50<<1 = 0xA0\n*/"
+        },
+        {
+          "title": "EEPROM读写实现",
+          "content": "封装EEPROM读写函数便于使用。写：HAL_I2C_Mem_Write，注意写后延时5ms。读：HAL_I2C_Mem_Read。可写多字节(跨页需分多次写)。读取任意字节较简单。",
+          "codeExample": "// EEPROM读写封装\n#define EEPROM_ADDR 0xA0  // 0x50<<1\n\n// 写1字节\nvoid eepromWriteByte(uint8_t addr, uint8_t data) {\n    HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDR, addr, \n                      I2C_MEMADD_SIZE_8BIT, &data, 1, 100);\n    HAL_Delay(5);  // 写周期\n}\n\n// 读1字节\nuint8_t eepromReadByte(uint8_t addr) {\n    uint8_t data;\n    HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDR, addr, \n                     I2C_MEMADD_SIZE_8BIT, &data, 1, 100);\n    return data;\n}\n\n// 使用\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_I2C1_Init();\n    \n    eepromWriteByte(0x00, 0xAA);\n    uint8_t val = eepromReadByte(0x00);\n    printf(\"读出:0x%02x\\r\\n\", val);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "AT24C02的容量是？",
+          "options": ["256字节", "512字节", "1KB", "2KB"],
+          "answer": 0,
+          "explanation": "AT24C02是2Kbit=256字节。C04是512字节，C08是1KB。"
+        },
+        {
+          "type": "choice",
+          "question": "EEPROM写入后为何要延时5ms？",
+          "options": ["提高速度", "等待内部写周期", "降低功耗", "避免冲突"],
+          "answer": 1,
+          "explanation": "EEPROM有内部写周期约5ms，期间不响应任何操作。"
+        },
+        {
+          "type": "fill",
+          "question": "AT24C02页写大小是____字节。",
+          "answer": "8",
+          "explanation": "AT24C02页写8字节，一次连续写不能跨页。"
+        },
+        {
+          "type": "code",
+          "question": "写eepromReadByte函数读EEPROM指定地址1字节。",
+          "keywords": ["uint8_t", "eepromReadByte", "uint8_t", "addr", "HAL_I2C_Mem_Read", "&hi2c1", "EEPROM_ADDR", "I2C_MEMADD_SIZE_8BIT"],
+          "explanation": "参考答案：uint8_t eepromReadByte(uint8_t a){uint8_t d; HAL_I2C_Mem_Read(&hi2c1,EEPROM_ADDR,a,I2C_MEMADD_SIZE_8BIT,&d,1,100); return d;}"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "SPI协议基础",
+      "goal": "理解MOSI/MISO/SCK/CS和SPI通信",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "SPI基本概念",
+          "content": "SPI(串行外设接口)是四线高速串行通信：SCK(时钟)、MOSI(主出从入)、MISO(主入从出)、CS(片选)。特点：1.全双工；2.高速(几十MHz)；3.主从模式；4.每个从机独立CS线。常用于Flash、LCD、SD卡。CPOL/CPHA四种模式。",
+          "codeExample": "/* SPI通信\n\n信号线：\n  SCK:  时钟(主机输出)\n  MOSI: 主出从入(主机输出)\n  MISO: 主入从出(从机输出)\n  CS/NSS: 片选(主机输出,低有效)\n\n特点：\n  - 全双工(同时收发)\n  - 高速(可达几十MHz)\n  - 每从机独立CS\n  - 主从模式\n\n应用：\n  - SPI Flash (W25Q64)\n  - LCD (ST7735/IL9341)\n  - SD卡\n  - 传感器(MAX6675)\n*/"
+        },
+        {
+          "title": "SPI四种模式",
+          "content": "SPI有4种模式由CPOL(时钟极性)和CPHA(时钟相位)决定：CPOL=0空闲低电平，CPOL=1空闲高电平；CPHA=0第一个边沿采样，CPHA=1第二个边沿采样。常用Mode0(CPOL=0,CPHA=0)和Mode3(CPOL=1,CPHA=1)。需与从设备一致。",
+          "codeExample": "/* SPI四种模式\n\nMode 0: CPOL=0, CPHA=0\n  空闲低，上升沿采样\n  最常用\n\nMode 1: CPOL=0, CPHA=1\n  空闲低，下降沿采样\n\nMode 2: CPOL=1, CPHA=0\n  空闲高，下降沿采样\n\nMode 3: CPOL=1, CPHA=1\n  空闲高，上升沿采样\n  W25Q Flash常用Mode0/Mode3\n\n注意：主从设备模式必须一致\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "SPI通信需要几根线(单从机)？",
+          "options": ["2根", "3根", "4根", "5根"],
+          "answer": 2,
+          "explanation": "SPI需4根线：SCK、MOSI、MISO、CS。3线SPI无MISO(只发不收)。"
+        },
+        {
+          "type": "choice",
+          "question": "SPI相比I2C的优势是？",
+          "options": ["线少", "全双工高速", "支持多机", "更简单"],
+          "answer": 1,
+          "explanation": "SPI全双工、速度高(几十MHz)，I2C半双工、速度低(400kHz)。"
+        },
+        {
+          "type": "fill",
+          "question": "SPI主出从入的信号线简称____。",
+          "answer": "MOSI",
+          "explanation": "MOSI(Master Out Slave In)主机输出从机输入。"
+        },
+        {
+          "type": "code",
+          "question": "写出SPI四根信号线名称。",
+          "keywords": ["SCK", "MOSI", "MISO", "CS"],
+          "explanation": "SCK时钟、MOSI主出从入、MISO主入从出、CS片选。"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "STM32 SPI配置",
+      "goal": "在CubeMX中配置SPI外设",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX配置SPI",
+          "content": "CubeMX配置SPI1步骤：1.选择SPI1模式Full-Duplex Master；2.设置参数：波特率分频、CPOL/CPHA、数据位；3.引脚PA5(SCK)PA7(MOSI)PA6(MISO)PA4(NSS)或软件CS；4.生成代码。",
+          "codeExample": "/* CubeMX SPI1配置\n1. Connectivity → SPI1\n2. Mode: Full-Duplex Master\n3. Parameter Settings:\n   - Frame Format: Motorola\n   - Data Size: 8 Bits\n   - First Bit: MSB First\n   - Prescaler: 4 (72/4=18MHz)\n   - CPOL: Low (Mode 0)\n   - CPHA: 1 Edge\n   - NSS: Disable(软件CS)\n4. 引脚：PA5(SCK) PA7(MOSI) PA6(MISO)\n   CS用普通GPIO\n*/"
+        },
+        {
+          "title": "SPI发送接收",
+          "content": "HAL库SPI函数：HAL_SPI_Transmit发送、HAL_SPI_Receive接收、HAL_SPI_TransmitReceive同时收发。SPI是全双工，发送同时接收。片选CS用GPIO控制：拉低选中，通信完拉高释放。",
+          "codeExample": "// SPI读写Flash(W25Q64)\n#define CS_LOW()  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET)\n#define CS_HIGH() HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET)\n\n// SPI发送接收1字节\nuint8_t spiReadWrite(uint8_t txData) {\n    uint8_t rxData;\n    HAL_SPI_TransmitReceive(&hspi1, &txData, &rxData, 1, 100);\n    return rxData;\n}\n\n// Flash读取ID\nuint16_t flashReadID(void) {\n    uint16_t id;\n    CS_LOW();\n    spiReadWrite(0x9F);  // 读ID命令\n    id = spiReadWrite(0xFF) << 8;  // 厂商ID\n    id |= spiReadWrite(0xFF);       // 类型ID\n    CS_HIGH();\n    return id;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "SPI全双工收发函数是？",
+          "options": ["HAL_SPI_Transmit", "HAL_SPI_Receive", "HAL_SPI_TransmitReceive", "HAL_SPI_Send"],
+          "answer": 2,
+          "explanation": "HAL_SPI_TransmitReceive同时发送和接收，实现全双工通信。"
+        },
+        {
+          "type": "choice",
+          "question": "SPI通信前应做什么？",
+          "options": ["拉高CS", "拉低CS", "发送数据", "延时"],
+          "answer": 1,
+          "explanation": "CS低电平有效，通信前拉低CS选中从设备。"
+        },
+        {
+          "type": "fill",
+          "question": "SPI1默认SCK引脚是____。",
+          "answer": "PA5",
+          "explanation": "SPI1: SCK=PA5, MISO=PA6, MOSI=PA7, NSS=PA4。"
+        },
+        {
+          "type": "code",
+          "question": "写spiReadWrite函数实现SPI同时收发1字节。",
+          "keywords": ["HAL_SPI_TransmitReceive", "&hspi1", "&txData", "&rxData", "1", "100", "return", "rxData"],
+          "explanation": "参考答案：uint8_t spiReadWrite(uint8_t t){uint8_t r; HAL_SPI_TransmitReceive(&hspi1,&t,&r,1,100); return r;}"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "SPI读写Flash",
+      "goal": "实现W25Q64 SPI Flash读写",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "W25Q64 Flash",
+          "content": "W25Q64是8MB SPI Flash。特点：1.容量8MB(64Mbit)；2.SPI模式0和3；3.最高时钟104MHz；4.扇区擦除4KB；5.页编程256字节。常用命令：0x9F读ID、0x03读数据、0x06写使能、0x02页编程、0x20扇区擦除。写入前必须先擦除。",
+          "codeExample": "/* W25Q64 Flash\n\n容量: 8MB (64Mbit)\n结构: 128扇区 × 16页 × 256字节\n  扇区: 4KB\n  页:   256字节\n\n常用命令：\n  0x9F: 读ID (EF 40 17)\n  0x03: 读数据\n  0x06: 写使能\n  0x04: 写禁止\n  0x02: 页编程(写)\n  0x20: 扇区擦除(4KB)\n  0xC7: 整片擦除\n  0x05: 读状态寄存器\n\n注意：\n  - 写入前必须先擦除\n  - 擦除后为0xFF\n  - 编程只能0→1\n  - 写后等待BUSY位清零\n*/"
+        },
+        {
+          "title": "Flash读写实现",
+          "content": "Flash读写流程：1.读ID验证连接；2.擦除扇区(写使能→发命令→等待)；3.页编程写数据(写使能→发命令→地址→数据)；4.读取数据(发命令→地址→读)。需等待写完成(状态寄存器BUSY位)。",
+          "codeExample": "// W25Q64读写\n// 读数据\nvoid flashRead(uint32_t addr, uint8_t* buf, uint16_t len) {\n    CS_LOW();\n    spiReadWrite(0x03);  // 读命令\n    spiReadWrite((addr>>16)&0xFF);  // 地址24位\n    spiReadWrite((addr>>8)&0xFF);\n    spiReadWrite(addr&0xFF);\n    for (int i = 0; i < len; i++) {\n        buf[i] = spiReadWrite(0xFF);\n    }\n    CS_HIGH();\n}\n\n// 等待写完成\nvoid flashWaitBusy(void) {\n    uint8_t status;\n    do {\n        CS_LOW();\n        spiReadWrite(0x05);  // 读状态\n        status = spiReadWrite(0xFF);\n        CS_HIGH();\n    } while (status & 0x01);  // BUSY位\n}\n\n// 扇区擦除\nvoid flashEraseSector(uint32_t addr) {\n    CS_LOW();\n    spiReadWrite(0x06);  // 写使能\n    CS_HIGH();\n    CS_LOW();\n    spiReadWrite(0x20);  // 扇区擦除\n    spiReadWrite((addr>>16)&0xFF);\n    spiReadWrite((addr>>8)&0xFF);\n    spiReadWrite(addr&0xFF);\n    CS_HIGH();\n    flashWaitBusy();\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "W25Q64的容量是？",
+          "options": ["1MB", "4MB", "8MB", "16MB"],
+          "answer": 2,
+          "explanation": "W25Q64是64Mbit=8MB。W25Q128是16MB。"
+        },
+        {
+          "type": "choice",
+          "question": "Flash写入前必须先？",
+          "options": ["读取", "擦除", "延时", "复位"],
+          "answer": 1,
+          "explanation": "Flash写入只能0→1，擦除后全为0xFF(1)，才能写入数据。"
+        },
+        {
+          "type": "fill",
+          "question": "W25Q64读取数据的命令是0x____。",
+          "answer": "03",
+          "explanation": "0x03是读数据命令，后跟24位地址。"
+        },
+        {
+          "type": "code",
+          "question": "写flashWaitBusy函数：循环读状态寄存器直到BUSY位清零。",
+          "keywords": ["spiReadWrite", "0x05", "status", "spiReadWrite", "0xFF", "&", "0x01"],
+          "explanation": "参考答案：do{CS_LOW();spiReadWrite(0x05);status=spiReadWrite(0xFF);CS_HIGH();}while(status&0x01);"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+练习",
+      "goal": "总结本周知识，巩固I2C和SPI",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.I2C协议(SCL/SDA/地址/时序)；2.CubeMX配置I2C；3.读写EEPROM(AT24C02)；4.SPI协议(SCK/MOSI/MISO/CS/四模式)；5.CubeMX配置SPI；6.读写Flash(W25Q64)。I2C和SPI是嵌入式最重要的两种串行通信协议，大量传感器和存储器使用。",
+          "codeExample": "// 综合示例：EEPROM参数存储\nstruct Config {\n    uint8_t brightness;\n    uint8_t volume;\n    uint16_t timeout;\n};\n\nvoid saveConfig(struct Config* cfg) {\n    eepromWriteByte(0x00, cfg->brightness);\n    eepromWriteByte(0x01, cfg->volume);\n    eepromWriteByte(0x02, cfg->timeout & 0xFF);\n    eepromWriteByte(0x03, (cfg->timeout >> 8) & 0xFF);\n}\n\nvoid loadConfig(struct Config* cfg) {\n    cfg->brightness = eepromReadByte(0x00);\n    cfg->volume = eepromReadByte(0x01);\n    cfg->timeout = eepromReadByte(0x02) | (eepromReadByte(0x03) << 8);\n}"
+        },
+        {
+          "title": "I2C与SPI对比",
+          "content": "I2C：2线、半双工、多机地址、100/400kHz、简单慢速、适合EEPROM/传感器/OLED。SPI：4线、全双工、CS选片、几十MHz、高速复杂、适合Flash/LCD/SD卡。根据设备数量、速度需求选择。",
+          "codeExample": "/* I2C vs SPI\n\n特性     I2C          SPI\n线数     2            4\n双工     半双工        全双工\n速度     100/400k     几十MHz\n多机     地址          CS线\n引脚     少            多\n复杂度   简单          中等\n应用     EEPROM/传感器  Flash/LCD/SD\n\n选择：\n设备多、速度低 → I2C\n设备少、速度高 → SPI\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下哪个设备常用I2C通信？",
+          "options": ["W25Q64 Flash", "OLED SSD1306", "SD卡", "ST7735 LCD"],
+          "answer": 1,
+          "explanation": "OLED SSD1306常用I2C，Flash/LCD/SD卡常用SPI。"
+        },
+        {
+          "type": "choice",
+          "question": "I2C和SPI的主要区别是？",
+          "options": ["I2C快SPI慢", "I2C两线SPI四线", "I2C全双工SPI半双工", "没有区别"],
+          "answer": 1,
+          "explanation": "I2C两线半双工慢速，SPI四线全双工高速。"
+        },
+        {
+          "type": "fill",
+          "question": "存储配置参数常用____芯片(AT24C02)。",
+          "answer": "EEPROM",
+          "explanation": "EEPROM掉电不丢失，适合存储配置参数。"
+        },
+        {
+          "type": "code",
+          "question": "写函数从Flash地址0x1000读取16字节数据。",
+          "keywords": ["flashRead", "0x1000", "buf", "16"],
+          "explanation": "参考答案：uint8_t buf[16]; flashRead(0x1000,buf,16);"
+        }
+      ]
+    }
+  ]
+}

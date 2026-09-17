@@ -1,0 +1,383 @@
+{
+  "week": 1,
+  "month": 1,
+  "title": "第1周：C语言入门",
+  "goal": "掌握变量、数据类型、运算符、输入输出，能够编写简单的C程序。",
+  "days": [
+    {
+      "day": 1,
+      "title": "变量与数据类型",
+      "goal": "理解C语言变量和基本数据类型",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "什么是变量",
+          "content": "变量是存储数据的容器，每个变量都有特定的数据类型，编译器根据类型为其分配相应大小的内存空间。变量名是内存地址的别名，通过变量名可以访问内存中的数据。变量必须先声明后使用。",
+          "codeExample": "int age = 18;\nfloat height = 1.75f;\nchar grade = 'A';\ndouble pi = 3.141592653;"
+        },
+        {
+          "title": "基本数据类型",
+          "content": "C语言基本数据类型包括：整型（int、short、long）、浮点型（float、double）、字符型（char）。不同类型占用内存大小不同，取值范围也不同。嵌入式开发中要注意数据类型的精确大小，可使用stdint.h中的uint8_t/uint16_t/uint32_t等定宽类型。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int a = 10;\n    float b = 3.14f;\n    char c = 'X';\n    double d = 3.141592653589;\n    printf(\"a=%d, b=%.2f, c=%c, d=%.10lf\\n\", a, b, c, d);\n    return 0;\n}"
+        },
+        {
+          "title": "变量命名规则",
+          "content": "变量名只能由字母、数字和下划线组成，不能以数字开头，不能使用C语言关键字，区分大小写。建议使用有意义的名称，驼峰命名法或下划线命名法均可。",
+          "codeExample": "int student_age = 20;   // 合法\nint _count = 0;          // 合法\nint maxValue = 100;      // 合法\n// int 1var = 0;         // 非法：以数字开头\n// int var-name = 0;     // 非法：包含连字符"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下哪个是合法的C语言变量名？",
+          "options": ["1var", "_count", "var-name", "class"],
+          "answer": 1,
+          "explanation": "_count 是合法的变量名，以下划线开头是允许的。1var以数字开头非法；var-name包含连字符非法；class是C++关键字（C语言中部分编译器保留）。"
+        },
+        {
+          "type": "choice",
+          "question": "在32位系统中，以下哪种数据类型通常占用4个字节？",
+          "options": ["char", "short", "int", "double"],
+          "answer": 2,
+          "explanation": "在32位系统中，int通常占4字节，char占1字节，short占2字节，double占8字节。具体大小可用sizeof运算符查看。"
+        },
+        {
+          "type": "fill",
+          "question": "在C语言中，用于声明单精度浮点型变量的关键字是____。",
+          "answer": "float",
+          "explanation": "float是单精度浮点型，通常占4字节；double是双精度浮点型，通常占8字节。"
+        },
+        {
+          "type": "code",
+          "question": "写一个C程序，声明一个int变量num赋值为10，并用printf输出它的值。",
+          "keywords": ["int", "num", "=", "10", "printf", "%d"],
+          "explanation": "参考答案：int num = 10; printf(\"%d\", num); 注意printf格式化字符串使用%d输出整数。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "运算符",
+      "goal": "掌握算术、关系、逻辑、赋值运算符的使用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "算术运算符",
+          "content": "算术运算符包括+、-、*、/、%（取模）、++（自增）、--（自减）。注意整数除法会截断小数部分，如5/2结果为2。取模运算符%只能用于整型。自增自减有前置和后置之分，前置先加减后使用，后置先使用后加减。",
+          "codeExample": "int a = 10, b = 3;\nint sum = a + b;      // 13\nint div = a / b;      // 3，整数除法\nint mod = a % b;      // 1，取模\nint c = a++;          // c=10, a=11 后置\nint d = ++a;          // a=12, d=12 前置"
+        },
+        {
+          "title": "关系运算符与逻辑运算符",
+          "content": "关系运算符有>、<、>=、<=、==、!=，结果为1（真）或0（假）。逻辑运算符有&&（与）、||（或）、!（非）。C语言中0为假，非0为真。注意==与=的区别，==是判断相等，=是赋值，这是初学者常见错误。逻辑运算符有短路特性：&&左边为假时右边不计算，||左边为真时右边不计算。",
+          "codeExample": "int a = 5, b = 10;\nint result = (a > 0) && (b > 0);   // 1，都为真\nint result2 = (a > 10) || (b > 5);  // 1，右边为真\nint result3 = !(a == b);            // 1，a不等于b"
+        },
+        {
+          "title": "赋值运算符与复合赋值",
+          "content": "赋值运算符=将右边的值赋给左边变量。复合赋值运算符有+=、-=、*=、/=、%=等，如a+=5等价于a=a+5。位运算复合赋值有&=、|=、^=、<<=、>>=，在嵌入式寄存器操作中常用。",
+          "codeExample": "int a = 10;\na += 5;    // a = a + 5 = 15\na -= 3;    // a = a - 3 = 12\na *= 2;    // a = a * 2 = 24\na /= 4;    // a = a / 4 = 6\na %= 4;    // a = a % 4 = 2"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "表达式 5 / 2 的结果是多少？（int类型）",
+          "options": ["2.5", "2", "3", "编译错误"],
+          "answer": 1,
+          "explanation": "整数除法会截断小数部分，5/2结果为2而非2.5。若想得到2.5需写成5.0/2或(float)5/2。"
+        },
+        {
+          "type": "choice",
+          "question": "以下代码执行后，a和b的值分别是多少？\nint a = 5, b;b = a++;",
+          "options": ["a=5,b=5", "a=6,b=5", "a=6,b=6", "a=5,b=6"],
+          "answer": 1,
+          "explanation": "a++是后置自增，先使用a的值赋给b（b=5），然后a自增为6。"
+        },
+        {
+          "type": "fill",
+          "question": "表达式 (5 > 3) && (2 > 8) 的结果是____。",
+          "answer": "0",
+          "explanation": "5>3为真(1)，2>8为假(0)，与运算结果为0。"
+        },
+        {
+          "type": "code",
+          "question": "写代码计算两个整数a=15和b=4的和、差、积、商、余数，并输出结果。",
+          "keywords": ["+", "-", "*", "/", "%", "printf"],
+          "explanation": "参考答案：int a=15,b=4; printf(\"%d %d %d %d %d\", a+b, a-b, a*b, a/b, a%b); 输出19 11 60 3 3。"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "输入输出",
+      "goal": "掌握printf格式化输出和scanf读取输入",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "printf格式化输出",
+          "content": "printf函数用于格式化输出到屏幕。常用格式符：%d（整数）、%f（浮点）、%c（字符）、%s（字符串）、%x（十六进制）、%o（八进制）、%%（百分号）。可使用%.nf控制小数位数，%nd控制字段宽度。嵌入式开发中调试常用printf输出变量值。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int a = 255;\n    float f = 3.14159f;\n    printf(\"十进制:%d\\n\", a);\n    printf(\"十六进制:%x\\n\", a);\n    printf(\"八进制:%o\\n\", a);\n    printf(\"浮点:%.2f\\n\", f);\n    printf(\"字符:%c\\n\", 'A');\n    return 0;\n}"
+        },
+        {
+          "title": "scanf读取输入",
+          "content": "scanf函数用于从键盘读取输入。格式符与printf类似，但变量前必须加取地址符&（数组名除外）。scanf返回成功读取的项数，可用于输入验证。注意scanf在读取字符串时不安全，建议使用fgets。读取字符时可用getchar()。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int age;\n    float score;\n    char name[20];\n    printf(\"请输入年龄：\");\n    scanf(\"%d\", &age);\n    printf(\"请输入成绩：\");\n    scanf(\"%f\", &score);\n    printf(\"年龄:%d, 成绩:%.1f\\n\", age, score);\n    return 0;\n}"
+        },
+        {
+          "title": "转义字符",
+          "content": "转义字符以反斜线\\开头，用于表示不可见字符或特殊字符。常用转义字符：\\n（换行）、\\t（制表符）、\\r（回车）、\\\\（反斜线）、\\\"（双引号）、\\'（单引号）、\\0（空字符）、\\x41（十六进制字符A）。嵌入式串口通信中\\r\\n常用于换行。",
+          "codeExample": "printf(\"第一行\\t第二列\\n\");\nprintf(\"路径:C:\\\\Program Files\\\\\\\");\nprintf(\"他说:\\\"你好\\\"\\n\");"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下printf语句输出什么？\nprintf(\"%x\", 255);",
+          "options": ["255", "ff", "FF", "11111111"],
+          "answer": 1,
+          "explanation": "%x以小写十六进制输出，255的十六进制为ff。%X输出大写FF。"
+        },
+        {
+          "type": "choice",
+          "question": "使用scanf读取int变量age的值，以下写法正确的是？",
+          "options": ["scanf(\"%d\", age);", "scanf(\"%d\", &age);", "scanf(\"%d\", *age);", "scanf(\"%f\", &age);"],
+          "answer": 1,
+          "explanation": "scanf需要变量地址，int变量前必须加&。%d对应int，%f对应float。"
+        },
+        {
+          "type": "fill",
+          "question": "要让printf输出一个换行，应使用转义字符____。",
+          "answer": "\\n",
+          "explanation": "\\n是换行符，将光标移到下一行开头。"
+        },
+        {
+          "type": "code",
+          "question": "编写程序，从键盘输入圆的半径r（浮点数），计算并输出圆的面积（保留2位小数）。π取3.14。",
+          "keywords": ["scanf", "%f", "&", "3.14", "r", "r", "printf", "%.2f"],
+          "explanation": "参考答案：float r; scanf(\"%f\", &r); printf(\"%.2f\", 3.14*r*r);"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "类型转换",
+      "goal": "理解自动类型转换和强制类型转换",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "自动类型转换",
+          "content": "在表达式中，不同类型的数据会自动转换为高精度类型。转换规则：char/short→int→unsigned int→long→double；float会转换为double参与运算。赋值时将右值类型转换为左值类型，可能丢失精度。例如int转float可能丢失精度，float转int会截断小数。",
+          "codeExample": "int a = 5;\nfloat b = 2.5f;\nfloat c = a + b;   // a自动转为float，c=7.5\nint d = a + b;     // 结果7.5转为int，d=7\nchar ch = 'A';\nint code = ch;     // code=65"
+        },
+        {
+          "title": "强制类型转换",
+          "content": "强制类型转换使用(type)运算符，将一个表达式转换为指定类型。语法：(目标类型)表达式。常用于：整数除法转浮点除法、指针类型转换（嵌入式寄存器操作常用）、避免隐式转换带来的精度丢失。注意强制转换不会改变原变量的类型和值。",
+          "codeExample": "int a = 5, b = 2;\nfloat result1 = a / b;        // 2.0，整数除法\nfloat result2 = (float)a / b; // 2.5，强制转换\nfloat result3 = (float)(a / b); // 2.0，转换的是结果\n// 嵌入式寄存器操作\nvolatile unsigned int* reg = (unsigned int*)0x40010800;"
+        },
+        {
+          "title": "数据溢出",
+          "content": "当数据超出类型表示范围时会发生溢出。有符号整数溢出是未定义行为，无符号整数溢出会回绕（取模运算）。嵌入式开发中要特别注意变量范围，使用合适的数据类型。例如uint8_t范围0-255，加1后变为0。",
+          "codeExample": "unsigned char a = 255;\na = a + 1;   // 回绕到0\nint b = 2147483647;\nb = b + 1;   // 溢出，未定义行为\n// 使用sizeof和limits.h查看范围\n#include <limits.h>\nprintf(\"int范围:%d~%d\\n\", INT_MIN, INT_MAX);"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下代码输出什么？\nint a=5,b=2; printf(\"%f\", (float)a/b);",
+          "options": ["2.000000", "2.500000", "2", "编译错误"],
+          "answer": 1,
+          "explanation": "(float)a将a转为5.0，再除以b（自动转为2.0），结果2.5，%f默认输出6位小数为2.500000。"
+        },
+        {
+          "type": "choice",
+          "question": "unsigned char变量a=200，执行a+=100后，a的值是？",
+          "options": ["300", "44", "255", "0"],
+          "answer": 1,
+          "explanation": "unsigned char范围0-255，300超过范围回绕到300-256=44。"
+        },
+        {
+          "type": "fill",
+          "question": "将float变量f转换为int类型，应使用表达式____。",
+          "answer": "(int)f",
+          "explanation": "强制类型转换语法：(int)f，会截断小数部分。"
+        },
+        {
+          "type": "code",
+          "question": "编写程序，int a=10,b=3;用强制类型转换计算a/b的浮点结果并输出（保留4位小数）。",
+          "keywords": ["(float)", "a", "/", "b", "printf", "%.4f"],
+          "explanation": "参考答案：int a=10,b=3; printf(\"%.4f\", (float)a/b); 输出3.3333。"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "综合练习",
+      "goal": "通过简单计算器和温度转换综合运用所学知识",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "简单计算器",
+          "content": "综合运用变量、输入输出、运算符实现一个简单计算器。读取两个数和一个运算符，根据运算符进行相应运算。这个练习综合了输入、运算、输出的知识。注意除数为0的情况判断（虽然还没学if，可先用三目运算符）。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    float a, b;\n    char op;\n    printf(\"输入表达式(如3+5): \");\n    scanf(\"%f%c%f\", &a, &op, &b);\n    float result = (op=='+') ? a+b :\n                   (op=='-') ? a-b :\n                   (op=='*') ? a*b :\n                   (op=='/') ? a/b : 0;\n    printf(\"%.2f %c %.2f = %.2f\\n\", a, op, b, result);\n    return 0;\n}"
+        },
+        {
+          "title": "温度转换",
+          "content": "摄氏温度C与华氏温度F的转换公式：F = C * 9/5 + 32，C = (F-32) * 5/9。这是一个经典的编程练习，注意9/5在整数除法下为1，应使用9.0/5或9.0f/5.0f。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    float celsius, fahrenheit;\n    printf(\"输入摄氏温度: \");\n    scanf(\"%f\", &celsius);\n    fahrenheit = celsius * 9.0f / 5.0f + 32;\n    printf(\"华氏温度: %.2f\\n\", fahrenheit);\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "在温度转换中，celsius*9/5+32结果错误的原因是？",
+          "options": ["运算符优先级错误", "9/5整数除法结果为1", "变量类型错误", "公式错误"],
+          "answer": 1,
+          "explanation": "9/5是整数除法结果为1，应写成9.0/5或9.0f/5.0f进行浮点除法。"
+        },
+        {
+          "type": "fill",
+          "question": "华氏温度转摄氏温度的公式是C = ____。",
+          "answer": "(F-32)*5/9",
+          "explanation": "C = (F-32)*5/9，实际编程中应使用5.0/9.0保证浮点运算。"
+        },
+        {
+          "type": "code",
+          "question": "编写程序，输入华氏温度，输出对应摄氏温度（保留2位小数）。",
+          "keywords": ["scanf", "%f", "(F-32)", "5.0", "9.0", "printf"],
+          "explanation": "参考答案：float F; scanf(\"%f\",&F); printf(\"%.2f\", (F-32)*5.0f/9.0f);"
+        },
+        {
+          "type": "code",
+          "question": "输入两个整数a和b，交换它们的值并输出交换后的结果。",
+          "keywords": ["temp", "a", "b", "swap"],
+          "explanation": "参考答案：int a,b,temp; scanf(\"%d%d\",&a,&b); temp=a; a=b; b=temp; printf(\"%d %d\",a,b);"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "复习+实战",
+      "goal": "通过圆面积计算和BMI计算巩固本周知识",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "圆面积计算",
+          "content": "圆面积公式S=π*r*r。定义常量PI可用宏定义#define或const关键字。宏定义在预处理阶段替换，const是真正的常量变量。嵌入式开发中常用宏定义寄存器地址和常量。",
+          "codeExample": "#include <stdio.h>\n#define PI 3.14159f\n\nint main() {\n    float r;\n    printf(\"输入半径: \");\n    scanf(\"%f\", &r);\n    float area = PI * r * r;\n    printf(\"圆面积: %.2f\\n\", area);\n    return 0;\n}"
+        },
+        {
+          "title": "BMI计算",
+          "content": "BMI（身体质量指数）= 体重(kg) / 身高(m)的平方。BMI<18.5偏瘦，18.5-24正常，24-28偏胖，>28肥胖。综合运用变量、输入、运算、输出，并初步接触条件判断（用三目运算符）。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    float weight, height;\n    printf(\"输入体重(kg)和身高(m): \");\n    scanf(\"%f %f\", &weight, &height);\n    float bmi = weight / (height * height);\n    printf(\"BMI = %.1f\\n\", bmi);\n    const char* status = (bmi < 18.5f) ? \"偏瘦\" :\n                         (bmi < 24.0f) ? \"正常\" :\n                         (bmi < 28.0f) ? \"偏胖\" : \"肥胖\";\n    printf(\"%s\\n\", status);\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下定义常量PI的方式，哪种在预处理阶段进行文本替换？",
+          "options": ["const float PI=3.14f;", "#define PI 3.14f", "float PI=3.14f;", "static const float PI;"],
+          "answer": 1,
+          "explanation": "#define是宏定义，在预处理阶段进行文本替换；const是定义常量变量，有类型检查。"
+        },
+        {
+          "type": "fill",
+          "question": "圆面积公式S = ____（用PI和r表示）。",
+          "answer": "PI*r*r",
+          "explanation": "S = π*r²，C语言中表示为PI*r*r或PI*r^2（需包含math.h用pow）。"
+        },
+        {
+          "type": "code",
+          "question": "输入体重和身高，计算BMI并输出（保留1位小数）。",
+          "keywords": ["scanf", "%f", "weight", "height", "*", "/", "printf", "%.1f"],
+          "explanation": "参考答案：float w,h; scanf(\"%f%f\",&w,&h); printf(\"%.1f\", w/(h*h));"
+        },
+        {
+          "type": "code",
+          "question": "输入圆的半径，计算圆的周长（2*PI*r）和面积（PI*r*r），都保留2位小数。",
+          "keywords": ["2", "PI", "r", "PI", "r", "r", "printf", "%.2f"],
+          "explanation": "参考答案：float r; scanf(\"%f\",&r); printf(\"%.2f %.2f\", 2*3.14f*r, 3.14f*r*r);"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+进阶练习",
+      "goal": "总结本周知识，进行进阶综合练习",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了C语言基础：1.变量与数据类型（int/float/char/double）；2.运算符（算术、关系、逻辑、赋值）；3.输入输出（printf/scanf）；4.类型转换（自动、强制）；5.综合应用（计算器、温度转换、圆面积、BMI）。这些是嵌入式开发的基石，后续指针、寄存器操作都依赖这些基础。",
+          "codeExample": "// 综合示例：输入输出+运算\n#include <stdio.h>\n\nint main() {\n    int num;\n    printf(\"输入一个整数: \");\n    scanf(\"%d\", &num);\n    printf(\"十进制:%d 十六进制:%x 八进制:%o\\n\", num, num, num);\n    printf(\"平方:%d 立方:%d\\n\", num*num, num*num*num);\n    return 0;\n}"
+        },
+        {
+          "title": "进阶：宏定义与sizeof",
+          "content": "宏定义#define用于定义常量和宏函数，在嵌入式开发中常用于寄存器地址定义和位操作。sizeof运算符用于获取数据类型或变量占用的字节数，在嵌入式开发中用于确定数据宽度。",
+          "codeExample": "#include <stdio.h>\n#define MAX(a,b) ((a)>(b)?(a):(b))\n#define REG_ADDR 0x40010800\n\nint main() {\n    printf(\"int大小:%zu字节\\n\", sizeof(int));\n    printf(\"char大小:%zu字节\\n\", sizeof(char));\n    printf(\"double大小:%zu字节\\n\", sizeof(double));\n    printf(\"MAX(3,5)=%d\\n\", MAX(3, 5));\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "sizeof(int)在32位系统中的返回值是？",
+          "options": ["1", "2", "4", "8"],
+          "answer": 2,
+          "explanation": "32位系统中int通常占4字节。sizeof返回size_t类型，使用%zu格式符输出。"
+        },
+        {
+          "type": "choice",
+          "question": "以下宏定义正确的是？",
+          "options": ["#define PI 3.14", "#define PI = 3.14", "#define PI 3.14;", "define PI 3.14"],
+          "answer": 0,
+          "explanation": "#define 宏名 替换文本，不需要等号和分号。宏定义以行为单位，末尾不加分号。"
+        },
+        {
+          "type": "fill",
+          "question": "定义一个宏MAX(a,b)返回a和b中的较大值，应写为#define MAX(a,b) ____。",
+          "answer": "((a)>(b)?(a):(b))",
+          "explanation": "宏定义中参数要用括号包裹避免运算符优先级问题。"
+        },
+        {
+          "type": "code",
+          "question": "编写程序，输入一个整数，分别输出它的十进制、十六进制和八进制形式。",
+          "keywords": ["scanf", "%d", "printf", "%d", "%x", "%o"],
+          "explanation": "参考答案：int n; scanf(\"%d\",&n); printf(\"%d %x %o\", n, n, n);"
+        }
+      ]
+    }
+  ]
+}

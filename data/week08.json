@@ -1,0 +1,365 @@
+{
+  "week": 8,
+  "month": 2,
+  "title": "第8周：UART串口通信",
+  "goal": "掌握UART串口通信原理、HAL库串口函数和printf重定向。",
+  "days": [
+    {
+      "day": 1,
+      "title": "串口通信基础",
+      "goal": "理解波特率、数据帧、RS232/TTL电平",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "串口通信概念",
+          "content": "UART(通用异步收发器)是最常用的串行通信接口。通信方式：单线发送(TX)、单线接收(RX)、共地(GND)。数据按位串行传输。优点：线少、简单、距离远；缺点：速度慢、单向。STM32有3个USART(USART1/2/3)和2个UART(UART4/5)。USART1挂在APB2(72MHz)，其他挂在APB1(36MHz)。",
+          "codeExample": "/* UART通信\n\n连接：\n  MCU TX → 上位机 RX\n  MCU RX ← 上位机 TX\n  GND    → GND\n\n参数：\n  波特率：9600/115200等\n  数据位：8位\n  停止位：1位\n  校验：无/奇/偶\n\nSTM32F103 USART分配：\n  USART1: PA9(TX) PA10(RX) - 常用调试\n  USART2: PA2(TX) PA3(RX)\n  USART3: PB10(TX) PB11(RX)\n*/"
+        },
+        {
+          "title": "波特率和数据帧",
+          "content": "波特率是每秒传输的位数(bps)。常用9600、115200。收发双方必须波特率一致。数据帧格式：起始位(1位低电平)+数据位(5-9位)+校验位(可选)+停止位(1/2位高电平)。无数据时TX为高电平(空闲)。",
+          "codeExample": "/* 数据帧格式(8N1)\n\n空闲: _________\n数据: S|D0|D1|D2|D3|D4|D5|D6|D7|P|Stop\n\nS: 起始位(低)\nD: 数据位(8位,LSB先)\nP: 校验位(无)\nStop: 停止位(高)\n\n每字节数据位数 = 1(起始) + 8(数据) + 0(校验) + 1(停止) = 10位\n115200bps时每字节时间 = 10/115200 ≈ 86.8us\n每秒传输 = 11520字节\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "UART通信至少需要几根线？",
+          "options": ["1根", "2根", "3根", "4根"],
+          "answer": 2,
+          "explanation": "至少3根线：TX、RX、GND。单工只需TX+GND，双工需TX+RX+GND。"
+        },
+        {
+          "type": "choice",
+          "question": "波特率115200表示什么？",
+          "options": ["每秒115200字节", "每秒115200位", "每秒115200赫兹", "数据位数"],
+          "answer": 1,
+          "explanation": "波特率是每秒传输的位数(bps)，115200bps即每秒115200位。"
+        },
+        {
+          "type": "fill",
+          "question": "UART空闲时TX线电平为____。",
+          "answer": "高",
+          "explanation": "空闲状态TX为高电平，起始位是低电平用于同步。"
+        },
+        {
+          "type": "code",
+          "question": "写出STM32F103 USART1的默认引脚(TX和RX)。",
+          "keywords": ["PA9", "TX", "PA10", "RX"],
+          "explanation": "USART1: PA9是TX(发送)，PA10是RX(接收)。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "STM32 USART配置",
+      "goal": "在CubeMX中配置USART1",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX配置USART",
+          "content": "CubeMX配置USART1步骤：1.选择USART1模式为Asynchronous(异步)；2.设置参数：波特率115200、数据位8、停止位1、校验None；3.引脚自动分配PA9(TX)PA10(RX)；4.可在NVIC中使能USART1全局中断(接收用)；5.生成代码。CubeMX生成MX_USART1_UART_Init初始化函数。",
+          "codeExample": "/* CubeMX USART1配置\n参数设置(Parameter Settings)：\n  Baud Rate: 115200\n  Word Length: 8 Bits\n  Parity: None\n  Stop Bits: 1\n  Data Direction: Receive and Transmit\n\nNVIC设置：\n  勾选 USART1 global interrupt\n  (接收中断时需使能)\n\nCubeMX生成：\n  MX_USART1_UART_Init() 初始化函数\n  huart1 句柄变量\n*/"
+        },
+        {
+          "title": "UART初始化结构体",
+          "content": "UART初始化通过UART_HandleTypeDef句柄配置。包含波特率、字长、停止位、校验、模式等。CubeMX自动生成初始化代码，但理解结构体便于调试和修改。huart1是全局变量，用于后续调用HAL_UART函数。",
+          "codeExample": "// CubeMX生成的USART1初始化\nUART_HandleTypeDef huart1;\n\nvoid MX_USART1_UART_Init(void) {\n    huart1.Instance = USART1;\n    huart1.Init.BaudRate = 115200;\n    huart1.Init.WordLength = UART_WORDLENGTH_8B;\n    huart1.Init.StopBits = UART_STOPBITS_1;\n    huart1.Init.Parity = UART_PARITY_NONE;\n    huart1.Init.Mode = UART_MODE_TX_RX;\n    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;\n    huart1.Init.OverSampling = UART_OVERSAMPLING_16;\n    if (HAL_UART_Init(&huart1) != HAL_OK) {\n        Error_Handler();\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "CubeMX中USART1应选择哪种模式实现普通串口通信？",
+          "options": ["Asynchronous", "Synchronous", "IRDA", "SmartCard"],
+          "answer": 0,
+          "explanation": "Asynchronous(异步)模式是普通UART通信，无需时钟线。"
+        },
+        {
+          "type": "choice",
+          "question": "UART_HandleTypeDef变量huart1的作用是？",
+          "options": ["存储数据", "UART句柄，保存配置状态", "中断向量", "时钟配置"],
+          "answer": 1,
+          "explanation": "huart1是UART句柄，保存配置参数和运行状态，所有HAL_UART函数用它。"
+        },
+        {
+          "type": "fill",
+          "question": "串口通信常用波特率是____bps。",
+          "answer": "115200",
+          "explanation": "115200是调试常用波特率，9600也常用，需收发一致。"
+        },
+        {
+          "type": "code",
+          "question": "写出UART_HandleTypeDef句柄变量名(USART1)。",
+          "keywords": ["huart1"],
+          "explanation": "USART1的句柄变量名是huart1，CubeMX自动生成。"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "发送数据",
+      "goal": "掌握HAL_UART_Transmit发送函数",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "HAL_UART_Transmit函数",
+          "content": "HAL_UART_Transmit(&huart, data, size, timeout)发送数据。参数：UART句柄、数据指针、数据长度、超时时间(毫秒)。函数阻塞发送，超时返回。发送字符串需用strlen计算长度。发送数组指定长度。常用于调试输出。",
+          "codeExample": "#include \"main.h\"\n#include <string.h>\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_USART1_UART_Init();\n    \n    // 发送字符串\n    char* msg = \"Hello, UART!\\r\\n\";\n    HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), 100);\n    \n    // 发送数字(用sprintf格式化)\n    char buf[20];\n    int val = 12345;\n    int len = sprintf(buf, \"val=%d\\r\\n\", val);\n    HAL_UART_Transmit(&huart1, (uint8_t*)buf, len, 100);\n    \n    while (1);\n}"
+        },
+        {
+          "title": "发送十六进制数据",
+          "content": "串口也可发送二进制数据(十六进制)。直接发送uint8_t数组，长度用sizeof或指定。注意接收端按相同格式解析。嵌入式通信协议常用十六进制帧(如0xAA 0x55 数据 校验)。",
+          "codeExample": "// 发送十六进制数据帧\nuint8_t frame[] = {0xAA, 0x55, 0x01, 0x02, 0x03, 0x0D};\nHAL_UART_Transmit(&huart1, frame, sizeof(frame), 100);\n\n// 发送传感器数据帧\nuint8_t sendSensorData(float temp, float humi) {\n    uint8_t buf[6];\n    buf[0] = 0xAA;  // 帧头\n    buf[1] = 0x01;  // 设备ID\n    buf[2] = (uint8_t)(temp * 10);  // 温度*10\n    buf[3] = (uint8_t)(humi * 10);  // 湿度*10\n    buf[4] = buf[0] ^ buf[1] ^ buf[2] ^ buf[3];  // 校验\n    buf[5] = 0x0D;  // 帧尾\n    return HAL_UART_Transmit(&huart1, buf, 6, 100);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "HAL_UART_Transmit的第4个参数是？",
+          "options": ["数据指针", "数据长度", "超时时间", "波特率"],
+          "answer": 2,
+          "explanation": "第4参数是超时时间(毫秒)，超时未发送完返回HAL_TIMEOUT。"
+        },
+        {
+          "type": "choice",
+          "question": "发送字符串\"Hello\"应使用哪个函数计算长度？",
+          "options": ["sizeof", "strlen", "size", "count"],
+          "answer": 1,
+          "explanation": "strlen返回字符串长度不含'\\0'，sizeof会包含'\\0'。发送用strlen。"
+        },
+        {
+          "type": "fill",
+          "question": "HAL_UART_Transmit的第2个参数类型是uint8_t的____。",
+          "answer": "指针",
+          "explanation": "第2参数是数据指针(uint8_t*)，需强制转换char*为uint8_t*。"
+        },
+        {
+          "type": "code",
+          "question": "通过USART1发送字符串\"Hello STM32\\r\\n\"。",
+          "keywords": ["HAL_UART_Transmit", "&huart1", "uint8_t*", "\"Hello STM32\\r\\n\"", "strlen", "100"],
+          "explanation": "参考答案：char* s=\"Hello STM32\\r\\n\"; HAL_UART_Transmit(&huart1,(uint8_t*)s,strlen(s),100);"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "接收数据",
+      "goal": "掌握HAL_UART_Receive和中断接收",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "阻塞接收",
+          "content": "HAL_UART_Receive(&huart, buf, size, timeout)阻塞接收数据。函数等待接收完指定长度或超时返回。适合已知长度的接收。缺点：阻塞CPU，等待期间不能做其他事。一般不推荐用于实时系统。",
+          "codeExample": "// 阻塞接收\nuint8_t buf[10];\nHAL_StatusTypeDef status = HAL_UART_Receive(&huart1, buf, 10, 1000);\nif (status == HAL_OK) {\n    // 接收成功，处理buf\n} else if (status == HAL_TIMEOUT) {\n    // 超时\n}\n\n// 接收单个字符\nuint8_t ch;\nHAL_UART_Receive(&huart1, &ch, 1, HAL_MAX_DELAY);  // 无限等待"
+        },
+        {
+          "title": "中断接收",
+          "content": "中断接收方式不阻塞CPU。HAL_UART_Receive_IT启动中断接收，数据到达时触发中断，HAL库在内部接收完成后调用HAL_UART_RxCpltCallback回调。适合实时接收。注意回调中需再次启动接收才能接收下个数据。",
+          "codeExample": "// 中断接收\nuint8_t rxByte;\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_USART1_UART_Init();\n    \n    // 启动中断接收\n    HAL_UART_Receive_IT(&huart1, &rxByte, 1);\n    \n    while (1) {\n        // 主循环做其他事\n    }\n}\n\n// 接收完成回调\nvoid HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {\n    if (huart->Instance == USART1) {\n        // 处理rxByte\n        if (rxByte == '1') {\n            HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n        }\n        // 重新启动接收\n        HAL_UART_Receive_IT(&huart1, &rxByte, 1);\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "HAL_UART_Receive_IT的特点是？",
+          "options": ["阻塞接收", "中断非阻塞接收", "只能接收一个字符", "需要DMA"],
+          "answer": 1,
+          "explanation": "_IT后缀表示中断方式，非阻塞，数据到达时触发中断回调。"
+        },
+        {
+          "type": "choice",
+          "question": "在HAL_UART_RxCpltCallback中应做什么？",
+          "options": ["处理接收数据并重新启动接收", "什么都不做", "关闭中断", "调用HAL_Delay"],
+          "answer": 0,
+          "explanation": "处理数据后需再次调用HAL_UART_Receive_IT重新启动接收，否则无法接收下个数据。"
+        },
+        {
+          "type": "fill",
+          "question": "启动中断接收的函数是____。",
+          "answer": "HAL_UART_Receive_IT",
+          "explanation": "HAL_UART_Receive_IT启动中断接收，收到数据后调用HAL_UART_RxCpltCallback。"
+        },
+        {
+          "type": "code",
+          "question": "写代码：启动USART1中断接收1字节到rxByte变量。",
+          "keywords": ["HAL_UART_Receive_IT", "&huart1", "&rxByte", "1"],
+          "explanation": "参考答案：HAL_UART_Receive_IT(&huart1,&rxByte,1);"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "printf重定向",
+      "goal": "实现printf通过串口输出，方便调试",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "printf重定向原理",
+          "content": "printf调用fputc输出字符。重写fputc函数，将字符通过串口发送，即可实现printf到串口。需在工程设置中勾选Use MicroLib(微库)，或在链接器中添加-u _printf_float支持浮点输出。这样printf就能通过串口打印，调试非常方便。",
+          "codeExample": "// printf重定向\n#include <stdio.h>\n\n// 在main.c或其他文件中重写fputc\nint fputc(int ch, FILE* f) {\n    HAL_UART_Transmit(&huart1, (uint8_t*)&ch, 1, HAL_MAX_DELAY);\n    return ch;\n}\n\n// 工程设置：\n// 1. Project → Properties → C/C++ Build → Settings\n// 2. 勾选 Use MicroLib\n// 或在链接选项添加 -u _printf_float\n\n// 使用\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_USART1_UART_Init();\n    \n    printf(\"Hello, STM32!\\r\\n\");\n    int count = 100;\n    printf(\"count = %d\\r\\n\", count);\n    float temp = 25.6f;\n    printf(\"temp = %.1f\\r\\n\", temp);\n    while (1);\n}"
+        },
+        {
+          "title": "printf使用技巧",
+          "content": "printf重定向后可方便调试。常用格式：%d整数、%f浮点、%s字符串、%x十六进制。为节省Flash可定义printf宏在Release时关闭。调试时printf是重要工具，能快速定位问题。",
+          "codeExample": "// printf调试技巧\n\n// 1. 条件编译控制printf\n#ifdef DEBUG\n  #define DBG(fmt, ...) printf(fmt, ##__VA_ARGS__)\n#else\n  #define DBG(fmt, ...)\n#endif\n\n// 2. 调试输出\nDBG(\"进入主循环\\r\\n\");\nDBG(\"温度=%d.%d\\r\\n\", (int)temp, (int)((temp-(int)temp)*10));\n\n// 3. 状态输出\nprintf(\"[INFO] 系统启动\\r\\n\");\nprintf(\"[WARN] 温度偏高: %.1f\\r\\n\", temp);\nprintf(\"[ERROR] 传感器无响应\\r\\n\");"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "printf重定向需重写哪个函数？",
+          "options": ["printf", "scanf", "fputc", "putchar"],
+          "answer": 2,
+          "explanation": "重写fputc函数，将字符通过HAL_UART_Transmit发送，printf底层调用fputc。"
+        },
+        {
+          "type": "choice",
+          "question": "为支持printf浮点输出，需做什么？",
+          "options": ["勾选MicroLib或加-u _printf_float", "增大RAM", "提高波特率", "重写printf"],
+          "answer": 0,
+          "explanation": "标准库printf不支持浮点，需MicroLib或添加链接选项-u _printf_float。"
+        },
+        {
+          "type": "fill",
+          "question": "printf(\"temp=%.1f\",25.6f)输出____。",
+          "answer": "temp=25.6",
+          "explanation": "%.1f保留1位小数，输出temp=25.6。"
+        },
+        {
+          "type": "code",
+          "question": "写fputc重定向函数，通过huart1输出字符。",
+          "keywords": ["int", "fputc", "int", "ch", "FILE*", "f", "HAL_UART_Transmit", "&huart1", "uint8_t*", "&ch", "1", "return", "ch"],
+          "explanation": "参考答案：int fputc(int ch,FILE* f){HAL_UART_Transmit(&huart1,(uint8_t*)&ch,1,HAL_MAX_DELAY); return ch;}"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "串口命令控制LED",
+      "goal": "解析接收的串口字符命令控制LED",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "命令解析器",
+          "content": "通过串口接收字符命令控制LED：接收字符'1'点亮、'0'熄灭、't'翻转。在中断回调中解析命令并执行。这是简单的命令解析器，实际项目可扩展为多字节命令帧解析。",
+          "codeExample": "#include \"main.h\"\n#include <string.h>\n\nuint8_t rxByte;\nuint8_t rxBuf[32];\nuint8_t rxIndex = 0;\n\nvoid HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {\n    if (huart->Instance == USART1) {\n        if (rxByte == '\\n' || rxByte == '\\r') {\n            // 命令结束，解析\n            rxBuf[rxIndex] = '\\0';\n            if (strcmp((char*)rxBuf, \"on\") == 0) {\n                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);\n                printf(\"LED ON\\r\\n\");\n            } else if (strcmp((char*)rxBuf, \"off\") == 0) {\n                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);\n                printf(\"LED OFF\\r\\n\");\n            } else if (strcmp((char*)rxBuf, \"toggle\") == 0) {\n                HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n                printf(\"LED Toggle\\r\\n\");\n            }\n            rxIndex = 0;\n        } else {\n            if (rxIndex < 31) {\n                rxBuf[rxIndex++] = rxByte;\n            }\n        }\n        HAL_UART_Receive_IT(&huart1, &rxByte, 1);\n    }\n}"
+        },
+        {
+          "title": "单字符命令",
+          "content": "简单应用可用单字符命令：'1'开灯、'0'关灯。更复杂的多字符命令需用缓冲区存储，遇到换行符时解析。命令解析器是嵌入式常见功能，可扩展为AT指令解析、Modbus协议等。",
+          "codeExample": "// 单字符命令(简单版)\nvoid HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {\n    if (huart->Instance == USART1) {\n        switch (rxByte) {\n            case '1':\n                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);\n                printf(\"LED ON\\r\\n\");\n                break;\n            case '0':\n                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);\n                printf(\"LED OFF\\r\\n\");\n                break;\n            case 't':\n                HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n                printf(\"LED Toggle\\r\\n\");\n                break;\n        }\n        HAL_UART_Receive_IT(&huart1, &rxByte, 1);\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "解析多字符串口命令的关键是？",
+          "options": ["接收每个字符立即处理", "缓冲到换行符再解析", "用DMA接收", "用定时器"],
+          "answer": 1,
+          "explanation": "多字符命令需缓冲存储，遇到换行符表示命令结束，再整体解析。"
+        },
+        {
+          "type": "choice",
+          "question": "命令'1'控制LED点亮，应使用什么结构判断？",
+          "options": ["if-else", "switch-case", "for循环", "while循环"],
+          "answer": 1,
+          "explanation": "switch-case适合单字符多分支判断，结构清晰。"
+        },
+        {
+          "type": "fill",
+          "question": "接收缓冲区满前需检查rxIndex防止____。",
+          "answer": "溢出",
+          "explanation": "检查rxIndex<缓冲大小避免数组越界溢出。"
+        },
+        {
+          "type": "code",
+          "question": "写单字符命令解析：收到'1'点亮LED，收到'0'熄灭LED。",
+          "keywords": ["switch", "case", "'1'", "WritePin", "RESET", "case", "'0'", "WritePin", "SET", "Receive_IT"],
+          "explanation": "参考答案：switch(rxByte){case '1':HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_RESET);break;case '0':HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_SET);break;} HAL_UART_Receive_IT(&huart1,&rxByte,1);"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+综合练习",
+      "goal": "总结本周知识，巩固串口通信",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合项目", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.串口通信基础(波特率/数据帧/TTL电平)；2.USART配置(CubeMX)；3.发送数据(HAL_UART_Transmit)；4.接收数据(阻塞和中断方式)；5.printf重定向(fputc改造)；6.串口命令控制LED。串口是嵌入式最重要的通信接口，调试和数据传输都依赖它。",
+          "codeExample": "// 综合示例：串口交互菜单\n#include <stdio.h>\n#include <string.h>\n\nuint8_t rxByte;\nuint8_t rxBuf[32];\nuint8_t rxIndex = 0;\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_USART1_UART_Init();\n    \n    printf(\"\\r\\n=== STM32 控制台 ===\\r\\n\");\n    printf(\"1. LED ON\\r\\n\");\n    printf(\"2. LED OFF\\r\\n\");\n    printf(\"3. LED Toggle\\r\\n\");\n    printf(\"4. LED Blink\\r\\n\");\n    HAL_UART_Receive_IT(&huart1, &rxByte, 1);\n    while (1);\n}"
+        },
+        {
+          "title": "串口调试助手",
+          "content": "PC端串口调试助手常用：串口调试助手(SSCOM)、Tera Term、PuTTY、VSCode串口插件等。设置与MCU一致的波特率(115200)、数据位8、停止位1、校验无。发送区输入命令发送，接收区显示MCU输出。串口调试是嵌入式开发最常用的调试手段。",
+          "codeExample": "/* 串口调试助手设置\n\n1. 选择正确COM口(USB转串口)\n2. 波特率：115200\n3. 数据位：8\n4. 停止位：1\n5. 校验位：None\n6. 流控：无\n\n发送命令示例：\n  on\\r\\n     → 点亮LED\n  off\\r\\n    → 熄灭LED\n  toggle\\r\\n → 翻转LED\n\n注意：换行选\\r\\n\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下哪个不是串口调试助手？",
+          "options": ["SSCOM", "Tera Term", "PuTTY", "STM32CubeMX"],
+          "answer": 2,
+          "explanation": "PuTTY主要是终端模拟器，SSCOM和Tera Term是专门串口工具，CubeMX是配置工具。"
+        },
+        {
+          "type": "choice",
+          "question": "串口调试助手波特率应设置为？",
+          "options": ["任意值", "与MCU一致", "最大值", "9600"],
+          "answer": 1,
+          "explanation": "收发双方波特率必须一致，否则数据乱码。MCU设115200则助手也设115200。"
+        },
+        {
+          "type": "fill",
+          "question": "printf重定向后，printf通过____输出字符。",
+          "answer": "串口",
+          "explanation": "fputc将字符通过HAL_UART_Transmit发送到串口，printf调用fputc。"
+        },
+        {
+          "type": "code",
+          "question": "写串口菜单系统：启动时打印菜单，接收命令执行对应操作。",
+          "keywords": ["printf", "菜单", "HAL_UART_Receive_IT", "switch", "WritePin", "TogglePin"],
+          "explanation": "参考答案：printf(\"1.LED ON\\r\\n\"); HAL_UART_Receive_IT(&huart1,&rxByte,1); 回调中switch(rxByte){case '1':HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_RESET);break;...}"
+        }
+      ]
+    }
+  ]
+}

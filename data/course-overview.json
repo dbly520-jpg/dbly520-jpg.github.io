@@ -1,0 +1,52 @@
+{
+  "totalWeeks": 16,
+  "totalDays": 112,
+  "courseTitle": "嵌入式系统4个月学习计划",
+  "description": "从C语言基础到STM32嵌入式开发，再到FreeRTOS实时操作系统与综合项目的完整学习路径。",
+  "months": [
+    {
+      "month": 1,
+      "title": "第1个月：C语言基础",
+      "goal": "掌握C语言基本语法、控制流、函数、数组、字符串、指针、结构体与位运算，为嵌入式开发打基础。",
+      "weeks": [
+        {"week": 1, "title": "C语言入门", "goal": "掌握变量、数据类型、运算符、输入输出"},
+        {"week": 2, "title": "控制流", "goal": "掌握if/else、for、while、switch等流程控制"},
+        {"week": 3, "title": "函数、数组、字符串", "goal": "掌握函数定义调用、数组使用、字符串处理"},
+        {"week": 4, "title": "指针、结构体、位运算", "goal": "掌握指针、结构体、位运算（嵌入式重点）"}
+      ]
+    },
+    {
+      "month": 2,
+      "title": "第2个月：嵌入式入门 + GPIO",
+      "goal": "了解嵌入式系统与STM32，搭建开发环境，掌握GPIO输入输出与UART串口通信。",
+      "weeks": [
+        {"week": 5, "title": "嵌入式概念、STM32介绍、开发环境搭建", "goal": "了解嵌入式系统，搭建STM32开发环境"},
+        {"week": 6, "title": "STM32第一个程序、GPIO输出", "goal": "掌握GPIO输出，点亮LED与流水灯"},
+        {"week": 7, "title": "GPIO输入、外部中断", "goal": "掌握GPIO输入、按键检测与外部中断"},
+        {"week": 8, "title": "UART串口通信", "goal": "掌握UART串口通信与printf重定向"}
+      ]
+    },
+    {
+      "month": 3,
+      "title": "第3个月：外设驱动",
+      "goal": "掌握定时器、PWM、ADC/DAC、I2C/SPI通信与LCD/OLED显示及传感器驱动。",
+      "weeks": [
+        {"week": 9, "title": "定时器、PWM", "goal": "掌握定时器中断与PWM输出"},
+        {"week": 10, "title": "ADC、DAC", "goal": "掌握ADC采样与DAC输出"},
+        {"week": 11, "title": "I2C/SPI通信", "goal": "掌握I2C与SPI通信协议及外设读写"},
+        {"week": 12, "title": "LCD/OLED显示+传感器", "goal": "掌握OLED显示与传感器数据采集"}
+      ]
+    },
+    {
+      "month": 4,
+      "title": "第4个月：FreeRTOS + 综合项目",
+      "goal": "掌握FreeRTOS实时操作系统，完成综合项目。",
+      "weeks": [
+        {"week": 13, "title": "FreeRTOS基础", "goal": "掌握FreeRTOS任务创建与调度"},
+        {"week": 14, "title": "FreeRTOS进阶", "goal": "掌握信号量、互斥锁、队列等同步机制"},
+        {"week": 15, "title": "综合项目1：智能环境监测站", "goal": "完成温湿度+光照+OLED+WiFi的综合项目"},
+        {"week": 16, "title": "综合项目2 + 总结", "goal": "完成智能小车项目并总结学习路线"}
+      ]
+    }
+  ]
+}

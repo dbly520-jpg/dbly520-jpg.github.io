@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="周学习计划详情">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon-192.svg">
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
+  <link rel="stylesheet" href="./css/style.css">
+  <title>周详情 - 嵌入式学习之旅</title>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-title">
+      <a href="./index.html" class="btn btn-secondary" style="min-height:36px;padding:0 12px;font-size:14px;">&larr; 首页</a>
+    </div>
+    <div class="navbar-actions">
+      <span id="week-nav-title" style="font-weight:700;font-size:16px;">周详情</span>
+    </div>
+  </nav>
+
+  <!-- 主体内容 -->
+  <main class="container">
+    <!-- 周信息卡片 -->
+    <section class="card mb-16" id="week-info">
+      <div class="loading">加载中...</div>
+    </section>
+
+    <!-- 7天卡片列表 -->
+    <section>
+      <h2 class="section-title"><span class="icon">📅</span> 本周学习计划</h2>
+      <div class="day-list" id="day-list">
+        <div class="loading">加载天数数据...</div>
+      </div>
+    </section>
+
+    <!-- 本周进度条 -->
+    <section class="card mt-24" id="week-progress-card">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">本周进度</h3>
+      <div class="progress-bar light">
+        <div class="progress-fill" id="week-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-label">
+        <span id="week-progress-text">0/7</span>
+        <span id="week-progress-percent">0%</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a class="bottom-nav-item" href="./index.html">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首页</span>
+    </a>
+    <a class="bottom-nav-item active" href="./day.html?week=1&day=1">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">学习</span>
+    </a>
+    <a class="bottom-nav-item" href="./english.html">
+      <span class="nav-icon">🔤</span>
+      <span class="nav-label">英语</span>
+    </a>
+    <a class="bottom-nav-item" href="./index.html#months-container">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">课程</span>
+    </a>
+  </nav>
+
+  <!-- 引入JS文件 -->
+  <script src="./js/data.js"></script>
+  <script src="./js/progress.js"></script>
+  <script src="./js/reminder.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      /**
+       * 从URL参数获取周数
+       * @returns {number} 周序号（默认1）
+       */
+      function getWeekId() {
+        const params = new URLSearchParams(window.location.search);
+        const week = parseInt(params.get('week'));
+        return week >= 1 && week <= 16 ? week : 1;
+      }
+
+      /**
+       * 渲染周详情页面
+       */
+      async function renderWeek() {
+        const weekId = getWeekId();
+
+        try {
+          await CourseData.load();
+        } catch (err) {
+          document.getElementById('week-info').innerHTML =
+            '<div class="error-msg">数据加载失败: ' + err.message + '</div>';
+          return;
+        }
+
+        const week = CourseData.getWeek(weekId);
+        if (!week) {
+          document.getElementById('week-info').innerHTML =
+            '<div class="error-msg">未找到第' + weekId + '周数据</div>';
+          return;
+        }
+
+        // 更新导航标题
+        document.getElementById('week-nav-title').textContent = week.title + ' · ' + week.theme;
+
+        // 渲染周信息卡片
+        const infoEl = document.getElementById('week-info');
+        infoEl.innerHTML = `
+          <div class="week-number">${week.title}</div>
+          <div class="card-title" style="font-size:20px;">${week.theme}</div>
+          <div class="card-subtitle">🎯 学习目标：${week.goal}</div>
+        `;
+
+        // 渲染7天卡片
+        const days = CourseData.getDaysByWeek(weekId);
+        const dayListEl = document.getElementById('day-list');
+        dayListEl.innerHTML = '';
+
+        days.forEach((day, index) => {
+          const dayInWeek = index + 1;
+          const isDone = Progress.isDayComplete(day.id);
+          const dayCard = document.createElement('a');
+          dayCard.className = 'day-card';
+          dayCard.href = `./day.html?week=${weekId}&day=${dayInWeek}`;
+          dayCard.innerHTML = `
+            <div class="day-icon ${isDone ? 'done' : 'undone'}">
+              ${isDone ? '✓' : (index + 1)}
+            </div>
+            <div class="day-info">
+              <div class="day-label">第${dayInWeek}天</div>
+              <div class="day-title">${day.title}</div>
+            </div>
+            <span class="day-arrow">&rsaquo;</span>
+          `;
+          dayListEl.appendChild(dayCard);
+        });
+
+        // 渲染本周进度
+        const dayIds = days.map((d) => d.id);
+        const weekProgress = Progress.getWeekProgress(dayIds);
+        document.getElementById('week-progress-fill').style.width = weekProgress.percent + '%';
+        document.getElementById('week-progress-text').textContent =
+          weekProgress.completed + '/' + weekProgress.total;
+        document.getElementById('week-progress-percent').textContent = weekProgress.percent + '%';
+      }
+
+      // 启动
+      document.addEventListener('DOMContentLoaded', function () {
+        renderWeek();
+        // 启动提醒引擎
+        if (window.Reminder) {
+          Reminder.load().then(function () { Reminder.start(); });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

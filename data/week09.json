@@ -1,0 +1,365 @@
+{
+  "week": 9,
+  "month": 3,
+  "title": "第9周：定时器、PWM",
+  "goal": "掌握STM32定时器原理、配置和使用，理解PWM并实现呼吸灯。",
+  "days": [
+    {
+      "day": 1,
+      "title": "定时器概念",
+      "goal": "了解基本、通用、高级定时器的区别",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "三种定时器",
+          "content": "STM32F103定时器分三类：1.基本定时器(TIM6/7)：仅定时，无GPIO，用于DAC触发；2.通用定时器(TIM2-5)：16/32位计数器，可定时、PWM、输入捕获、输出比较；3.高级定时器(TIM1/8)：通用功能+死区控制、刹车输入，用于电机控制。学习主要用通用定时器。",
+          "codeExample": "/* STM32F103定时器分类\n\n基本定时器：\n  TIM6, TIM7\n  功能：定时、DAC触发\n  无GPIO引脚\n\n通用定时器：\n  TIM2, TIM3, TIM4, TIM5\n  功能：定时、PWM、输入捕获、输出比较\n  16位(TIM2-5在F103是16位)\n  每个定时器4个通道\n\n高级定时器：\n  TIM1, TIM8\n  功能：通用+死区控制+刹车\n  用于电机PWM控制\n*/"
+        },
+        {
+          "title": "定时器时钟和计数",
+          "content": "定时器通过预分频和自动重装载值控制定时周期。定时频率=定时器时钟/(预分频+1)/(重装载值+1)。如72MHz/(7199+1)/(999+1)=10Hz即100ms中断一次。向上计数从0计数到重装载值溢出，向下计数相反。",
+          "codeExample": "/* 定时器计数原理\n\n时钟源：APB1(36MHz)或APB2(72MHz)\nTIM2-5在APB1，TIM1在APB2\nAPB1定时器时钟=APB1*2=72MHz(当APB1预分频≠1时)\n\n定时周期：\nT = (PSC+1) * (ARR+1) / TIM_CLK\n\n示例：72MHz, PSC=7199, ARR=999\nT = 7200 * 1000 / 72000000\n  = 0.1s = 100ms\n\n中断频率 = 1/T = 10Hz\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32F103中属于基本定时器的是？",
+          "options": ["TIM1", "TIM2", "TIM6", "TIM8"],
+          "answer": 2,
+          "explanation": "TIM6和TIM7是基本定时器，功能简单，无GPIO。"
+        },
+        {
+          "type": "choice",
+          "question": "通用定时器的主要用途是？",
+          "options": ["仅定时", "定时+PWM+捕获+比较", "电机控制", "DAC触发"],
+          "answer": 1,
+          "explanation": "通用定时器功能丰富：定时、PWM、输入捕获、输出比较，4个通道。"
+        },
+        {
+          "type": "fill",
+          "question": "定时器中断频率计算公式：TIM_CLK/(____+1)/(ARR+1)。",
+          "answer": "PSC",
+          "explanation": "PSC是预分频值，定时频率=时钟/(PSC+1)/(ARR+1)。"
+        },
+        {
+          "type": "code",
+          "question": "计算72MHz时钟下PSC=7199、ARR=999的定时周期。",
+          "keywords": ["7200", "1000", "72000000", "0.1", "100ms"],
+          "explanation": "周期=7200*1000/72000000=0.1秒=100ms。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "定时器配置",
+      "goal": "在CubeMX中配置TIM和中断",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX配置定时器",
+          "content": "CubeMX配置定时器步骤：1.选择TIM(如TIM2)，时钟源选Internal Clock；2.设置预分频PSC和重装载ARR；3.使能更新中断(NVIC中TIM2 global interrupt)；4.生成代码。CubeMX自动生成MX_TIM2_Init初始化和TIM2_IRQHandler中断服务函数。",
+          "codeExample": "/* CubeMX TIM2配置\n1. Timers → TIM2\n2. Clock Source: Internal Clock\n3. Counter Settings:\n   - Prescaler (PSC): 7199\n   - Counter Period (ARR): 999\n   - auto-reload preload: Enable\n4. NVIC:\n   - 勾选 TIM2 global interrupt\n\n定时周期：\n   72MHz / 7200 / 1000 = 10Hz\n   即100ms中断一次\n*/"
+        },
+        {
+          "title": "定时器初始化代码",
+          "content": "CubeMX生成的TIM初始化代码包含句柄htim2和MX_TIM2_Init函数。启动定时器用HAL_TIM_Base_Start_IT。中断回调函数HAL_TIM_PeriodElapsedCallback，在其中判断htim实例。",
+          "codeExample": "TIM_HandleTypeDef htim2;\n\n// CubeMX生成初始化\nvoid MX_TIM2_Init(void) {\n    htim2.Instance = TIM2;\n    htim2.Init.Prescaler = 7199;\n    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;\n    htim2.Init.Period = 999;\n    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;\n    HAL_TIM_Base_Init(&htim2);\n}\n\n// 用户代码\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_TIM2_Init();\n    HAL_TIM_Base_Start_IT(&htim2);  // 启动定时器中断\n    while (1);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "启动定时器中断的函数是？",
+          "options": ["HAL_TIM_Base_Start", "HAL_TIM_Base_Start_IT", "HAL_TIM_Start", "MX_TIM2_Init"],
+          "answer": 1,
+          "explanation": "_IT后缀表示中断方式，HAL_TIM_Base_Start_IT启动定时器并使能更新中断。"
+        },
+        {
+          "type": "choice",
+          "question": "定时器中断回调函数名是？",
+          "options": ["HAL_TIM_Callback", "HAL_TIM_PeriodElapsedCallback", "TIM2_IRQHandler", "HAL_TIM2_Init"],
+          "answer": 1,
+          "explanation": "HAL_TIM_PeriodElapsedCallback是定时器周期溢出回调，需判断htim实例。"
+        },
+        {
+          "type": "fill",
+          "question": "定时器配置中PSC是____，ARR是自动重装载值。",
+          "answer": "预分频值",
+          "explanation": "PSC是预分频值，对时钟源分频；ARR是计数上限值。"
+        },
+        {
+          "type": "code",
+          "question": "写main函数中启动TIM2定时器中断的代码。",
+          "keywords": ["MX_TIM2_Init", "HAL_TIM_Base_Start_IT", "&htim2"],
+          "explanation": "参考答案：MX_TIM2_Init(); HAL_TIM_Base_Start_IT(&htim2);"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "定时器中断",
+      "goal": "实现定时器中断翻转LED",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "定时器中断实现",
+          "content": "定时器中断在HAL_TIM_PeriodElapsedCallback回调中处理。需判断htim->Instance是否为TIM2。定时器中断不阻塞主循环，适合周期性任务。以下实现每100ms翻转LED一次。",
+          "codeExample": "#include \"main.h\"\n\nvoid HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {\n    if (htim->Instance == TIM2) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);  // 每100ms翻转LED\n    }\n}\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_TIM2_Init();\n    HAL_TIM_Base_Start_IT(&htim2);\n    while (1) {\n        // 主循环可做其他事\n    }\n}"
+        },
+        {
+          "title": "定时器vs HAL_Delay",
+          "content": "定时器中断相比HAL_Delay优势：1.非阻塞，主循环可执行其他任务；2.更精确，不受主循环影响；3.可多任务并行。适合多任务调度、精确时序控制。HAL_Delay适合简单延时。定时器是RTOS调度基础。",
+          "codeExample": "/* 定时器中断 vs HAL_Delay\n\nHAL_Delay方式(阻塞)：\n  while(1){\n    TogglePin();\n    HAL_Delay(100);  // 阻塞100ms\n    // 无法做其他事\n  }\n\n定时器中断(非阻塞)：\n  while(1){\n    // 可做其他任务\n    task1();\n    task2();\n  }\n  // 中断中：\n  void Callback() {\n    TogglePin();  // 100ms自动触发\n  }\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "定时器中断相比HAL_Delay的主要优点是？",
+          "options": ["代码更短", "非阻塞不占用主循环", "更省电", "更简单"],
+          "answer": 1,
+          "explanation": "定时器中断非阻塞，主循环可执行其他任务，实现多任务并行。"
+        },
+        {
+          "type": "choice",
+          "question": "在HAL_TIM_PeriodElapsedCallback中判断是TIM2中断，应比较？",
+          "options": ["htim->Instance == TIM2", "htim == TIM2", "htim.Init == TIM2", "htim2 == TIM2"],
+          "answer": 0,
+          "explanation": "htim->Instance存储定时器实例(如TIM2)，多个定时器共用一个回调需判断。"
+        },
+        {
+          "type": "fill",
+          "question": "定时器中断每____触发一次（PSC=7199,ARR=999,72MHz）。",
+          "answer": "100ms",
+          "explanation": "72MHz/7200/1000=10Hz，周期100ms，即每100ms中断一次。"
+        },
+        {
+          "type": "code",
+          "question": "写定时器回调函数，每1000ms翻转PC13 LED。",
+          "keywords": ["HAL_TIM_PeriodElapsedCallback", "TIM_HandleTypeDef*", "htim", "TIM2", "HAL_GPIO_TogglePin", "GPIOC", "GPIO_PIN_13"],
+          "explanation": "参考答案：void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){if(htim->Instance==TIM2)HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);} 配置PSC=7199,ARR=9999实现1秒。"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "PWM原理",
+      "goal": "理解占空比、频率等PWM概念",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "PWM概念",
+          "content": "PWM(脉宽调制)通过改变脉冲宽度(高电平时间)控制平均电压。关键参数：频率(每秒脉冲数)、占空比(高电平时间/周期)。应用：LED调光、电机调速、舵机控制、DAC模拟电压。定时器输出PWM原理：计数器从0计到ARR，与比较值CCR比较，小于CCR输出高，否则输出低。",
+          "codeExample": "/* PWM原理\n\n频率 = TIM_CLK / (PSC+1) / (ARR+1)\n占空比 = CCR / (ARR+1)\n\n示例：72MHz, PSC=71, ARR=999, CCR=500\n频率 = 72000000/72/1000 = 1000Hz\n占空比 = 500/1000 = 50%\n\n应用：\n- LED调光：占空比0%-100%对应0-全亮\n- 电机调速：占空比对应速度\n- 舵机：50Hz, 占空比2.5%-12.5%\n- DAC：PWM+滤波器=模拟电压\n*/"
+        },
+        {
+          "title": "PWM参数计算",
+          "content": "PWM频率=定时器时钟/(PSC+1)/(ARR+1)。占空比=CCR/(ARR+1)。修改CCR改变占空比，实现调光调速。如ARR=999，CCR=200则占空比20%。修改CCR用__HAL_TIM_SET_COMPARE宏。",
+          "codeExample": "// PWM参数\n// 设1kHz频率，占空比可调\n// 72MHz / (71+1) / (999+1) = 1000Hz\n\n// 初始占空比50%\n// CCR = 500 → 50%\n\n// 运行中修改占空比\n__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 200);  // 改为20%\n__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 800);  // 改为80%\n\n// 获取当前占空比\nuint32_t ccr = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_1);\nfloat duty = (float)ccr / (htim2.Init.Period + 1) * 100;"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "PWM占空比的含义是？",
+          "options": ["脉冲频率", "高电平时间占周期比例", "脉冲幅度", "脉冲数"],
+          "answer": 1,
+          "explanation": "占空比=高电平时间/周期时间，百分比表示，影响平均电压。"
+        },
+        {
+          "type": "choice",
+          "question": "PWM调光LED时，占空比50%对应亮度是？",
+          "options": ["全亮", "半亮", "全灭", "不确定"],
+          "answer": 1,
+          "explanation": "占空比50%表示一半时间亮，平均亮度约为全亮一半。"
+        },
+        {
+          "type": "fill",
+          "question": "修改PWM占空比的宏是____。",
+          "answer": "__HAL_TIM_SET_COMPARE",
+          "explanation": "__HAL_TIM_SET_COMPARE(&htim, channel, ccr)设置比较值改变占空比。"
+        },
+        {
+          "type": "code",
+          "question": "PSC=71,ARR=999,计算PWM频率。",
+          "keywords": ["72000000", "72", "1000", "1000Hz", "1kHz"],
+          "explanation": "频率=72MHz/72/1000=1000Hz=1kHz。"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "PWM配置",
+      "goal": "在CubeMX中配置PWM输出",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX配置PWM",
+          "content": "CubeMX配置PWM输出步骤：1.选择定时器通道(如TIM2 CH1)；2.选择PWM Generation CH1；3.设置PSC和ARR(决定频率)；4.设置Pulse(CCR，决定占空比)；5.生成代码。CubeMX自动配置GPIO为复用功能并初始化PWM。启动用HAL_TIM_PWM_Start。",
+          "codeExample": "/* CubeMX PWM配置\n1. Timers → TIM2\n2. 通道1选 PWM Generation CH1\n3. Parameter Settings:\n   - Prescaler: 71\n   - Counter Period: 999\n   - Pulse(CH1): 500  // 50%占空比\n4. 引脚PA0自动配置为复用\n\n频率 = 72MHz/72/1000 = 1000Hz\n占空比 = 500/1000 = 50%\n*/"
+        },
+        {
+          "title": "PWM启动和修改",
+          "content": "HAL_TIM_PWM_Start启动PWM输出。运行中用__HAL_TIM_SET_COMPARE修改占空比。PWM输出到定时器通道对应引脚(如TIM2_CH1是PA0)。可同时启动多个通道输出不同PWM。",
+          "codeExample": "int main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_TIM2_Init();\n    \n    // 启动PWM通道1\n    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);\n    \n    uint8_t duty = 0;\n    while (1) {\n        // 修改占空比\n        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, duty);\n        duty = (duty + 10) % 100;\n        HAL_Delay(50);\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "启动PWM输出的函数是？",
+          "options": ["HAL_TIM_Start", "HAL_TIM_PWM_Start", "HAL_PWM_Start", "MX_TIM2_Init"],
+          "answer": 1,
+          "explanation": "HAL_TIM_PWM_Start(&htim, channel)启动指定通道的PWM输出。"
+        },
+        {
+          "type": "choice",
+          "question": "TIM2_CH1对应哪个引脚？",
+          "options": ["PA0", "PA1", "PA5", "PB0"],
+          "answer": 0,
+          "explanation": "TIM2_CH1默认映射到PA0，可通过复用映射改到其他引脚。"
+        },
+        {
+          "type": "fill",
+          "question": "设置PWM占空比为30%，Pulse应设为____（ARR=999）。",
+          "answer": "300",
+          "explanation": "占空比=CCR/(ARR+1)，30%即300/1000，CCR=300。"
+        },
+        {
+          "type": "code",
+          "question": "写代码启动TIM2通道1的PWM输出并设置50%占空比(ARR=999)。",
+          "keywords": ["HAL_TIM_PWM_Start", "&htim2", "TIM_CHANNEL_1", "__HAL_TIM_SET_COMPARE", "500"],
+          "explanation": "参考答案：HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1); __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,500);"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "呼吸灯+舵机控制",
+      "goal": "实现PWM呼吸灯和舵机控制",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "PWM呼吸灯",
+          "content": "呼吸灯通过逐渐改变PWM占空比实现LED亮度渐变。渐亮：占空比0%→100%递增；渐灭：100%→0%递减。用for循环改变CCR，每步小延时。硬件PWM比软件PWM更流畅不占CPU。",
+          "codeExample": "// PWM呼吸灯\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_TIM2_Init();\n    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);\n    \n    while (1) {\n        // 渐亮\n        for (int i = 0; i <= 999; i += 10) {\n            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, i);\n            HAL_Delay(10);\n        }\n        // 渐灭\n        for (int i = 999; i >= 0; i -= 10) {\n            __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, i);\n            HAL_Delay(10);\n        }\n    }\n}"
+        },
+        {
+          "title": "舵机控制",
+          "content": "舵机(SG90等)控制信号是50Hz PWM，周期20ms。脉冲宽度0.5ms-2.5ms对应0°-180°。占空比2.5%-12.5%。定时器配置：PSC=1439,ARR=9999，20ms周期。CCR=500对应0.5ms(0°)，CCR=2500对应2.5ms(180°)。",
+          "codeExample": "/* 舵机控制\n\n频率：50Hz，周期20ms\n脉冲：0.5ms-2.5ms → 0°-180°\n\n定时器配置(PSC=1439, ARR=9999)：\n  72MHz / 1440 / 10000 = 50Hz\n  20ms周期，1计数=2us\n\n角度对应CCR：\n  0°   → 0.5ms  → CCR=250\n  90°  → 1.5ms  → CCR=750\n  180° → 2.5ms  → CCR=1250\n*/\n\n// 设置舵机角度\nvoid setServoAngle(int angle) {\n    int ccr = 250 + angle * 1000 / 180;  // 0-180°→250-1250\n    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, ccr);\n}\n\n// 使用\nsetServoAngle(0);    // 0°\nHAL_Delay(1000);\nsetServoAngle(90);   // 90°\nHAL_Delay(1000);\nsetServoAngle(180);  // 180°"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "呼吸灯渐亮的实现方式是？",
+          "options": ["增加PWM频率", "增加PWM占空比", "增加电压", "增加LED数量"],
+          "answer": 1,
+          "explanation": "占空比从0%到100%递增，LED平均亮度渐增，实现渐亮。"
+        },
+        {
+          "type": "choice",
+          "question": "舵机控制PWM的频率是？",
+          "options": ["50Hz", "1kHz", "10kHz", "100Hz"],
+          "answer": 0,
+          "explanation": "舵机需要50Hz(20ms周期)PWM信号，脉冲宽度0.5-2.5ms控制角度。"
+        },
+        {
+          "type": "fill",
+          "question": "舵机0°对应的脉冲宽度是____ms。",
+          "answer": "0.5",
+          "explanation": "舵机0°对应0.5ms脉冲宽度，180°对应2.5ms。"
+        },
+        {
+          "type": "code",
+          "question": "写呼吸灯渐亮循环代码(占空比0到999递增)。",
+          "keywords": ["for", "i", "0", "999", "__HAL_TIM_SET_COMPARE", "&htim2", "TIM_CHANNEL_1", "i", "HAL_Delay"],
+          "explanation": "参考答案：for(int i=0;i<=999;i+=10){__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,i);HAL_Delay(10);}"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+练习",
+      "goal": "总结本周知识，巩固定时器和PWM",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.定时器类型(基本/通用/高级)；2.定时器原理和参数计算；3.CubeMX配置定时器；4.定时器中断(非阻塞)；5.PWM原理(频率/占空比)；6.PWM配置和呼吸灯；7.舵机控制。定时器和PWM是嵌入式核心，电机控制、LED调光、传感器读取都依赖它们。",
+          "codeExample": "// 综合示例：多通道PWM\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_TIM2_Init();\n    \n    // 启动多通道PWM\n    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);  // LED1\n    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);  // LED2\n    \n    uint16_t step = 0;\n    while (1) {\n        // LED1渐亮LED2渐灭\n        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, step);\n        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 999-step);\n        step = (step + 10) % 1000;\n        HAL_Delay(20);\n    }\n}"
+        },
+        {
+          "title": "定时器应用场景",
+          "content": "定时器和PWM的典型应用：1.LED调光(PWM占空比)；2.直流电机调速(PWM)；3.舵机控制(50Hz PWM)；4.周期性任务(定时器中断)；5.输入捕获(测频率/脉宽)；6.编码器读取(电机测速)；7.软件RTC。理解定时器是嵌入式高级应用的基础。",
+          "codeExample": "/* 定时器应用\n1. LED调光    → PWM占空比\n2. 电机调速    → PWM + L298N\n3. 舵机控制    → 50Hz PWM\n4. 周期任务    → 定时器中断\n5. 频率测量    → 输入捕获\n6. 电机测速    → 编码器模式\n7. 软件RTC     → 定时器中断计数\n8. 超声波测距   → 输入捕获脉宽\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下哪个不是定时器的应用？",
+          "options": ["LED调光", "电机调速", "读取温度", "舵机控制"],
+          "answer": 2,
+          "explanation": "读取温度用ADC，不是定时器。LED调光、电机调速、舵机控制都用PWM。"
+        },
+        {
+          "type": "choice",
+          "question": "定时器中断实现多任务的原理是？",
+          "options": ["提高主频", "非阻塞周期触发", "增加RAM", "用DMA"],
+          "answer": 1,
+          "explanation": "定时器中断非阻塞，周期触发任务，主循环可并行执行其他任务。"
+        },
+        {
+          "type": "fill",
+          "question": "STM32高级定时器TIM1主要用于____控制。",
+          "answer": "电机",
+          "explanation": "TIM1是高级定时器，支持死区控制和刹车，专门用于电机PWM控制。"
+        },
+        {
+          "type": "code",
+          "question": "写舵机控制函数setAngle(int angle)，将0-180°转为CCR(250-1250)。",
+          "keywords": ["void", "setAngle", "int", "angle", "250", "+", "angle", "*", "1000", "/", "180", "__HAL_TIM_SET_COMPARE"],
+          "explanation": "参考答案：void setAngle(int angle){__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,250+angle*1000/180);}"
+        }
+      ]
+    }
+  ]
+}

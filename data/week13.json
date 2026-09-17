@@ -1,0 +1,365 @@
+{
+  "week": 13,
+  "month": 4,
+  "title": "第13周：FreeRTOS基础",
+  "goal": "掌握RTOS概念、FreeRTOS移植和任务创建调度。",
+  "days": [
+    {
+      "day": 1,
+      "title": "RTOS概念",
+      "goal": "理解实时操作系统、任务调度和FreeRTOS",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "实时操作系统",
+          "content": "RTOS(实时操作系统)是保证在确定时间内响应外部事件的操作系统。特点：1.实时性(确定性响应)；2.多任务(并发执行)；3.任务调度(优先级)；4.任务间通信(信号量/队列)。相比裸机(while循环+中断)，RTOS更适合复杂多任务系统。FreeRTOS是最流行的嵌入式RTOS。",
+          "codeExample": "/* 裸机 vs RTOS\n\n裸机(前后台系统)：\n  while(1) {\n    task1();\n    task2();\n    task3();\n  }\n  中断 → 后台\n  缺点：任务互相阻塞\n\nRTOS：\n  task1() { while(1){...} }\n  task2() { while(1){...} }\n  task3() { while(1){...} }\n  调度器自动切换\n  优点：高优先级及时响应\n\nRTOS特性：\n  - 抢占式调度\n  - 优先级\n  - 任务间通信\n  - 确定性响应\n*/"
+        },
+        {
+          "title": "FreeRTOS介绍",
+          "content": "FreeRTOS是开源RTOS，广泛用于嵌入式。特点：1.免费、开源(MIT)；2.轻量(占用几KB)；3.支持优先级抢占调度；4.任务间通信丰富(信号量/队列/互斥锁)；5.跨平台(Cortex-M/AVR等)。STM32CubeMX集成FreeRTOS，可图形化配置。最新版本FreeRTOS V10。",
+          "codeExample": "/* FreeRTOS 特点\n\n开源免费(MIT许可)\n轻量级：\n  Flash: 4-10KB\n  RAM:   1-2KB\n\n调度方式：\n  抢占式(优先级)\n  协作式(主动让出)\n  时间片(同优先级轮转)\n\n任务间通信：\n  信号量(Semaphore)\n  互斥锁(Mutex)\n  队列(Queue)\n  事件标志组(EventGroup)\n  软件定时器(Timer)\n\nSTM32集成：\n  CubeMX → FREERTOS → Enable\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "RTOS相比裸机的主要优势是？",
+          "options": ["代码更短", "多任务并发", "更省电", "更简单"],
+          "answer": 1,
+          "explanation": "RTOS支持多任务并发执行，高优先级任务可抢占低优先级，实时性好。"
+        },
+        {
+          "type": "choice",
+          "question": "FreeRTOS的调度方式是？",
+          "options": ["协作式", "抢占式优先级", "时间片", "以上都有"],
+          "answer": 3,
+          "explanation": "FreeRTOS支持抢占式、协作式、时间片三种调度方式，可配置。"
+        },
+        {
+          "type": "fill",
+          "question": "FreeRTOS是____许可的开源RTOS。",
+          "answer": "MIT",
+          "explanation": "FreeRTOS采用MIT开源许可，免费商用。"
+        },
+        {
+          "type": "code",
+          "question": "写出裸机和RTOS的main循环区别。",
+          "keywords": ["while", "1", "task1", "xTaskCreate"],
+          "explanation": "裸机：while(1){task1();task2();} RTOS：xTaskCreate(task1);xTaskCreate(task2); 各任务独立while循环。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "FreeRTOS移植",
+      "goal": "在CubeMX中配置FreeRTOS",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX配置FreeRTOS",
+          "content": "CubeMX配置FreeRTOS步骤：1.FREERTOS→勾选CMSIS_V1或V2；2.使能FreeRTOS；3.配置参数：堆大小、任务数、优先级数；4.创建任务(Tasks and Queues)；5.生成代码。CubeMX自动移植FreeRTOS源码，生成任务框架。vTaskStartScheduler启动调度器。",
+          "codeExample": "/* CubeMX FreeRTOS配置\n1. Middleware → FREERTOS\n2. 选择 CMSIS_V1 或 V2\n3. 勾选启用\n4. Config Parameters:\n   - TOTAL_HEAP_SIZE: 3072(堆)\n   - MAX_PRIORITIES: 7\n5. Tasks and Queues:\n   - 创建任务(LEDTask, 128, 3)\n   - 创建任务(SensorTask, 256, 2)\n6. 生成代码\n\nCubeMX生成：\n  FreeRTOSConfig.h 配置\n  各任务的函数框架\n*/"
+        },
+        {
+          "title": "FreeRTOS配置参数",
+          "content": "FreeRTOSConfig.h配置参数：configMINIMAL_STACK_SIZE(最小栈)、configTOTAL_HEAP_SIZE(堆大小)、configMAX_PRIORITIES(优先级数)、configTICK_RATE_HZ(时钟频率通常1000Hz)。这些参数决定资源分配，需根据任务数和栈需求调整。",
+          "codeExample": "/* FreeRTOSConfig.h 关键参数\n\nconfigCPU_CLOCK_HZ      72000000  // CPU主频\nconfigTICK_RATE_HZ       1000      // 1ms一次tick\nconfigMAX_PRIORITIES     7         // 优先级0-6\nconfigMINIMAL_STACK_SIZE 128       // 最小栈(字)\nconfigTOTAL_HEAP_SIZE    3072      // 堆(字节)\nconfigMAX_TASKS          10        // 最大任务数\n\n堆大小估算：\n  每任务栈128字=512字节\n  3任务约1.5KB\n  TCB约80字节/任务\n  建议堆2-4KB\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "FreeRTOS系统时钟(tick)通常设为多少？",
+          "options": ["100Hz", "1000Hz", "10kHz", "1Hz"],
+          "answer": 1,
+          "explanation": "configTICK_RATE_HZ通常1000Hz，即1ms一次tick，调度精度1ms。"
+        },
+        {
+          "type": "choice",
+          "question": "FreeRTOS堆大小主要影响什么？",
+          "options": ["任务数", "任务栈大小", "优先级", "时钟频率"],
+          "answer": 0,
+          "explanation": "堆用于分配任务栈和TCB，堆大小决定能创建多少任务及其栈大小。"
+        },
+        {
+          "type": "fill",
+          "question": "FreeRTOS启动调度器的函数是____。",
+          "answer": "vTaskStartScheduler",
+          "explanation": "vTaskStartScheduler()启动FreeRTOS调度器，开始任务调度。"
+        },
+        {
+          "type": "code",
+          "question": "写出CubeMX配置FreeRTOS的4个关键参数。",
+          "keywords": ["TOTAL_HEAP_SIZE", "MAX_PRIORITIES", "MINIMAL_STACK_SIZE", "TICK_RATE_HZ"],
+          "explanation": "关键参数：堆大小、最大优先级、最小栈、tick频率。"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "任务创建",
+      "goal": "掌握xTaskCreate和任务函数编写",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "xTaskCreate函数",
+          "content": "xTaskCreate创建任务。参数：任务函数、任务名、栈大小(字)、参数、优先级、句柄。任务函数原型void func(void* arg)，必须是无限循环，不能return。任务栈大小以字为单位(4字节)，128字=512字节。CubeMX用osThreadCreate封装。",
+          "codeExample": "// 任务函数\nvoid LEDTask(void* argument) {\n    while (1) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n        vTaskDelay(500);  // 延时500ms\n    }\n}\n\n// 创建任务\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    \n    // 方法1：FreeRTOS原生\n    xTaskCreate(LEDTask, \"LED\", 128, NULL, 3, NULL);\n    \n    // 方法2：CMSIS-OS封装\n    osThreadDef(LED, LEDTask, 3, 0, 128);\n    osThreadCreate(osThread(LED), NULL);\n    \n    vTaskStartScheduler();\n    while (1);\n}"
+        },
+        {
+          "title": "任务函数编写",
+          "content": "任务函数要点：1.必须是无限循环while(1)；2.不能return(会调用vTaskDelete)；3.用vTaskDelay延时(让出CPU)；4.参数通过void*传递；5.不要阻塞(vTaskDelay除外)。CubeMX生成的任务在USER CODE区域写逻辑。",
+          "codeExample": "// CubeMX生成的任务框架\nvoid StartLEDTask(void const * argument) {\n    /* USER CODE BEGIN StartLEDTask */\n    while (1) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n        osDelay(500);  // CMSIS-OS延时\n    }\n    /* USER CODE END StartLEDTask */\n}\n\n// 带参数的任务\nvoid PrintTask(void* arg) {\n    char* name = (char*)arg;\n    while (1) {\n        printf(\"%s running\\r\\n\", name);\n        vTaskDelay(1000);\n    }\n}\n\nchar* name = \"Task1\";\nxTaskCreate(PrintTask, \"Print\", 256, name, 2, NULL);"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "FreeRTOS任务函数必须是？",
+          "options": ["有限循环", "无限循环", "无循环", "递归"],
+          "answer": 1,
+          "explanation": "任务必须是while(1)无限循环，return会导致错误，需用vTaskDelete删除。"
+        },
+        {
+          "type": "choice",
+          "question": "xTaskCreate的第3个参数是？",
+          "options": ["任务名", "栈大小", "优先级", "参数"],
+          "answer": 1,
+          "explanation": "第3参数是栈大小(单位字)，如128表示128*4=512字节。"
+        },
+        {
+          "type": "fill",
+          "question": "FreeRTOS延时函数是____，让出CPU给其他任务。",
+          "answer": "vTaskDelay",
+          "explanation": "vTaskDelay(ticks)延时指定tick数并让出CPU，osDelay是CMSIS封装。"
+        },
+        {
+          "type": "code",
+          "question": "写一个LED闪烁任务函数，每500ms翻转LED。",
+          "keywords": ["void", "LEDTask", "while", "1", "HAL_GPIO_TogglePin", "GPIOC", "GPIO_PIN_13", "vTaskDelay", "500"],
+          "explanation": "参考答案：void LEDTask(void* p){while(1){HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);vTaskDelay(500);}}"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "任务优先级与调度",
+      "goal": "理解优先级抢占式调度机制",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "优先级和抢占",
+          "content": "FreeRTOS优先级：0最低，configMAX_PRIORITIES-1最高。高优先级任务就绪时抢占低优先级任务运行。同优先级任务用时间片轮转。空闲任务(优先级0)在无任务就绪时运行。优先级越高越先执行，但要注意优先级反转和饥饿问题。",
+          "codeExample": "/* 优先级调度\n\n优先级: 0(空闲) ~ 6(最高)\n\n示例：\n  TaskA 优先级3\n  TaskB 优先级5\n\nTaskB就绪 → 抢占TaskA\nTaskB阻塞 → TaskA恢复\n\n同优先级：\n  TaskA,B都是3\n  时间片轮转(1ms切换)\n\n空闲任务：\n  优先级0\n  无任务就绪时运行\n  可设空闲钩子\n*/"
+        },
+        {
+          "title": "任务状态",
+          "content": "FreeRTOS任务有4种状态：1.运行(Running，仅一个)；2.就绪(Ready，等待调度)；3.阻塞(Blocked，等待事件/延时)；4.挂起(Suspended，被挂起)。状态转换：就绪→运行(被调度)、运行→就绪(被抢占)、运行→阻塞(vTaskDelay)、阻塞→就绪(延时到/事件)。",
+          "codeExample": "/* 任务状态\n\nRunning(运行)\n  ↓ 被抢占\nReady(就绪)\n  ↓ 被调度\nRunning\n\nRunning → Blocked(vTaskDelay/等信号量)\nBlocked → Ready(延时到/事件到)\n\n任意 → Suspended(vTaskSuspend)\nSuspended → Ready(vTaskResume)\n\n状态查看：\n  eTaskGetState(taskHandle)\n  返回 eRunning/eReady/eBlocked/eSuspended\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "FreeRTOS优先级数字越大表示？",
+          "options": ["优先级越低", "优先级越高", "无关", "不确定"],
+          "answer": 1,
+          "explanation": "FreeRTOS中数字越大优先级越高，0是空闲任务最低。"
+        },
+        {
+          "type": "choice",
+          "question": "高优先级任务就绪时会发生？",
+          "options": ["等待低优先级", "抢占低优先级", "死锁", "崩溃"],
+          "answer": 1,
+          "explanation": "抢占式调度中，高优先级就绪立即抢占低优先级任务运行。"
+        },
+        {
+          "type": "fill",
+          "question": "FreeRTOS任务有4种状态：运行、就绪、____和挂起。",
+          "answer": "阻塞",
+          "explanation": "四种状态：Running、Ready、Blocked、Suspended。"
+        },
+        {
+          "type": "code",
+          "question": "创建优先级为5的任务TaskA。",
+          "keywords": ["xTaskCreate", "TaskA", "128", "NULL", "5", "NULL"],
+          "explanation": "参考答案：xTaskCreate(TaskA,\"TaskA\",128,NULL,5,NULL);"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "延时函数",
+      "goal": "理解vTaskDelay与HAL_Delay的区别",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "vTaskDelay",
+          "content": "vTaskDelay(ticks)是FreeRTOS任务延时函数。参数是tick数(1tick=1ms)。延时将任务设为阻塞状态，让出CPU给其他任务。这是RTOS正确的延时方式。osDelay是CMSIS-OS封装，功能相同。相对延时：vTaskDelay(从调用时刻算)。绝对延时：vTaskDelayUntil精确周期延时。",
+          "codeExample": "// vTaskDelay用法\nvoid task1(void* arg) {\n    while (1) {\n        // 延时500ms\n        vTaskDelay(500);  // 或 osDelay(500)\n        // 延时1秒\n        vTaskDelay(pdMS_TO_TICKS(1000));  // 毫秒转tick\n    }\n}\n\n// 绝对延时(精确周期)\nvoid periodicTask(void* arg) {\n    TickType_t lastWake = xTaskGetTickCount();\n    while (1) {\n        // 每100ms精确执行一次\n        vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(100));\n        doSomething();\n    }\n}"
+        },
+        {
+          "title": "vTaskDelay vs HAL_Delay",
+          "content": "HAL_Delay是阻塞延时，CPU空转，不释放给其他任务。vTaskDelay释放CPU给其他任务运行。在FreeRTOS任务中必须用vTaskDelay/osDelay，不用HAL_Delay。HAL_Delay可用于任务外(如初始化)。在中断中都不能用。",
+          "codeExample": "/* HAL_Delay vs vTaskDelay\n\nHAL_Delay(ms):\n  - 阻塞CPU空转\n  - 不释放给其他任务\n  - 用于裸机或初始化\n  - RTOS任务中禁用\n\nvTaskDelay(ticks):\n  - 任务进入阻塞状态\n  - CPU调度其他任务\n  - 用于RTOS任务\n  - 参数是tick(1ms)\n  - 中断中禁用\n\n示例：\n  错误: HAL_Delay(500);  // CPU空转\n  正确: vTaskDelay(500);  // 让出CPU\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "FreeRTOS任务中应使用哪个延时函数？",
+          "options": ["HAL_Delay", "vTaskDelay", "for循环", "delay_ms"],
+          "answer": 1,
+          "explanation": "vTaskDelay让任务进入阻塞状态，释放CPU给其他任务。HAL_Delay会阻塞CPU。"
+        },
+        {
+          "type": "choice",
+          "question": "vTaskDelay(500)延时时长是？",
+          "options": ["500秒", "500ms", "500us", "500tick"],
+          "answer": 1,
+          "explanation": "默认1tick=1ms，500即500ms。pdMS_TO_TICKS(500)更明确。"
+        },
+        {
+          "type": "fill",
+          "question": "实现精确周期延时用____函数。",
+          "answer": "vTaskDelayUntil",
+          "explanation": "vTaskDelayUntil是绝对延时，保证任务固定周期执行，不受执行时间影响。"
+        },
+        {
+          "type": "code",
+          "question": "写任务每100ms执行一次(用vTaskDelayUntil)。",
+          "keywords": ["vTaskDelayUntil", "&lastWake", "pdMS_TO_TICKS", "100"],
+          "explanation": "参考答案：TickType_t lastWake=xTaskGetTickCount(); while(1){vTaskDelayUntil(&lastWake,pdMS_TO_TICKS(100)); ...}"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "多任务LED控制",
+      "goal": "创建多个任务分别控制不同LED",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "多任务LED程序",
+          "content": "创建两个任务分别控制两个LED以不同频率闪烁。两个任务并发执行，互不影响。这是FreeRTOS多任务的基本演示。任务1控制PC13(500ms)，任务2控制PA5(200ms)，可看到两个LED不同频率闪烁。",
+          "codeExample": "// 多任务LED控制\nvoid LED1Task(void* arg) {\n    while (1) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n        vTaskDelay(500);  // 500ms\n    }\n}\n\nvoid LED2Task(void* arg) {\n    while (1) {\n        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);\n        vTaskDelay(200);  // 200ms\n    }\n}\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    \n    xTaskCreate(LED1Task, \"LED1\", 128, NULL, 2, NULL);\n    xTaskCreate(LED2Task, \"LED2\", 128, NULL, 2, NULL);\n    \n    vTaskStartScheduler();\n    while (1);\n}"
+        },
+        {
+          "title": "任务参数传递",
+          "content": "通过任务参数传递不同数据，同一任务函数可创建多个实例。如用参数传递LED引脚和延时，复用同一任务函数。注意参数是指针，需确保数据生命周期。",
+          "codeExample": "// 通过参数复用任务\ntypedef struct {\n    GPIO_TypeDef* port;\n    uint16_t pin;\n    int delay;\n} LED_Config;\n\nLED_Config led1 = {GPIOC, GPIO_PIN_13, 500};\nLED_Config led2 = {GPIOA, GPIO_PIN_5, 200};\n\nvoid LEDTask(void* arg) {\n    LED_Config* cfg = (LED_Config*)arg;\n    while (1) {\n        HAL_GPIO_TogglePin(cfg->port, cfg->pin);\n        vTaskDelay(cfg->delay);\n    }\n}\n\n// 创建\nxTaskCreate(LEDTask, \"LED1\", 128, &led1, 2, NULL);\nxTaskCreate(LEDTask, \"LED2\", 128, &led2, 2, NULL);"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "两个任务优先级相同会怎样？",
+          "options": ["只运行一个", "时间片轮转", "高优先级先运行", "死锁"],
+          "answer": 1,
+          "explanation": "同优先级任务用时间片轮转，每个任务运行1tick后切换。"
+        },
+        {
+          "type": "choice",
+          "question": "同一任务函数创建多个实例的方法是？",
+          "options": ["多次xTaskCreate不同参数", "用不同函数名", "不能", "用vTaskCreate"],
+          "answer": 0,
+          "explanation": "同一函数多次调用xTaskCreate传不同参数，创建多个任务实例。"
+        },
+        {
+          "type": "fill",
+          "question": "任务参数通过____指针传递。",
+          "answer": "void*",
+          "explanation": "xTaskCreate第4参数是void* arg，任务函数接收void* argument。"
+        },
+        {
+          "type": "code",
+          "question": "写LEDTask任务函数，通过参数LED_Config控制不同LED。",
+          "keywords": ["LED_Config*", "cfg", "HAL_GPIO_TogglePin", "cfg->port", "cfg->pin", "vTaskDelay", "cfg->delay"],
+          "explanation": "参考答案：void LEDTask(void* a){LED_Config*c=(LED_Config*)a; while(1){HAL_GPIO_TogglePin(c->port,c->pin); vTaskDelay(c->delay);}}"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+练习",
+      "goal": "总结本周知识，巩固FreeRTOS基础",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.RTOS概念(实时/多任务/调度)；2.FreeRTOS移植(CubeMX)；3.任务创建(xTaskCreate)；4.优先级与调度(抢占/状态)；5.延时函数(vTaskDelay)；6.多任务LED控制。FreeRTOS是嵌入式高级开发必备，下周学习任务间通信。",
+          "codeExample": "// 综合示例：多任务系统\n#include \"main.h\"\n\nvoid SensorTask(void* arg) {\n    while (1) {\n        // 读取传感器\n        float temp = readTemp();\n        // 存储到全局或队列\n        g_temp = temp;\n        vTaskDelay(2000);  // 2秒\n    }\n}\n\nvoid DisplayTask(void* arg) {\n    while (1) {\n        // 显示数据\n        char buf[20];\n        sprintf(buf, \"T:%.1f\", g_temp);\n        oledShowString(0, 0, buf);\n        vTaskDelay(1000);  // 1秒\n    }\n}\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_I2C1_Init();\n    MX_USART1_UART_Init();\n    \n    xTaskCreate(SensorTask, \"Sensor\", 256, NULL, 3, NULL);\n    xTaskCreate(DisplayTask, \"Display\", 256, NULL, 2, NULL);\n    vTaskStartScheduler();\n}"
+        },
+        {
+          "title": "FreeRTOS资源占用",
+          "content": "FreeRTOS占用资源：Flash约5-10KB，RAM每任务约128-512字节栈+80字节TCB。STM32F103C8T6(20KB SRAM)可运行约10-15个任务。合理配置栈大小，用uxTaskGetStackHighWaterMark检查剩余栈。空闲任务钩子可用于低功耗管理。",
+          "codeExample": "/* FreeRTOS 资源占用\n\nFlash: 5-10KB\n  内核: 4-6KB\n  接口: 1-2KB\n  配置: 1KB\n\nRAM: \n  每任务: 栈+80字节TCB\n  最小栈: 128字=512字节\n  典型任务: 256-512字\n\nSTM32F103C8T6 (20KB SRAM):\n  系统占用: ~2KB\n  可用: ~18KB\n  可运行: 10-15个任务\n\n检查栈剩余:\n  UBaseType_t free = uxTaskGetStackHighWaterMark(handle);\n  free越小越危险\n\n空闲钩子:\n  void vApplicationIdleHook(void) {\n    __WFI();  // 低功耗\n  }\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32F103C8T6大约能运行多少FreeRTOS任务？",
+          "options": ["3-5个", "10-15个", "50个以上", "100个"],
+          "answer": 1,
+          "explanation": "20KB SRAM去除系统约剩18KB，每任务约1-2KB，可运行10-15个任务。"
+        },
+        {
+          "type": "choice",
+          "question": "检查任务栈剩余的函数是？",
+          "options": ["xTaskGetStack", "uxTaskGetStackHighWaterMark", "vTaskCheck", "osStack"],
+          "answer": 1,
+          "explanation": "uxTaskGetStackHighWaterMark返回任务栈剩余最小值，越小越危险。"
+        },
+        {
+          "type": "fill",
+          "question": "FreeRTOS启动调度器后main函数的while循环____执行。",
+          "answer": "不会",
+          "explanation": "vTaskStartScheduler后不会返回，调度器接管，main的while不会执行。"
+        },
+        {
+          "type": "code",
+          "question": "写main函数：创建SensorTask和DisplayTask并启动调度器。",
+          "keywords": ["xTaskCreate", "SensorTask", "xTaskCreate", "DisplayTask", "vTaskStartScheduler"],
+          "explanation": "参考答案：xTaskCreate(SensorTask,\"Sensor\",256,NULL,3,NULL); xTaskCreate(DisplayTask,\"Display\",256,NULL,2,NULL); vTaskStartScheduler();"
+        }
+      ]
+    }
+  ]
+}

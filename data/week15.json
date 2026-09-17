@@ -1,0 +1,365 @@
+{
+  "week": 15,
+  "month": 4,
+  "title": "第15周：综合项目1（智能环境监测站）",
+  "goal": "综合运用所学知识，完成智能环境监测站项目。",
+  "days": [
+    {
+      "day": 1,
+      "title": "项目规划",
+      "goal": "完成功能需求、硬件清单、系统框图",
+      "timeAllocation": [
+        {"task": "需求分析", "minutes": 30},
+        {"task": "硬件设计", "minutes": 60},
+        {"task": "系统设计", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "功能需求",
+          "content": "智能环境监测站功能：1.温湿度采集(DHT11)；2.光照检测(光敏电阻+ADC)；3.OLED显示数据；4.串口上报数据；5.WiFi模块联网上传(ESP8266)；6.按键切换界面；7.温度超限报警(LED+蜂鸣器)；8.数据存储(EEPROM)。综合了4个月所学知识。",
+          "codeExample": "/* 智能环境监测站\n\n功能：\n  1. 温湿度采集(DHT11)\n  2. 光照检测(ADC)\n  3. OLED显示数据\n  4. 串口上报数据\n  5. WiFi上传(ESP8266)\n  6. 按键切换界面\n  7. 报警(LED+蜂鸣器)\n  8. 数据存储(EEPROM)\n\n目标：\n  整合4个月知识\n  完整工程实践\n*/"
+        },
+        {
+          "title": "硬件清单和框图",
+          "content": "硬件：STM32F103C8T6最小系统、DHT11温湿度、光敏电阻、0.96寸OLED(I2C)、ESP8266 WiFi、蜂鸣器、LED、按键、AT24C02 EEPROM。系统框图：传感器→STM32→显示/通信/存储。用FreeRTOS多任务管理。",
+          "codeExample": "/* 硬件清单\n\n主控：STM32F103C8T6\n传感器：\n  DHT11(PA0)      温湿度\n  光敏(ADC PA1)   光照\n显示：\n  OLED(I2C PB6/7) 128x64\n通信：\n  USART1(PA9/10)  调试\n  USART2(PA2/3)   ESP8266\n存储：\n  AT24C02(I2C)   配置\n交互：\n  按键(PA1)      切换\n  LED(PC13)      报警\n  蜂鸣器(PB12)   报警\n\n系统框图：\n传感器→STM32→OLED\n          ├→WiFi\n          ├→串口\n          └→EEPROM\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "智能环境监测站的核心MCU是？",
+          "options": ["STM32F103", "Arduino", "ESP32", "树莓派"],
+          "answer": 0,
+          "explanation": "本项目基于STM32F103C8T6，符合4个月学习内容。"
+        },
+        {
+          "type": "choice",
+          "question": "温湿度传感器使用？",
+          "options": ["DS18B20", "DHT11", "BME280", "SHT30"],
+          "answer": 1,
+          "explanation": "DHT11是本周学习的温湿度传感器，价格低易获取。"
+        },
+        {
+          "type": "fill",
+          "question": "WiFi模块使用____(常用AT指令模块)。",
+          "answer": "ESP8266",
+          "explanation": "ESP8266通过串口AT指令联网，是嵌入式常用WiFi模块。"
+        },
+        {
+          "type": "code",
+          "question": "写出项目8个功能需求。",
+          "keywords": ["温湿度", "光照", "OLED", "串口", "WiFi", "按键", "报警", "存储"],
+          "explanation": "功能：温湿度采集、光照检测、OLED显示、串口上报、WiFi上传、按键切换、报警、数据存储。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "硬件搭建",
+      "goal": "连接所有硬件模块",
+      "timeAllocation": [
+        {"task": "电路设计", "minutes": 30},
+        {"task": "硬件连接", "minutes": 90},
+        {"task": "硬件测试", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "引脚分配",
+          "content": "合理分配STM32引脚：DHT11→PA0、光敏→PA1(ADC)、按键→PA1(EXTI，需调整)、OLED→I2C1(PB6/7)、ESP8266→USART2(PA2/3)、调试串口→USART1(PA9/10)、EEPROM→I2C1(与OLED共用)、LED→PC13、蜂鸣器→PB12。注意I2C设备共用总线需不同地址。",
+          "codeExample": "/* 引脚分配\n\n传感器：\n  DHT11   → PA0(单总线)\n  光敏    → PA1(ADC1_IN1)\n  按键    → PA11(EXTI11,上拉)\n\n显示：\n  OLED    → I2C1(PB6=SCL,PB7=SDA)\n  地址: 0x3C\n\n通信：\n  USART1  → PA9(TX),PA10(RX) 调试\n  USART2  → PA2(TX),PA3(RX) ESP8266\n\n存储：\n  EEPROM  → I2C1(与OLED共用)\n  地址: 0x50\n\n输出：\n  LED     → PC13(板载)\n  蜂鸣器  → PB12(推挽输出)\n\n注意：\n  I2C设备地址不同可共用\n  ADC和EXTI引脚不冲突\n*/"
+        },
+        {
+          "title": "硬件连接要点",
+          "content": "硬件连接注意：1.共地(GND连接)；2.供电(3.3V，ESP8266可独立供电)；3.I2C上拉电阻(4.7k)；4.ESP8266需3.3V供电，电流大需稳压；5.蜂鸣器用三极管驱动(STM32引脚电流不够)；6.DHT11数据线上拉电阻10k。",
+          "codeExample": "/* 硬件连接要点\n\n1. 共地\n   所有模块GND连接\n\n2. 供电\n   STM32 3.3V\n   ESP8266 独立3.3V(电流大)\n   传感器 3.3V\n\n3. I2C上拉\n   SCL/SDA各接4.7k上拉到3.3V\n\n4. 蜂鸣器驱动\n   STM32 → 三极管 → 蜂鸣器\n   (引脚电流不足直接驱动)\n\n5. DHT11上拉\n   数据线接10k上拉到3.3V\n\n6. ESP8266\n   EN接3.3V使能\n   RST接STM32 GPIO(可选复位)\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "OLED和EEPROM能共用I2C总线吗？",
+          "options": ["不能", "可以，地址不同即可", "需要分时复用", "需额外芯片"],
+          "answer": 1,
+          "explanation": "I2C支持多设备，只要地址不同(OLED 0x3C，EEPROM 0x50)可共用总线。"
+        },
+        {
+          "type": "choice",
+          "question": "蜂鸣器为何需三极管驱动？",
+          "options": ["STM32电流不足", "电压不够", "频率不对", "保护STM32"],
+          "answer": 0,
+          "explanation": "STM32引脚电流约8mA，蜂鸣器需更大电流，用三极管放大驱动。"
+        },
+        {
+          "type": "fill",
+          "question": "I2C总线上拉电阻常用____kΩ。",
+          "answer": "4.7",
+          "explanation": "I2C上拉电阻4.7kΩ是常用值，也有用10k的。"
+        },
+        {
+          "type": "code",
+          "question": "写出ESP8266与STM32的连接方式。",
+          "keywords": ["USART2", "PA2", "TX", "PA3", "RX", "ESP8266", "RX", "TX"],
+          "explanation": "STM32 USART2: PA2(TX)接ESP8266 RX，PA3(RX)接ESP8266 TX，共地。"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "传感器驱动整合",
+      "goal": "用FreeRTOS任务采集传感器数据",
+      "timeAllocation": [
+        {"task": "驱动移植", "minutes": 30},
+        {"task": "任务编写", "minutes": 90},
+        {"task": "测试验证", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "传感器采集任务",
+          "content": "创建传感器采集任务，整合DHT11和光敏电阻。任务每2秒采集一次，通过队列将数据发送给显示和上报任务。用结构体封装传感器数据。注意DHT11时序严格，采集失败需重试。",
+          "codeExample": "typedef struct {\n    uint8_t temp;\n    uint8_t humi;\n    uint16_t light;\n} EnvData;\n\nQueueHandle_t envQueue;\n\nvoid sensorTask(void* arg) {\n    EnvData data;\n    while (1) {\n        // 读取DHT11(重试3次)\n        int retry = 0;\n        while (dht11Read(&data.temp, &data.humi) != 0 && retry < 3) {\n            retry++;\n            vTaskDelay(200);\n        }\n        // 读取光敏\n        data.light = readADCAverage(10) / 41;  // 0-100\n        // 发送队列\n        xQueueSend(envQueue, &data, 10);\n        vTaskDelay(2000);  // 2秒\n    }\n}"
+        },
+        {
+          "title": "数据结构设计",
+          "content": "EnvData结构体封装温度、湿度、光照。队列长度5缓冲数据。显示任务接收后显示，上报任务也接收(或直接读全局变量)。也可用事件标志组通知多个任务。",
+          "codeExample": "// 全局最新数据(用Mutex保护)\nSemaphoreHandle_t dataMutex;\nEnvData latestData;\n\nvoid updateData(EnvData* data) {\n    xSemaphoreTake(dataMutex, portMAX_DELAY);\n    latestData = *data;\n    xSemaphoreGive(dataMutex);\n}\n\nvoid getData(EnvData* data) {\n    xSemaphoreTake(dataMutex, portMAX_DELAY);\n    *data = latestData;\n    xSemaphoreGive(dataMutex);\n}\n\n// 传感器任务调用\nEnvData data;\n// ... 读取\nupdateData(&data);\nxQueueSend(envQueue, &data, 10);  // 同时发队列"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "DHT11采集失败应如何处理？",
+          "options": ["立即放弃", "重试几次", "重启系统", "忽略"],
+          "answer": 1,
+          "explanation": "DHT11时序严格可能偶尔失败，重试2-3次提高成功率。"
+        },
+        {
+          "type": "choice",
+          "question": "多任务共享latestData应用什么保护？",
+          "options": ["信号量", "互斥量Mutex", "队列", "关中断"],
+          "answer": 1,
+          "explanation": "Mutex保护共享变量，优先级继承避免反转。"
+        },
+        {
+          "type": "fill",
+          "question": "传感器数据用____结构体封装。",
+          "answer": "EnvData",
+          "explanation": "EnvData结构体含温度、湿度、光照字段。"
+        },
+        {
+          "type": "code",
+          "question": "写sensorTask任务函数(采集温湿度和光照，发队列)。",
+          "keywords": ["while", "1", "dht11Read", "readADCAverage", "xQueueSend", "envQueue", "vTaskDelay"],
+          "explanation": "参考答案：void sensorTask(void* a){EnvData d; while(1){dht11Read(&d.temp,&d.humi); d.light=readADCAverage(10); xQueueSend(envQueue,&d,10); vTaskDelay(2000);}}"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "OLED显示界面设计",
+      "goal": "设计美观的OLED显示界面",
+      "timeAllocation": [
+        {"task": "界面设计", "minutes": 30},
+        {"task": "代码编写", "minutes": 90},
+        {"task": "测试调试", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "界面设计",
+          "content": "OLED界面设计：主界面显示标题、温度、湿度、光照、时间；设置界面显示阈值设置；报警时闪烁。用图标(温度计、水滴)增强可读性。界面切换用按键。注意刷新策略避免闪烁。",
+          "codeExample": "/* OLED界面布局(128x64)\n\n主界面：\n+------------------+\n| Env Monitor      |  页0\n|                  |\n| Temp: 25.5 C     |  页2\n| Humi: 60.5 %     |  页4\n| Light: 75 %      |  页6\n+------------------+\n\n报警界面：\n+------------------+\n| !! WARNING !!    |\n| Temp HIGH!       |\n| Current: 38.0C   |\n| Threshold: 35C   |\n+------------------+\n*/"
+        },
+        {
+          "title": "显示任务实现",
+          "content": "显示任务从队列接收数据，根据当前界面模式显示。用sprintf格式化数字。图标用字模数据。界面切换标志由按键中断设置。显示函数封装便于维护。",
+          "codeExample": "void displayTask(void* arg) {\n    EnvData data;\n    uint8_t mode = 0;  // 0:主界面 1:报警\n    while (1) {\n        if (xQueueReceive(envQueue, &data, 100)) {\n            oledClear();\n            if (mode == 0) {\n                // 主界面\n                char buf[20];\n                oledShowString(0, 0, \"Env Monitor\");\n                sprintf(buf, \"Temp: %d C\", data.temp);\n                oledShowString(0, 2, buf);\n                sprintf(buf, \"Humi: %d %%\", data.humi);\n                oledShowString(0, 4, buf);\n                sprintf(buf, \"Light: %d %%\", data.light);\n                oledShowString(0, 6, buf);\n            } else {\n                // 报警界面\n                oledShowString(0, 0, \"!!WARNING!!\");\n                char buf[20];\n                sprintf(buf, \"Temp: %dC\", data.temp);\n                oledShowString(0, 3, buf);\n            }\n            oledRefresh();\n        }\n        // 检查报警\n        if (data.temp > 35) mode = 1;\n        else mode = 0;\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "OLED显示数字用什么函数转换？",
+          "options": ["itoa", "sprintf", "atoi", "strcat"],
+          "answer": 1,
+          "explanation": "sprintf格式化数字为字符串，灵活控制格式。"
+        },
+        {
+          "type": "choice",
+          "question": "界面切换用什么机制？",
+          "options": ["串口命令", "按键中断", "定时器", "队列"],
+          "answer": 1,
+          "explanation": "按键用外部中断，在回调中切换显示模式变量。"
+        },
+        {
+          "type": "fill",
+          "question": "OLED界面刷新前先____再写数据。",
+          "answer": "清屏",
+          "explanation": "oledClear清屏避免残留数据，再写新数据最后oledRefresh。"
+        },
+        {
+          "type": "code",
+          "question": "写displayTask显示温度湿度光照。",
+          "keywords": ["xQueueReceive", "sprintf", "oledShowString", "oledClear", "oledRefresh"],
+          "explanation": "参考答案：void displayTask(void* a){EnvData d; while(1){if(xQueueReceive(envQueue,&d,100)){oledClear(); char b[20]; sprintf(b,\"T:%d\",d.temp); oledShowString(0,0,b); oledRefresh();}}}"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "串口数据上报协议",
+      "goal": "设计数据上报协议并实现",
+      "timeAllocation": [
+        {"task": "协议设计", "minutes": 30},
+        {"task": "代码编写", "minutes": 90},
+        {"task": "测试验证", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "上报协议设计",
+          "content": "设计简单数据上报协议：帧头0xAA 0x55 + 设备ID + 数据长度 + 数据(温度+湿度+光照) + 校验 + 帧尾0x0D。也可用JSON格式便于上位机解析。周期上报5秒一次。上位机解析协议显示数据。",
+          "codeExample": "/* 数据上报协议\n\n帧格式：\n+------+-------+------+---+---+---+------+----+\n|0xAA55| DevID | Len  | T | H | L | Chk  |0x0D|\n+------+-------+------+---+---+---+------+----+\n\n或JSON格式：\n{\"id\":1,\"temp\":25,\"humi\":60,\"light\":75}\n\n上报周期：5秒\n*/"
+        },
+        {
+          "title": "上报实现",
+          "content": "上报任务用软件定时器周期触发，或vTaskDelay周期执行。数据从全局变量读取(Mutex保护)。支持二进制帧和JSON两种格式。上位机用Python或串口助手解析。",
+          "codeExample": "// 上报任务\nvoid reportTask(void* arg) {\n    while (1) {\n        EnvData data;\n        getData(&data);  // Mutex保护读取\n        \n        // 方式1：二进制帧\n        uint8_t frame[8];\n        frame[0] = 0xAA;\n        frame[1] = 0x55;\n        frame[2] = 0x01;  // 设备ID\n        frame[3] = data.temp;\n        frame[4] = data.humi;\n        frame[5] = data.light & 0xFF;\n        frame[6] = frame[2] ^ frame[3] ^ frame[4] ^ frame[5];  // 校验\n        frame[7] = 0x0D;\n        HAL_UART_Transmit(&huart1, frame, 8, 100);\n        \n        // 方式2：JSON格式\n        char json[50];\n        sprintf(json, \"{\\\"id\\\":1,\\\"t\\\":%d,\\\"h\\\":%d,\\\"l\\\":%d}\\r\\n\",\n                data.temp, data.humi, data.light);\n        HAL_UART_Transmit(&huart1, (uint8_t*)json, strlen(json), 100);\n        \n        vTaskDelay(5000);  // 5秒\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "数据帧的校验方式常用？",
+          "options": ["CRC", "异或校验", "累加和", "以上都行"],
+          "answer": 3,
+          "explanation": "异或校验简单常用，CRC更可靠，累加和也常用。根据需求选择。"
+        },
+        {
+          "type": "choice",
+          "question": "JSON格式的优点是？",
+          "options": ["更短", "可读性好易解析", "更快", "更安全"],
+          "answer": 1,
+          "explanation": "JSON可读性好，上位机(如Python)易解析，但比二进制长。"
+        },
+        {
+          "type": "fill",
+          "question": "上报周期通常是____秒。",
+          "answer": "5",
+          "explanation": "环境数据5秒上报一次即可，平衡实时性和负载。"
+        },
+        {
+          "type": "code",
+          "question": "写JSON格式上报代码。",
+          "keywords": ["sprintf", "json", "id", "temp", "humi", "light", "HAL_UART_Transmit"],
+          "explanation": "参考答案：char j[50]; sprintf(j,\"{\\\"id\\\":1,\\\"t\\\":%d,\\\"h\\\":%d,\\\"l\\\":%d}\\r\\n\",d.temp,d.humi,d.light); HAL_UART_Transmit(&huart1,(uint8_t*)j,strlen(j),100);"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "系统联调与测试",
+      "goal": "整合所有功能并测试",
+      "timeAllocation": [
+        {"task": "代码整合", "minutes": 30},
+        {"task": "系统测试", "minutes": 90},
+        {"task": "问题修复", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "系统整合",
+          "content": "整合所有任务：sensorTask采集、displayTask显示、reportTask上报、alarmTask报警。用FreeRTOS管理，队列和信号量通信。主函数创建所有任务和同步机制，启动调度器。注意优先级分配：传感器最高，显示中等，上报最低。",
+          "codeExample": "// 系统整合\nQueueHandle_t envQueue;\nSemaphoreHandle_t dataMutex;\nEnvData latestData;\n\nvoid alarmTask(void* arg) {\n    EnvData data;\n    while (1) {\n        getData(&data);\n        if (data.temp > 35) {\n            HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);  // LED闪\n            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);  // 蜂鸣器\n            vTaskDelay(200);\n        } else {\n            HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);\n            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);\n            vTaskDelay(1000);\n        }\n    }\n}\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_I2C1_Init();\n    MX_USART1_UART_Init();\n    MX_ADC1_Init();\n    oledInit();\n    \n    envQueue = xQueueCreate(5, sizeof(EnvData));\n    dataMutex = xSemaphoreCreateMutex();\n    \n    xTaskCreate(sensorTask, \"Sensor\", 256, NULL, 3, NULL);\n    xTaskCreate(displayTask, \"Display\", 256, NULL, 2, NULL);\n    xTaskCreate(reportTask, \"Report\", 256, NULL, 1, NULL);\n    xTaskCreate(alarmTask, \"Alarm\", 128, NULL, 2, NULL);\n    vTaskStartScheduler();\n}"
+        },
+        {
+          "title": "测试验证",
+          "content": "测试内容：1.传感器数据是否正确；2.OLED显示是否正常；3.串口上报格式是否正确；4.报警是否触发；5.按键切换是否工作；6.系统稳定性(长时间运行)。记录问题并修复。常见问题：栈溢出、优先级配置、时序冲突。",
+          "codeExample": "/* 测试清单\n\n1. 传感器测试\n   - DHT11读数准确?\n   - 光敏ADC值合理?\n\n2. 显示测试\n   - OLED数据正确?\n   - 刷新无闪烁?\n\n3. 串口测试\n   - 帧格式正确?\n   - JSON可解析?\n\n4. 报警测试\n   - 温度>35报警?\n   - 蜂鸣器响?\n\n5. 按键测试\n   - 切换界面?\n   - 防抖有效?\n\n6. 稳定性测试\n   - 运行24小时?\n   - 无死机崩溃?\n\n常见问题：\n- 栈溢出 → 增大栈\n- 时序冲突 → 调优先级\n- 传感器失败 → 重试\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "系统中传感器任务优先级应？",
+          "options": ["最低", "最高", "中等", "任意"],
+          "answer": 1,
+          "explanation": "传感器采集是数据源，优先级最高确保及时采集。"
+        },
+        {
+          "type": "choice",
+          "question": "系统长时间运行死机可能原因？",
+          "options": ["栈溢出", "内存泄漏", "死锁", "以上都有可能"],
+          "answer": 3,
+          "explanation": "栈溢出、内存泄漏、死锁都可能导致长期运行死机，需逐一排查。"
+        },
+        {
+          "type": "fill",
+          "question": "系统测试至少应运行____小时验证稳定性。",
+          "answer": "24",
+          "explanation": "长时间(24小时)运行测试系统稳定性，发现问题。"
+        },
+        {
+          "type": "code",
+          "question": "写main函数创建所有任务并启动调度器。",
+          "keywords": ["xQueueCreate", "xSemaphoreCreateMutex", "xTaskCreate", "sensorTask", "displayTask", "reportTask", "alarmTask", "vTaskStartScheduler"],
+          "explanation": "参考答案：envQueue=xQueueCreate(5,sizeof(EnvData)); dataMutex=xSemaphoreCreateMutex(); xTaskCreate(sensorTask,\"S\",256,NULL,3,NULL); xTaskCreate(displayTask,\"D\",256,NULL,2,NULL); xTaskCreate(reportTask,\"R\",256,NULL,1,NULL); vTaskStartScheduler();"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "项目文档与总结",
+      "goal": "编写项目文档，总结经验",
+      "timeAllocation": [
+        {"task": "文档编写", "minutes": 30},
+        {"task": "项目总结", "minutes": 60},
+        {"task": "经验整理", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "项目文档",
+          "content": "项目文档包含：1.需求说明；2.硬件设计(原理图/引脚分配)；3.软件设计(任务结构/流程图)；4.通信协议；5.测试报告；6.使用说明；7.问题记录。文档是工程实践的重要部分，便于维护和团队协作。",
+          "codeExample": "/* 项目文档结构\n\n1. 需求说明\n   - 功能需求\n   - 性能指标\n\n2. 硬件设计\n   - 原理图\n   - 引脚分配表\n   - BOM清单\n\n3. 软件设计\n   - 任务结构图\n   - 程序流程图\n   - 关键算法\n\n4. 通信协议\n   - 帧格式\n   - JSON结构\n\n5. 测试报告\n   - 测试用例\n   - 测试结果\n\n6. 使用说明\n   - 接线方法\n   - 操作步骤\n\n7. 问题记录\n   - 遇到问题\n   - 解决方案\n*/"
+        },
+        {
+          "title": "项目经验总结",
+          "content": "项目经验：1.先规划再编码；2.模块化设计便于维护；3.优先级合理分配；4.Mutex保护共享资源；5.传感器加容错重试；6.充分测试验证；7.文档记录便于追溯。这些经验适用于所有嵌入式项目。",
+          "codeExample": "/* 项目经验总结\n\n1. 规划先行\n   先画框图再写代码\n   避免后期返工\n\n2. 模块化\n   传感器/显示/通信独立\n   便于测试和维护\n\n3. 优先级分配\n   采集>显示>上报\n   实时性保证\n\n4. 资源保护\n   Mutex保护共享变量\n   避免数据竞争\n\n5. 容错设计\n   传感器重试\n   看门狗\n\n6. 充分测试\n   单元测试\n   集成测试\n   长期稳定性\n\n7. 文档习惯\n   代码注释\n   项目文档\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "项目文档的作用是？",
+          "options": ["装饰", "便于维护和协作", "增加工作量", "可有可无"],
+          "answer": 1,
+          "explanation": "文档是工程实践重要部分，便于维护、团队协作和知识传承。"
+        },
+        {
+          "type": "choice",
+          "question": "项目开发应遵循的顺序是？",
+          "options": ["编码→测试→规划", "规划→编码→测试", "测试→编码→规划", "编码→规划→测试"],
+          "answer": 1,
+          "explanation": "正确顺序：先规划(需求/设计)→编码(实现)→测试(验证)。"
+        },
+        {
+          "type": "fill",
+          "question": "模块化设计的优势是便于____和维护。",
+          "answer": "测试",
+          "explanation": "模块独立便于单独测试和后期维护更换。"
+        },
+        {
+          "type": "code",
+          "question": "写出项目文档的7个组成部分。",
+          "keywords": ["需求", "硬件", "软件", "协议", "测试", "使用说明", "问题记录"],
+          "explanation": "文档7部分：需求说明、硬件设计、软件设计、通信协议、测试报告、使用说明、问题记录。"
+        }
+      ]
+    }
+  ]
+}

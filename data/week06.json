@@ -1,0 +1,365 @@
+{
+  "week": 6,
+  "month": 2,
+  "title": "第6周：STM32第一个程序、GPIO输出",
+  "goal": "掌握GPIO输出原理，点亮LED、实现LED闪烁和流水灯。",
+  "days": [
+    {
+      "day": 1,
+      "title": "GPIO概念",
+      "goal": "理解GPIO端口、引脚、推挽和开漏输出",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "GPIO基本概念",
+          "content": "GPIO(通用输入输出端口)是MCU与外部通信的基本接口。STM32F103有GPIOA-GPIOE多个端口，每个端口16个引脚(PA0-PA15)。每个引脚可配置为输入、输出、复用功能、模拟功能四种模式。输出模式有推挽(Push-Pull)和开漏(Open-Drain)两种。GPIO通过寄存器控制：模式、输出类型、速度、上下拉、数据。",
+          "codeExample": "/* GPIO相关寄存器\nCRL: 端口配置低寄存器(引脚0-7)\nCRH: 端口配置高寄存器(引脚8-15)\nIDR: 输入数据寄存器(读取输入)\nODR: 输出数据寄存器(设置输出)\nBSRR: 端口位设置/清除寄存器(原子操作)\nBRR:  端口位清除寄存器\nLCKR: 端口配置锁定寄存器\n*/"
+        },
+        {
+          "title": "推挽输出与开漏输出",
+          "content": "推挽输出：内部有P-MOS和N-MOS，输出高时P-MOS导通，输出低时N-MOS导通，能直接驱动负载，输出电流能力强。开漏输出：只有N-MOS，输出低时导通，输出高时引脚悬空(需外部上拉电阻)，可实现线与逻辑、电平转换、I2C总线。LED驱动常用推挽输出。",
+          "codeExample": "/* 推挽输出\n输出1：P-MOS导通 → 引脚为高电平(3.3V)\n输出0：N-MOS导通 → 引脚为低电平(0V)\n\n开漏输出\n输出1：N-MOS截止 → 引脚悬空(需上拉)\n输出0：N-MOS导通 → 引脚为低电平(0V)\n\n应用场景：\n推挽：LED驱动、SPI MOSI\n开漏：I2C SDA/SCL、多机通信\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32F103的GPIO端口名是？",
+          "options": ["PA-PD", "GPIOA-GPIOE", "PortA-PortE", "A-E"],
+          "answer": 1,
+          "explanation": "STM32端口名为GPIOA、GPIOB等，简写PA、PB等。每个端口16个引脚。"
+        },
+        {
+          "type": "choice",
+          "question": "驱动LED应使用哪种GPIO输出模式？",
+          "options": ["开漏输出", "推挽输出", "浮空输入", "模拟功能"],
+          "answer": 1,
+          "explanation": "推挽输出能直接输出高低电平驱动LED，开漏输出需上拉电阻。"
+        },
+        {
+          "type": "fill",
+          "question": "STM32 GPIO有____种工作模式（输入/输出/复用/模拟）。",
+          "answer": "4",
+          "explanation": "GPIO有四种模式：输入、输出、复用功能、模拟功能，每种又有子模式。"
+        },
+        {
+          "type": "code",
+          "question": "写出GPIO的4种主要工作模式。",
+          "keywords": ["输入", "输出", "复用功能", "模拟功能"],
+          "explanation": "GPIO模式：1.输入(浮空/上拉/下拉)2.输出(推挽/开漏)3.复用功能4.模拟功能。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "HAL库GPIO函数",
+      "goal": "掌握HAL_GPIO_WritePin、HAL_GPIO_TogglePin等函数",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "GPIO输出函数",
+          "content": "HAL库常用GPIO函数：HAL_GPIO_WritePin(GPIOx,GPIO_PIN_x,状态)设置引脚电平，状态GPIO_PIN_SET(高)或GPIO_PIN_RESET(低)；HAL_GPIO_TogglePin()翻转引脚；HAL_GPIO_ReadPin()读取输入。这些函数封装了BSRR寄存器操作，是原子操作。",
+          "codeExample": "// HAL库GPIO函数示例\n#include \"main.h\"\n\n// 设置引脚电平\nHAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);  // 低电平\nHAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);    // 高电平\n\n// 翻转引脚\nHAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n\n// 读取输入\nGPIO_PinState state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);\nif (state == GPIO_PIN_SET) {\n    // 按键按下\n}"
+        },
+        {
+          "title": "GPIO初始化结构体",
+          "content": "GPIO_InitTypeDef结构体包含：Pin(引脚号)、Mode(模式)、Pull(上下拉)、Speed(速度)。HAL_GPIO_Init()函数根据结构体配置寄存器。CubeMX自动生成初始化代码，但理解结构体便于手动修改。",
+          "codeExample": "// GPIO初始化结构体\nGPIO_InitTypeDef GPIO_InitStruct = {0};\n\n// 配置PC13为推挽输出\nGPIO_InitStruct.Pin   = GPIO_PIN_13;\nGPIO_InitStruct.Mode   = GPIO_MODE_OUTPUT_PP;\nGPIO_InitStruct.Pull   = GPIO_NOPULL;\nGPIO_InitStruct.Speed  = GPIO_SPEED_FREQ_LOW;\nHAL_GPIO_Init(GPIOC, &GPIO_InitStruct);\n\n// 配置PA0为上拉输入\nGPIO_InitStruct.Pin   = GPIO_PIN_0;\nGPIO_InitStruct.Mode  = GPIO_MODE_INPUT;\nGPIO_InitStruct.Pull  = GPIO_PULLUP;\nHAL_GPIO_Init(GPIOA, &GPIO_InitStruct);"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "设置PC13为高电平的HAL函数调用是？",
+          "options": ["HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,1)", "HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_SET)", "HAL_GPIO_Set(GPIOC,GPIO_PIN_13)", "GPIO_Write(GPIOC,13,1)"],
+          "answer": 1,
+          "explanation": "HAL_GPIO_WritePin第三个参数是GPIO_PinState枚举，GPIO_PIN_SET表示高电平。"
+        },
+        {
+          "type": "choice",
+          "question": "HAL_GPIO_TogglePin的作用是？",
+          "options": ["读取引脚", "翻转引脚电平", "设置引脚", "复位引脚"],
+          "answer": 1,
+          "explanation": "TogglePin翻转引脚状态，高变低低变高，常用于LED闪烁。"
+        },
+        {
+          "type": "fill",
+          "question": "HAL_GPIO_WritePin的第三个参数GPIO_PIN_RESET表示____电平。",
+          "answer": "低",
+          "explanation": "GPIO_PIN_RESET表示低电平(0V)，GPIO_PIN_SET表示高电平(3.3V)。"
+        },
+        {
+          "type": "code",
+          "question": "写出翻转PC13引脚电平并延时500ms的代码。",
+          "keywords": ["HAL_GPIO_TogglePin", "GPIOC", "GPIO_PIN_13", "HAL_Delay", "500"],
+          "explanation": "参考答案：HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13); HAL_Delay(500);"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "点亮LED",
+      "goal": "分析硬件连接，编写代码点亮LED",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "LED硬件连接",
+          "content": "蓝pill板载LED连接PC13，低电平点亮(因为LED阳极接3.3V，阴极接PC13)。所以输出GPIO_PIN_RESET点亮，GPIO_PIN_SET熄灭。外接LED时需串联限流电阻(220Ω-1kΩ)，避免电流过大损坏引脚。STM32引脚输出电流约8mA(单引脚)和150mA(总电流)。",
+          "codeExample": "/* LED连接方式\n\n1. 板载LED(蓝pill)\n   3.3V → LED → PC13\n   低电平点亮\n\n2. 外接LED(共阴)\n   PC13 → 电阻(330Ω) → LED(+) → LED(-) → GND\n   高电平点亮\n\n3. 外接LED(共阳)\n   3.3V → LED(+) → LED(-) → 电阻 → PC13\n   低电平点亮\n*/"
+        },
+        {
+          "title": "点亮LED代码",
+          "content": "使用CubeMX配置PC13为GPIO_Output，生成代码后在main中调用HAL_GPIO_WritePin点亮LED。也可在CubeMX中设置初始电平。注意蓝pill是低电平点亮，所以点亮LED要输出低电平。",
+          "codeExample": "#include \"main.h\"\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();  // CubeMX生成，配置PC13为输出\n    \n    // 点亮板载LED(低电平点亮)\n    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);\n    \n    while (1) {\n        // 主循环保持LED点亮\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "蓝pill板载LED如何点亮？",
+          "options": ["PC13输出高电平", "PC13输出低电平", "PA0输出高电平", "PB5输出低电平"],
+          "answer": 1,
+          "explanation": "蓝pill板载LED阳极接3.3V，阴极接PC13，所以PC13输出低电平时LED点亮。"
+        },
+        {
+          "type": "choice",
+          "question": "外接LED需要串联电阻的原因是？",
+          "options": ["提高亮度", "限制电流保护引脚", "稳定电压", "省电"],
+          "answer": 1,
+          "explanation": "LED是电流驱动器件，串联电阻限制电流在安全范围，保护GPIO引脚和LED。"
+        },
+        {
+          "type": "fill",
+          "question": "STM32单个GPIO引脚的最大输出电流约____mA。",
+          "answer": "8",
+          "explanation": "单引脚最大约8mA，整个芯片总电流约150mA。超过会损坏芯片。"
+        },
+        {
+          "type": "code",
+          "question": "写代码点亮蓝pill板载LED(PC13)。",
+          "keywords": ["HAL_GPIO_WritePin", "GPIOC", "GPIO_PIN_13", "GPIO_PIN_RESET"],
+          "explanation": "参考答案：HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_RESET);"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "LED闪烁",
+      "goal": "使用HAL_Delay实现LED闪烁",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "HAL_Delay延时",
+          "content": "HAL_Delay(ms)实现毫秒级阻塞延时，基于SysTick定时器(1ms中断一次)。延时期间CPU占用，不能做其他事。最大延时约49天(uint32_t上限)。适合简单延时，不适合精确时序或多任务场景。精确延时可用定时器中断或DWT计数器。",
+          "codeExample": "// LED闪烁程序\n#include \"main.h\"\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    \n    while (1) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);  // 翻转LED\n        HAL_Delay(500);  // 延时500ms\n    }\n}\n// LED以1秒为周期闪烁(500ms亮+500ms灭)"
+        },
+        {
+          "title": "不同闪烁频率",
+          "content": "改变HAL_Delay参数可改变闪烁频率。Delay(100)快速闪烁，Delay(1000)慢速闪烁。也可用WritePin分别控制亮灭时间，如亮100ms灭900ms实现心跳效果。注意HAL_Delay是阻塞的，延时期间无法响应按键等事件。",
+          "codeExample": "// 不同闪烁模式\n\n// 1. 均匀闪烁(1Hz)\nHAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\nHAL_Delay(500);\n\n// 2. 快闪(5Hz)\nHAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\nHAL_Delay(100);\n\n// 3. 心跳效果\nHAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);  // 亮\nHAL_Delay(100);\nHAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);    // 灭\nHAL_Delay(900);\n\n// 4. 双闪\nHAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13); HAL_Delay(100);\nHAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13); HAL_Delay(100);\nHAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13); HAL_Delay(100);\nHAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13); HAL_Delay(700);"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "HAL_Delay(1000)的延时时间大约是？",
+          "options": ["1秒", "1000秒", "1毫秒", "1微秒"],
+          "answer": 0,
+          "explanation": "HAL_Delay参数单位毫秒，1000表示1000ms即1秒。"
+        },
+        {
+          "type": "choice",
+          "question": "HAL_Delay的缺点是？",
+          "options": ["精度高", "阻塞CPU", "耗电低", "可中断"],
+          "answer": 1,
+          "explanation": "HAL_Delay是阻塞延时，延时期间CPU无法做其他事，不适合多任务。"
+        },
+        {
+          "type": "fill",
+          "question": "HAL_Delay基于____定时器实现。",
+          "answer": "SysTick",
+          "explanation": "SysTick是Cortex-M内核自带的24位定时器，HAL库用它实现1ms基准。"
+        },
+        {
+          "type": "code",
+          "question": "实现LED以2Hz频率闪烁(亮250ms灭250ms)。",
+          "keywords": ["HAL_GPIO_TogglePin", "GPIOC", "GPIO_PIN_13", "HAL_Delay", "250"],
+          "explanation": "参考答案：while(1){HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13); HAL_Delay(250);}"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "流水灯效果",
+      "goal": "控制多个LED实现流水灯",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "多LED控制",
+          "content": "流水灯需要多个LED，可用PA0-PA7等引脚连接8个LED。CubeMX批量配置引脚为输出。流水灯原理：依次点亮每个LED，每个亮一段时间后熄灭再点亮下一个。用数组存储引脚号可简化代码。",
+          "codeExample": "// 8个LED流水灯(PA0-PA7)\n#include \"main.h\"\n\nconst uint16_t ledPins[] = {\n    GPIO_PIN_0, GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3,\n    GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7\n};\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    \n    while (1) {\n        for (int i = 0; i < 8; i++) {\n            // 先全灭\n            for (int j = 0; j < 8; j++) {\n                HAL_GPIO_WritePin(GPIOA, ledPins[j], GPIO_PIN_RESET);\n            }\n            // 点亮当前LED\n            HAL_GPIO_WritePin(GPIOA, ledPins[i], GPIO_PIN_SET);\n            HAL_Delay(200);\n        }\n    }\n}"
+        },
+        {
+          "title": "流水灯进阶效果",
+          "content": "流水灯可设计多种效果：1.单向流水；2.双向来回；3.跑马灯(多灯移动)；4.渐变呼吸。用函数封装不同效果，通过状态变量切换。注意延时不能太短否则看不清效果，200-300ms较合适。",
+          "codeExample": "// 双向流水灯\nvoid flowForward(void) {\n    for (int i = 0; i < 8; i++) {\n        allOff();\n        HAL_GPIO_WritePin(GPIOA, ledPins[i], GPIO_PIN_SET);\n        HAL_Delay(200);\n    }\n}\n\nvoid flowBackward(void) {\n    for (int i = 7; i >= 0; i--) {\n        allOff();\n        HAL_GPIO_WritePin(GPIOA, ledPins[i], GPIO_PIN_SET);\n        HAL_Delay(200);\n    }\n}\n\n// 主循环\nwhile (1) {\n    flowForward();\n    flowBackward();\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "流水灯需要几个GPIO引脚控制8个LED？",
+          "options": ["1个", "4个", "8个", "16个"],
+          "answer": 2,
+          "explanation": "独立控制8个LED需8个GPIO引脚(如PA0-PA7)。也可用译码器减少引脚。"
+        },
+        {
+          "type": "choice",
+          "question": "流水灯延时时间一般设置为？",
+          "options": ["10ms", "200ms", "10秒", "1微秒"],
+          "answer": 1,
+          "explanation": "200ms左右人眼能看清流水效果，太短看不清，太长显得呆板。"
+        },
+        {
+          "type": "fill",
+          "question": "用____存储多个引脚号可简化流水灯代码。",
+          "answer": "数组",
+          "explanation": "数组存储引脚号，用for循环遍历，代码更简洁。"
+        },
+        {
+          "type": "code",
+          "question": "写一个函数allOff()熄灭PA0-PA7所有LED。",
+          "keywords": ["for", "HAL_GPIO_WritePin", "GPIOA", "ledPins", "GPIO_PIN_RESET"],
+          "explanation": "参考答案：void allOff(){for(int i=0;i<8;i++)HAL_GPIO_WritePin(GPIOA,ledPins[i],GPIO_PIN_RESET);}"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "进阶：呼吸灯概念（PWM预告）",
+      "goal": "理解呼吸灯原理，了解PWM概念",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "呼吸灯原理",
+          "content": "呼吸灯是LED亮度逐渐变化的灯效。原理：利用人眼视觉暂留(约100ms)，通过快速开关LED控制平均亮度。亮的时间长则看起来亮，亮的时间短则暗。这本质是PWM(脉宽调制)的软件实现。占空比=高电平时间/周期时间，占空比越大越亮。",
+          "codeExample": "/* 呼吸灯原理\n\n亮度 = 占空比 × 最大亮度\n\n占空比0%:   全灭\n占空比50%:  半亮\n占空比100%: 全亮\n\n软件实现：\n快速循环(周期<20ms)\n  亮 delay_time ms\n  灭 (20-delay_time) ms\n逐渐改变delay_time实现渐变\n*/"
+        },
+        {
+          "title": "软件PWM实现",
+          "content": "软件PWM通过快速切换引脚电平模拟模拟量。优点：任意引脚可用；缺点：占用CPU、精度低。硬件PWM用定时器外设，不占CPU、精度高。以下是一个简单的软件呼吸灯实现。",
+          "codeExample": "// 软件PWM呼吸灯\nvoid softPWM(uint8_t brightness) {\n    // brightness: 0-100\n    uint16_t onTime = brightness;     // 亮的时间(单位us)\n    uint16_t offTime = 100 - brightness;\n    \n    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);  // 亮\n    for (volatile int i = 0; i < onTime * 10; i++);\n    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);    // 灭\n    for (volatile int i = 0; i < offTime * 10; i++);\n}\n\n// 呼吸效果\nwhile (1) {\n    // 渐亮\n    for (int b = 0; b <= 100; b += 5) {\n        for (int j = 0; j < 10; j++) softPWM(b);\n    }\n    // 渐灭\n    for (int b = 100; b >= 0; b -= 5) {\n        for (int j = 0; j < 10; j++) softPWM(b);\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "呼吸灯实现的基础是？",
+          "options": ["提高电压", "PWM脉宽调制", "更换LED", "加大电阻"],
+          "answer": 1,
+          "explanation": "PWM通过改变占空比控制LED平均亮度，实现呼吸效果。"
+        },
+        {
+          "type": "choice",
+          "question": "占空比50%的PWM信号，LED亮度大约是？",
+          "options": ["全亮", "半亮", "全灭", "不确定"],
+          "answer": 1,
+          "explanation": "占空比50%表示一半时间亮一半时间灭，平均亮度约为全亮的一半。"
+        },
+        {
+          "type": "fill",
+          "question": "占空比 = 高电平时间 / ____。",
+          "answer": "周期",
+          "explanation": "占空比=高电平时间/周期时间，范围0%-100%。"
+        },
+        {
+          "type": "code",
+          "question": "写出软件PWM函数的框架(参数brightness控制亮度)。",
+          "keywords": ["void", "softPWM", "uint8_t", "brightness", "WritePin", "for"],
+          "explanation": "参考答案：void softPWM(uint8_t b){HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_RESET);delay(b);HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_SET);delay(100-b);}"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+练习",
+      "goal": "总结本周知识，巩固GPIO输出",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.GPIO概念(端口/引脚/推挽/开漏)；2.HAL库GPIO函数(WritePin/TogglePin/ReadPin)；3.点亮LED(硬件连接分析)；4.LED闪烁(HAL_Delay)；5.流水灯(多LED控制)；6.呼吸灯概念(PWM预告)。GPIO输出是嵌入式最基础的外设操作，掌握后可控制LED、继电器、电机驱动等。",
+          "codeExample": "// 综合示例：LED多种效果\n#include \"main.h\"\n\nvoid ledBlink(int times, int delay) {\n    for (int i = 0; i < times; i++) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n        HAL_Delay(delay);\n    }\n}\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    \n    while (1) {\n        ledBlink(10, 200);  // 快闪10次\n        HAL_Delay(1000);     // 停1秒\n        ledBlink(3, 1000);   // 慢闪3次\n        HAL_Delay(1000);\n    }\n}"
+        },
+        {
+          "title": "GPIO输出应用场景",
+          "content": "GPIO输出在嵌入式中的应用：1.LED指示灯(状态指示)；2.继电器控制(开关大功率设备)；3.电机驱动(L298N等)；4.数码管驱动；5.蜂鸣器；6.模拟SPI/I2C时序(软件模拟)；7.片选信号。理解GPIO输出是后续所有外设学习的基础。",
+          "codeExample": "/* GPIO输出应用\n1. LED指示灯   → HAL_GPIO_WritePin\n2. 继电器       → HAL_GPIO_WritePin (高电平触发)\n3. 电机方向     → L298N IN1/IN2\n4. 蜂鸣器       → HAL_GPIO_WritePin\n5. 数码管段选   → 多引脚组合输出数字\n6. 模拟时序     → 引脚高低电平模拟SPI/I2C\n7. 片选(CS)     → 拉低选中从设备\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下哪个不是GPIO输出的应用？",
+          "options": ["LED控制", "继电器控制", "读取按键", "蜂鸣器驱动"],
+          "answer": 2,
+          "explanation": "读取按键是GPIO输入功能，其他都是GPIO输出应用。"
+        },
+        {
+          "type": "choice",
+          "question": "HAL_GPIO_TogglePin的功能等价于？",
+          "options": ["WritePin(SET)", "WritePin(RESET)", "读取后写反", "ReadPin"],
+          "answer": 2,
+          "explanation": "TogglePin先读取当前状态再写相反值，实现翻转。"
+        },
+        {
+          "type": "fill",
+          "question": "GPIO输出的两种模式是推挽输出和____输出。",
+          "answer": "开漏",
+          "explanation": "推挽输出能输出高低电平，开漏输出需上拉电阻才能输出高。"
+        },
+        {
+          "type": "code",
+          "question": "写一个函数ledBlink(int times,int delay)，控制PC13 LED闪烁指定次数。",
+          "keywords": ["void", "ledBlink", "int", "times", "int", "delay", "for", "HAL_GPIO_TogglePin", "HAL_Delay"],
+          "explanation": "参考答案：void ledBlink(int t,int d){for(int i=0;i<t;i++){HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);HAL_Delay(d);}}"
+        }
+      ]
+    }
+  ]
+}

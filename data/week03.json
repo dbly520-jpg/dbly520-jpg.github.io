@@ -1,0 +1,365 @@
+{
+  "week": 3,
+  "month": 1,
+  "title": "第3周：函数、数组、字符串",
+  "goal": "掌握函数定义和调用、一维二维数组、字符数组与字符串处理函数。",
+  "days": [
+    {
+      "day": 1,
+      "title": "函数定义和调用",
+      "goal": "掌握函数的定义、声明、调用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "函数的定义",
+          "content": "函数是一段可复用的代码块。定义语法：返回类型 函数名(参数列表){函数体 return 表达式;}。返回类型void表示无返回值。函数需先声明（原型）后调用，或将定义放在调用之前。函数提高了代码复用性和可读性。嵌入式开发中HAL库就是大量函数的集合。",
+          "codeExample": "#include <stdio.h>\n\n// 函数声明\nint add(int a, int b);\n\nint main() {\n    int result = add(3, 5);\n    printf(\"3+5=%d\\n\", result);\n    return 0;\n}\n\n// 函数定义\nint add(int a, int b) {\n    return a + b;\n}"
+        },
+        {
+          "title": "void函数和无参函数",
+          "content": "返回类型为void的函数不返回值，使用return;或函数体结束返回。无参函数的参数列表写void或空。void函数常用于执行动作如打印、设置寄存器等。",
+          "codeExample": "// 无返回值函数\nvoid printHello(void) {\n    printf(\"Hello, World!\\n\");\n    return;  // 可省略\n}\n\n// 设置寄存器函数（嵌入式）\nvoid setReg(volatile unsigned int* reg, unsigned int val) {\n    *reg = val;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下函数定义正确的是？",
+          "options": ["int add(a,b){return a+b;}", "int add(int a,int b){return a+b;}", "int add(int a,b){return a+b;}", "add(int a,int b){return a+b;}"],
+          "answer": 1,
+          "explanation": "C语言中每个参数都要有类型说明。B选项正确：每个参数都标注类型，有返回类型。"
+        },
+        {
+          "type": "choice",
+          "question": "函数返回类型void表示？",
+          "options": ["返回0", "返回整数", "无返回值", "返回空指针"],
+          "answer": 2,
+          "explanation": "void表示函数不返回任何值，函数体中用return;或函数结束返回。"
+        },
+        {
+          "type": "fill",
+          "question": "函数声明（原型）以____结尾。",
+          "answer": "分号",
+          "explanation": "函数声明以分号结尾，如int add(int a, int b);。函数定义不需要分号。"
+        },
+        {
+          "type": "code",
+          "question": "定义一个函数max，返回两个整数中的较大值，并在main中调用测试。",
+          "keywords": ["int", "max", "int", "a", "int", "b", "return", "a", ">", "b", "?", "a", ":", "b"],
+          "explanation": "参考答案：int max(int a,int b){return a>b?a:b;} 调用：printf(\"%d\",max(3,5));"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "函数参数和返回值",
+      "goal": "理解值传递、形参与实参、返回值的使用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "值传递",
+          "content": "C语言函数参数默认是值传递（传值调用），将实参的值复制一份给形参。形参的改变不影响实参。要修改实参需用指针（传址调用）。数组作为参数时退化为指针，传递的是数组首地址。",
+          "codeExample": "#include <stdio.h>\n\n// 值传递，无法交换\nvoid swap(int a, int b) {\n    int t = a; a = b; b = t;\n}\n\nint main() {\n    int x = 3, y = 5;\n    swap(x, y);\n    printf(\"%d %d\\n\", x, y);  // 3 5，没变\n    return 0;\n}"
+        },
+        {
+          "title": "返回值和局部变量",
+          "content": "函数通过return返回值，返回值的类型要与函数返回类型匹配。局部变量在函数内定义，函数返回后销毁，不能返回局部变量的地址。static局部变量在函数返回后不销毁，常用于计数器。",
+          "codeExample": "#include <stdio.h>\n\n// 返回计算结果\nint square(int n) {\n    return n * n;\n}\n\n// static计数器\nint counter() {\n    static int count = 0;\n    return ++count;\n}\n\nint main() {\n    printf(\"%d\\n\", square(5));   // 25\n    printf(\"%d\\n\", counter());    // 1\n    printf(\"%d\\n\", counter());    // 2\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下函数能成功交换两个变量值的是？",
+          "options": ["void swap(int a,int b)", "void swap(int* a,int* b)", "void swap(int a[],int b[])", "都不能"],
+          "answer": 1,
+          "explanation": "传值无法修改实参。用指针参数void swap(int* a,int* b)通过解引用可修改实参。"
+        },
+        {
+          "type": "choice",
+          "question": "static局部变量的特点是？",
+          "options": ["每次调用重新初始化", "只初始化一次，函数返回后不销毁", "所有函数共享", "存储在堆上"],
+          "answer": 1,
+          "explanation": "static局部变量只初始化一次，生命周期为整个程序，但作用域仍是函数内。"
+        },
+        {
+          "type": "fill",
+          "question": "函数返回后，普通局部变量会被____。",
+          "answer": "销毁",
+          "explanation": "普通局部变量存储在栈上，函数返回时栈帧销毁，局部变量失效。"
+        },
+        {
+          "type": "code",
+          "question": "定义函数void swap(int* a,int* b)交换两个变量的值，在main中测试。",
+          "keywords": ["int*", "t", "*", "a", "*", "a", "=", "*", "b", "*", "b", "=", "t"],
+          "explanation": "参考答案：void swap(int* a,int* b){int t=*a;*a=*b;*b=t;} 调用：swap(&x,&y);"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "一维数组",
+      "goal": "掌握一维数组的定义、初始化和遍历",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "一维数组定义和初始化",
+          "content": "数组是相同类型数据的集合。定义语法：类型 数组名[大小];。初始化可在定义时用{}列出元素，如int a[5]={1,2,3,4,5}。部分初始化未赋值的为0。数组大小可用sizeof(a)/sizeof(a[0])计算。数组下标从0开始，到大小-1结束。数组名是首元素地址。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int a[5] = {1, 2, 3, 4, 5};\n    int b[5] = {0};           // 全0\n    int c[] = {10, 20, 30};   // 大小自动为3\n    for (int i = 0; i < 5; i++) {\n        printf(\"%d \", a[i]);\n    }\n    return 0;\n}"
+        },
+        {
+          "title": "数组遍历和常见操作",
+          "content": "数组遍历用for循环。常见操作：求和、求最大最小值、查找、排序等。数组作为函数参数时退化为指针，需额外传递长度。数组下标越界是未定义行为，要小心。",
+          "codeExample": "// 求数组最大值\nint findMax(int arr[], int n) {\n    int max = arr[0];\n    for (int i = 1; i < n; i++) {\n        if (arr[i] > max) max = arr[i];\n    }\n    return max;\n}\n// 调用\nint a[5] = {3, 7, 1, 9, 4};\nprintf(\"max=%d\\n\", findMax(a, 5));  // 9"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "int a[5]={1,2};数组a的元素依次是？",
+          "options": ["1,2,0,0,0", "1,2,随机,随机,随机", "1,2,2,2,2", "编译错误"],
+          "answer": 0,
+          "explanation": "部分初始化时，未赋值的元素自动为0。a={1,2,0,0,0}。"
+        },
+        {
+          "type": "choice",
+          "question": "数组int a[5]的有效下标范围是？",
+          "options": ["1到5", "0到4", "0到5", "1到4"],
+          "answer": 1,
+          "explanation": "数组下标从0开始到大小-1结束，即0到4。越界访问是未定义行为。"
+        },
+        {
+          "type": "fill",
+          "question": "计算数组大小的表达式是sizeof(a)/sizeof(____)。",
+          "answer": "a[0]",
+          "explanation": "sizeof(a)是整个数组字节数，sizeof(a[0])是一个元素字节数，相除得元素个数。"
+        },
+        {
+          "type": "code",
+          "question": "定义一个含5个整数的数组，输入5个数，计算并输出它们的和与平均值。",
+          "keywords": ["int", "a", "[5]", "for", "scanf", "sum", "+=", "printf"],
+          "explanation": "参考答案：int a[5],sum=0; for(int i=0;i<5;i++){scanf(\"%d\",&a[i]);sum+=a[i];} printf(\"%d %.1f\",sum,sum/5.0f);"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "二维数组",
+      "goal": "掌握二维数组的定义和使用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "二维数组定义",
+          "content": "二维数组用于表示矩阵或表格数据。定义语法：类型 数组名[行数][列数];。初始化可用嵌套{}，如int a[2][3]={{1,2,3},{4,5,6}}。按行存储在内存中。访问用a[i][j]，i是行j是列。嵌套循环遍历：外层行内层列。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int a[2][3] = {{1,2,3},{4,5,6}};\n    for (int i = 0; i < 2; i++) {\n        for (int j = 0; j < 3; j++) {\n            printf(\"%d \", a[i][j]);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}"
+        },
+        {
+          "title": "二维数组应用",
+          "content": "二维数组常用于矩阵运算、图像数据、地图等。可计算每行每列的和、矩阵转置等。二维数组作为函数参数时需指定列数。",
+          "codeExample": "// 矩阵转置\nvoid transpose(int src[][3], int dst[][2], int rows) {\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < 3; j++) {\n            dst[j][i] = src[i][j];\n        }\n    }\n}\n// 学生成绩：3学生5科\nfloat scores[3][5] = {\n    {90, 85, 78, 92, 88},\n    {75, 82, 91, 76, 89},\n    {88, 92, 85, 90, 87}\n};"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "int a[3][4]共能存储多少个元素？",
+          "options": ["3", "4", "7", "12"],
+          "answer": 3,
+          "explanation": "3行4列共12个元素。二维数组总元素数=行数*列数。"
+        },
+        {
+          "type": "choice",
+          "question": "二维数组在内存中如何存储？",
+          "options": ["按列存储", "按行存储", "随机存储", "对角线存储"],
+          "answer": 1,
+          "explanation": "C语言二维数组按行存储，先存第一行所有元素，再存第二行。"
+        },
+        {
+          "type": "fill",
+          "question": "访问二维数组a的第2行第3列元素，写作a[____][____]。",
+          "answer": "1][2",
+          "explanation": "下标从0开始，第2行是下标1，第3列是下标2，即a[1][2]。"
+        },
+        {
+          "type": "code",
+          "question": "定义3x3的二维数组并初始化，用嵌套循环输出所有元素。",
+          "keywords": ["int", "a", "[3]", "[3]", "for", "i", "<", "3", "for", "j", "<", "3", "printf"],
+          "explanation": "参考答案：int a[3][3]={{1,2,3},{4,5,6},{7,8,9}}; for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d \",a[i][j]);printf(\"\\n\");}"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "字符数组和字符串",
+      "goal": "掌握字符数组的定义和字符串存储方式",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "字符数组与字符串",
+          "content": "C语言没有字符串类型，用字符数组存储字符串。字符串以'\\0'结尾。char s[10]=\"hello\"存储'h','e','l','l','o','\\0'共6字节。字符串字面量用双引号。单字符用单引号。注意数组大小要容纳'\\0'。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    char s1[10] = \"hello\";\n    char s2[] = \"world\";   // 自动6字节\n    char s3[] = {'H','i','\\0'};\n    printf(\"%s %s %s\\n\", s1, s2, s3);\n    printf(\"s1长度=%d\\n\", 5);  // 不含\\0\n    return 0;\n}"
+        },
+        {
+          "title": "字符串输入输出",
+          "content": "字符串输出用printf的%s或puts。输入用scanf的%s（遇空格结束，不安全）或fgets（读取一行，更安全）。gets已被弃用因缓冲区溢出。字符串处理需包含string.h。",
+          "codeExample": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char name[20];\n    printf(\"输入名字: \");\n    fgets(name, sizeof(name), stdin);\n    name[strcspn(name, \"\\n\")] = '\\0';  // 去掉换行\n    printf(\"你好, %s!\\n\", name);\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "C语言中字符串的结束符是？",
+          "options": ["\\n", "\\0", " ", "EOF"],
+          "answer": 1,
+          "explanation": "字符串以'\\0'（空字符，ASCII码0）结尾。这是C字符串的核心特性。"
+        },
+        {
+          "type": "choice",
+          "question": "char s[]=\"hi\";数组s的大小是几个字节？",
+          "options": ["2", "3", "4", "不确定"],
+          "answer": 1,
+          "explanation": "\"hi\"含'h','i','\\0'共3字节。字符串字面量自动添加'\\0'。"
+        },
+        {
+          "type": "fill",
+          "question": "读取字符串时，____函数比scanf的%s更安全，可指定最大读取长度。",
+          "answer": "fgets",
+          "explanation": "fgets(buf, size, stdin)可限制读取长度，避免缓冲区溢出。"
+        },
+        {
+          "type": "code",
+          "question": "定义字符数组存储你的名字，用printf的%s输出。",
+          "keywords": ["char", "name", "[", "]", "=", "\"", "printf", "%s"],
+          "explanation": "参考答案：char name[]=\"张三\"; printf(\"%s\",name);"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "字符串处理函数",
+      "goal": "掌握strlen、strcpy、strcat、strcmp等常用字符串函数",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "strlen和strcpy",
+          "content": "strlen(s)返回字符串长度（不含'\\0'）。strcpy(dst,src)将src复制到dst，包括'\\0'，需确保dst空间足够。strncpy(dst,src,n)更安全，指定最大复制长度。嵌入式开发中字符串操作常用于命令解析。",
+          "codeExample": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char src[] = \"Hello\";\n    char dst[20];\n    \n    printf(\"长度: %zu\\n\", strlen(src));   // 5\n    strcpy(dst, src);\n    printf(\"复制后: %s\\n\", dst);          // Hello\n    strncpy(dst, src, 3);\n    dst[3] = '\\0';\n    printf(\"截断: %s\\n\", dst);             // Hel\n    return 0;\n}"
+        },
+        {
+          "title": "strcat和strcmp",
+          "content": "strcat(dst,src)将src追加到dst末尾，需确保dst空间足够。strncat更安全。strcmp(s1,s2)比较字符串，返回0相等，<0表示s1<s2，>0表示s1>s2。strncmp比较前n个字符。",
+          "codeExample": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    char s1[20] = \"Hello\";\n    char s2[] = \" World\";\n    strcat(s1, s2);\n    printf(\"连接: %s\\n\", s1);  // Hello World\n    \n    char a[] = \"apple\";\n    char b[] = \"banana\";\n    if (strcmp(a, b) < 0) {\n        printf(\"%s < %s\\n\", a, b);\n    }\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "strlen(\"hello\")的返回值是？",
+          "options": ["5", "6", "4", "不确定"],
+          "answer": 0,
+          "explanation": "strlen返回字符串长度不含'\\0'，\"hello\"长度为5。"
+        },
+        {
+          "type": "choice",
+          "question": "strcmp(\"abc\",\"abc\")的返回值是？",
+          "options": ["1", "0", "-1", "不确定"],
+          "answer": 1,
+          "explanation": "两个字符串相等时strcmp返回0。"
+        },
+        {
+          "type": "fill",
+          "question": "将字符串src复制到dst，应调用函数____。",
+          "answer": "strcpy",
+          "explanation": "strcpy(dst,src)将src复制到dst，包括结束符'\\0'。"
+        },
+        {
+          "type": "code",
+          "question": "输入两个字符串，用strcmp比较大小，输出较大（按字典序）的那个。",
+          "keywords": ["scanf", "%s", "strcmp", "if", ">", "0", "printf"],
+          "explanation": "参考答案：char a[20],b[20]; scanf(\"%s%s\",a,b); if(strcmp(a,b)>0)printf(\"%s\",a); else printf(\"%s\",b);"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+综合练习（学生成绩管理系统v1）",
+      "goal": "综合运用函数和数组，实现简单成绩管理",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合项目", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.函数定义和调用；2.参数传递（值传递）；3.一维数组；4.二维数组；5.字符数组和字符串；6.字符串处理函数。函数和数组是C语言的核心，嵌入式开发中大量使用。下周将学习指针，它能更灵活地操作内存。",
+          "codeExample": "// 综合示例：函数+数组\n#include <stdio.h>\n\nvoid printArr(int arr[], int n) {\n    for (int i = 0; i < n; i++)\n        printf(\"%d \", arr[i]);\n    printf(\"\\n\");\n}\n\nint sumArr(int arr[], int n) {\n    int s = 0;\n    for (int i = 0; i < n; i++) s += arr[i];\n    return s;\n}\n\nint main() {\n    int a[5] = {1,2,3,4,5};\n    printArr(a, 5);\n    printf(\"sum=%d\\n\", sumArr(a, 5));\n    return 0;\n}"
+        },
+        {
+          "title": "学生成绩管理系统v1",
+          "content": "综合运用函数和数组实现：输入若干学生成绩，存储在数组中；计算总分、平均分、最高分、最低分；支持查询某个学生成绩。用函数封装各个功能，主函数用菜单驱动。",
+          "codeExample": "#include <stdio.h>\n#define MAX 50\n\nfloat scores[MAX];\nint n = 0;\n\nvoid input() {\n    printf(\"输入学生人数: \");\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        printf(\"学生%d成绩: \", i+1);\n        scanf(\"%f\", &scores[i]);\n    }\n}\n\nvoid stat() {\n    float sum = 0, max = scores[0], min = scores[0];\n    for (int i = 0; i < n; i++) {\n        sum += scores[i];\n        if (scores[i] > max) max = scores[i];\n        if (scores[i] < min) min = scores[i];\n    }\n    printf(\"平均:%.1f 最高:%.1f 最低:%.1f\\n\", sum/n, max, min);\n}\n\nint main() {\n    input();\n    stat();\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "函数中定义的数组，函数返回后会怎样？",
+          "options": ["保留", "销毁", "存入堆", "变为全局"],
+          "answer": 1,
+          "explanation": "函数内局部数组存储在栈上，函数返回后销毁。不能返回局部数组地址。"
+        },
+        {
+          "type": "choice",
+          "question": "数组作为函数参数时，传递的是什么？",
+          "options": ["整个数组的副本", "数组首地址", "数组长度", "数组名"],
+          "answer": 1,
+          "explanation": "数组名退化为指针，传递的是首元素地址，所以函数内修改会影响原数组。"
+        },
+        {
+          "type": "fill",
+          "question": "计算数组平均分，需先求和再除以____。",
+          "answer": "元素个数",
+          "explanation": "平均分=总和/元素个数，注意整数除法需转浮点。"
+        },
+        {
+          "type": "code",
+          "question": "编写函数float average(float arr[],int n)计算数组平均值，并在main中测试。",
+          "keywords": ["float", "average", "float", "arr", "int", "n", "sum", "for", "return", "sum", "/", "n"],
+          "explanation": "参考答案：float average(float arr[],int n){float s=0; for(int i=0;i<n;i++)s+=arr[i]; return s/n;}"
+        }
+      ]
+    }
+  ]
+}

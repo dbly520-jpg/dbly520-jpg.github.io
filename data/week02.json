@@ -1,0 +1,365 @@
+{
+  "week": 2,
+  "month": 1,
+  "title": "第2周：控制流",
+  "goal": "掌握if/else、switch、for、while、do-while等流程控制，能编写含分支和循环的程序。",
+  "days": [
+    {
+      "day": 1,
+      "title": "if/else 条件判断",
+      "goal": "掌握if、if-else、if-else if-else分支结构",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "if语句",
+          "content": "if语句根据条件决定是否执行某段代码。语法：if(条件){语句}。条件为非0则执行。单条语句可不加大括号，但建议始终加大括号。if可嵌套使用。条件表达式可以是关系、逻辑运算的结果，也可以是任何整型表达式。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int score;\n    scanf(\"%d\", &score);\n    if (score >= 60) {\n        printf(\"及格\\n\");\n    }\n    if (score >= 90) {\n        printf(\"优秀\\n\");\n    }\n    return 0;\n}"
+        },
+        {
+          "title": "if-else和if-else if-else",
+          "content": "if-else表示二选一：条件为真执行if块，否则执行else块。if-else if-else用于多分支选择，从上到下依次判断，找到第一个为真的分支执行。else与最近的未配对的if匹配。注意条件的排他性，避免逻辑错误。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int score;\n    scanf(\"%d\", &score);\n    if (score >= 90) {\n        printf(\"A\\n\");\n    } else if (score >= 80) {\n        printf(\"B\\n\");\n    } else if (score >= 60) {\n        printf(\"C\\n\");\n    } else {\n        printf(\"D\\n\");\n    }\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下代码输出什么？\nint a=5;\nif(a=10) printf(\"yes\");\nelse printf(\"no\");",
+          "options": ["yes", "no", "编译错误", "什么都不输出"],
+          "answer": 0,
+          "explanation": "a=10是赋值语句，结果为10（非0），条件为真输出yes。这是常见错误，应写a==10。"
+        },
+        {
+          "type": "choice",
+          "question": "判断闰年的条件是：能被4整除但不能被100整除，或能被400整除。以下正确的是？",
+          "options": ["year%4==0&&year%100!=0||year%400==0", "year%4==0||year%100!=0&&year%400==0", "year%4==0&&year%400==0", "year%4!=0&&year%100==0"],
+          "answer": 0,
+          "explanation": "&&优先级高于||，A等价于(year%4==0&&year%100!=0)||(year%400==0)，符合闰年定义。"
+        },
+        {
+          "type": "fill",
+          "question": "else总是与最近的未配对的____语句匹配。",
+          "answer": "if",
+          "explanation": "else遵循就近匹配原则，与最近的未配对if结合。"
+        },
+        {
+          "type": "code",
+          "question": "输入一个整数，判断它是正数、负数还是零，并输出结果。",
+          "keywords": ["if", ">", "0", "<", "0", "else", "printf"],
+          "explanation": "参考答案：int n; scanf(\"%d\",&n); if(n>0) printf(\"正数\"); else if(n<0) printf(\"负数\"); else printf(\"零\");"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "switch多分支选择",
+      "goal": "掌握switch-case语句的使用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "switch基本语法",
+          "content": "switch根据变量值跳转到匹配的case标签执行。语法：switch(表达式){case 值1:语句;break;case 值2:语句;break;default:语句;}。表达式必须是整型或字符型。case后的值必须是常量。break用于跳出switch，否则会继续执行后续case（称为case穿透）。default是可选项，处理所有未匹配的情况。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int day;\n    scanf(\"%d\", &day);\n    switch(day) {\n        case 1: printf(\"周一\\n\"); break;\n        case 2: printf(\"周二\\n\"); break;\n        case 3: printf(\"周三\\n\"); break;\n        case 4: printf(\"周四\\n\"); break;\n        case 5: printf(\"周五\\n\"); break;\n        case 6:\n        case 7: printf(\"周末\\n\"); break;\n        default: printf(\"无效\\n\");\n    }\n    return 0;\n}"
+        },
+        {
+          "title": "case穿透利用",
+          "content": "switch不写break时会发生case穿透，多个case可共用同一段代码。合理利用穿透可简化代码，但无意穿透会导致逻辑错误。嵌入式开发中switch常用于命令解析、状态机实现。",
+          "codeExample": "// 简易命令解析器\nchar cmd;\nscanf(\" %c\", &cmd);\nswitch(cmd) {\n    case 'a':\n    case 'A':\n        printf(\"add\\n\"); break;\n    case 'd':\n    case 'D':\n        printf(\"delete\\n\"); break;\n    default:\n        printf(\"unknown\\n\");\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "switch语句中表达式不能是以下哪种类型？",
+          "options": ["int", "char", "float", "unsigned char"],
+          "answer": 2,
+          "explanation": "switch表达式必须是整型（包括char），不能是浮点型。float不合法。"
+        },
+        {
+          "type": "choice",
+          "question": "switch中忘写break会发生什么？",
+          "options": ["编译错误", "运行错误", "case穿透继续执行", "什么都不做"],
+          "answer": 2,
+          "explanation": "没有break会发生case穿透，继续执行后续case的代码，直到遇到break或switch结束。"
+        },
+        {
+          "type": "fill",
+          "question": "switch语句中用于处理所有未匹配情况的关键字是____。",
+          "answer": "default",
+          "explanation": "default是可选项，当所有case都不匹配时执行。"
+        },
+        {
+          "type": "code",
+          "question": "输入一个字符，如果是'a'输出add，'d'输出delete，'q'输出quit，其他输出unknown。用switch实现。",
+          "keywords": ["switch", "case", "'a'", "'d'", "'q'", "default", "break", "printf"],
+          "explanation": "参考答案：char c; scanf(\"%c\",&c); switch(c){case 'a':printf(\"add\");break;case 'd':printf(\"delete\");break;case 'q':printf(\"quit\");break;default:printf(\"unknown\");}"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "for循环",
+      "goal": "掌握for循环的语法和使用场景",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "for循环语法",
+          "content": "for循环是最常用的循环结构。语法：for(初始化;条件;更新){循环体}。三个部分都可省略，但分号不能省。省略条件为死循环。执行顺序：初始化→条件判断→循环体→更新→条件判断→...。for循环常用于已知次数的循环。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    // 1到10求和\n    int sum = 0;\n    for (int i = 1; i <= 10; i++) {\n        sum += i;\n    }\n    printf(\"sum=%d\\n\", sum);  // 55\n    return 0;\n}"
+        },
+        {
+          "title": "for循环变体",
+          "content": "for循环支持多种变体：1.省略初始化（变量已定义）；2.省略条件（死循环）；3.省略更新（在循环体内更新）；4.多重变量控制；5.空循环体（用分号）。嵌入式开发中for常用于延时。",
+          "codeExample": "// 多重变量\nfor (int i=0, j=10; i<j; i++, j--) {\n    printf(\"%d %d\\n\", i, j);\n}\n// 简单延时（不可靠）\nfor (volatile int i=0; i<1000000; i++);\n// 死循环\nfor(;;) {\n    // 嵌入式主循环常用\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下for循环执行几次？\nfor(int i=0;i<10;i+=2){}",
+          "options": ["5", "10", "6", "4"],
+          "answer": 0,
+          "explanation": "i取值0,2,4,6,8共5次。i<10不满足时i=10停止。"
+        },
+        {
+          "type": "choice",
+          "question": "for(;;)表示什么？",
+          "options": ["编译错误", "执行0次", "死循环", "执行1次"],
+          "answer": 2,
+          "explanation": "for(;;)省略三个部分是死循环，相当于while(1)，嵌入式主循环常用。"
+        },
+        {
+          "type": "fill",
+          "question": "计算1到100的和，for循环条件应写为for(int i=1;____;i++)。",
+          "answer": "i<=100",
+          "explanation": "i从1到100，条件i<=100，包含100。"
+        },
+        {
+          "type": "code",
+          "question": "用for循环输出1到20之间所有的偶数。",
+          "keywords": ["for", "i", "<=", "20", "i", "%", "2", "==", "0", "printf"],
+          "explanation": "参考答案：for(int i=1;i<=20;i++) if(i%2==0) printf(\"%d \",i);"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "while和do-while循环",
+      "goal": "掌握while和do-while循环的区别和使用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "while循环",
+          "content": "while循环在每次迭代前判断条件，条件为真则执行循环体。语法：while(条件){循环体}。当循环次数未知时常用while。注意循环体中要有改变条件的语句，否则死循环。while(1)是嵌入式主循环常用写法。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    // 计算数字位数\n    int n, count = 0;\n    scanf(\"%d\", &n);\n    while (n > 0) {\n        n /= 10;\n        count++;\n    }\n    printf(\"位数:%d\\n\", count);\n    return 0;\n}"
+        },
+        {
+          "title": "do-while循环",
+          "content": "do-while循环先执行循环体再判断条件，至少执行一次。语法：do{循环体}while(条件);注意末尾分号。适用于至少执行一次的场景，如菜单选择、输入验证。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    int num;\n    do {\n        printf(\"输入1-7之间的数字: \");\n        scanf(\"%d\", &num);\n    } while (num < 1 || num > 7);\n    printf(\"你输入了: %d\\n\", num);\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "while和do-while的主要区别是？",
+          "options": ["while执行0次，do-while执行1次", "do-while至少执行1次", "while更快", "没有区别"],
+          "answer": 1,
+          "explanation": "do-while先执行后判断，至少执行1次；while先判断后执行，可能0次。"
+        },
+        {
+          "type": "choice",
+          "question": "以下代码输出什么？\nint i=0; do{printf(\"%d\",i);i++;}while(i<3);",
+          "options": ["012", "123", "0123", "01"],
+          "answer": 0,
+          "explanation": "先执行打印i=0，i++为1，1<3继续；打印1，i=2，2<3继续；打印2，i=3，3<3假，停止。输出012。"
+        },
+        {
+          "type": "fill",
+          "question": "do-while语句末尾必须有____。",
+          "answer": "分号",
+          "explanation": "do{...}while(条件); 末尾分号不能省略。"
+        },
+        {
+          "type": "code",
+          "question": "用while循环计算1+2+...+n的和，n由用户输入。",
+          "keywords": ["while", "i", "<=", "n", "sum", "+=", "i++"],
+          "explanation": "参考答案：int n,sum=0,i=1; scanf(\"%d\",&n); while(i<=n){sum+=i;i++;} printf(\"%d\",sum);"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "break和continue",
+      "goal": "掌握break和continue在循环中的作用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "break语句",
+          "content": "break用于跳出当前循环或switch。在多层循环中只跳出最内层。常用于提前终止循环，如查找满足条件的元素。在嵌入式开发中常用于退出主循环。",
+          "codeExample": "// 找第一个能被7整除的数\nfor (int i = 1; i <= 100; i++) {\n    if (i % 7 == 0) {\n        printf(\"%d\\n\", i);  // 7\n        break;\n    }\n}"
+        },
+        {
+          "title": "continue语句",
+          "content": "continue跳过本次循环剩余语句，直接进入下一次迭代。在for中跳到更新部分，在while中跳到条件判断。常用于跳过特定条件的处理。注意continue不要导致死循环。",
+          "codeExample": "// 输出1-20中所有奇数\nfor (int i = 1; i <= 20; i++) {\n    if (i % 2 == 0) {\n        continue;  // 跳过偶数\n    }\n    printf(\"%d \", i);\n}\n// 输出：1 3 5 7 9 11 13 15 17 19"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "break在多层嵌套循环中的作用是？",
+          "options": ["跳出所有循环", "跳出最内层循环", "跳出最外层循环", "编译错误"],
+          "answer": 1,
+          "explanation": "break只跳出当前所在的最内层循环。要跳出多层可用goto或标志变量。"
+        },
+        {
+          "type": "choice",
+          "question": "以下代码输出什么？\nfor(int i=0;i<5;i++){if(i==2)continue;printf(\"%d\",i);}",
+          "options": ["0134", "01234", "012", "024"],
+          "answer": 0,
+          "explanation": "i=2时continue跳过printf，输出0134。"
+        },
+        {
+          "type": "fill",
+          "question": "在for循环中，continue会跳到循环的____部分。",
+          "answer": "更新",
+          "explanation": "for循环continue后执行更新表达式（如i++），再判断条件。"
+        },
+        {
+          "type": "code",
+          "question": "输入若干整数（输入0结束），统计其中正数的个数。",
+          "keywords": ["while", "scanf", "if", ">", "0", "count", "break", "==", "0"],
+          "explanation": "参考答案：int n,count=0; while(scanf(\"%d\",&n)){if(n==0)break; if(n>0)count++;} printf(\"%d\",count);"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "嵌套循环（九九乘法表）",
+      "goal": "掌握嵌套循环的使用，能编写九九乘法表",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "嵌套循环",
+          "content": "嵌套循环是循环体内包含另一个循环。外层循环每执行一次，内层循环完整执行一遍。常用于处理二维数据（如矩阵）、打印图形、穷举等。注意内层循环变量不要与外层冲突。嵌套层数不宜过多，影响性能。",
+          "codeExample": "// 打印3x3星号方阵\nfor (int i = 0; i < 3; i++) {\n    for (int j = 0; j < 3; j++) {\n        printf(\"* \");\n    }\n    printf(\"\\n\");\n}\n// 输出：\n// * * * \n// * * * \n// * * * "
+        },
+        {
+          "title": "九九乘法表",
+          "content": "九九乘法表是嵌套循环的经典案例。外层循环i从1到9，内层循环j从1到i，输出j*i的结果。使用%-2d实现左对齐占2位。注意内层只到i避免重复。",
+          "codeExample": "#include <stdio.h>\n\nint main() {\n    for (int i = 1; i <= 9; i++) {\n        for (int j = 1; j <= i; j++) {\n            printf(\"%d*%d=%-2d \", j, i, i*j);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "嵌套循环中，外层循环2次，内层循环3次，循环体共执行几次？",
+          "options": ["2", "3", "5", "6"],
+          "answer": 3,
+          "explanation": "外层每次执行，内层完整执行3次。2*3=6次。"
+        },
+        {
+          "type": "choice",
+          "question": "九九乘法表中内层循环j的范围是？",
+          "options": ["1到9", "1到i", "i到9", "0到i"],
+          "answer": 1,
+          "explanation": "内层j从1到i，这样输出下三角，避免重复（如3*4和4*3只输出一个）。"
+        },
+        {
+          "type": "fill",
+          "question": "printf(\"%d*%d=%-2d \",j,i,i*j)中%-2d表示输出整数占2位且____对齐。",
+          "answer": "左",
+          "explanation": "%-2d中负号表示左对齐，2表示占2个字符宽度。"
+        },
+        {
+          "type": "code",
+          "question": "用嵌套循环打印倒三角星号图案（5行，第一行5个星号，逐行减1）。",
+          "keywords": ["for", "i", "5", "for", "j", "printf", "*"],
+          "explanation": "参考答案：for(int i=5;i>0;i--){for(int j=0;j<i;j++)printf(\"*\");printf(\"\\n\");}"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+综合练习（猜数字游戏）",
+      "goal": "综合运用分支和循环，完成猜数字游戏",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合项目", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了C语言控制流：1.if/else条件判断；2.switch多分支选择；3.for循环；4.while和do-while循环；5.break和continue；6.嵌套循环。这些是程序逻辑控制的基础，嵌入式开发中状态机、菜单系统都依赖这些。",
+          "codeExample": "// 综合示例：菜单系统\n#include <stdio.h>\nint main() {\n    int choice;\n    do {\n        printf(\"1.开始 2.设置 3.退出\\n\");\n        scanf(\"%d\", &choice);\n        switch(choice) {\n            case 1: printf(\"游戏开始\\n\"); break;\n            case 2: printf(\"设置中\\n\"); break;\n            case 3: printf(\"再见\\n\"); break;\n        }\n    } while(choice != 3);\n    return 0;\n}"
+        },
+        {
+          "title": "猜数字游戏",
+          "content": "综合运用循环、分支、输入输出实现猜数字游戏。系统生成1-100随机数，用户猜测，系统提示大了或小了，直到猜中。用到rand()、srand()、time()函数。rand()返回伪随机数，srand()设置随机种子，通常用time(NULL)作为种子。",
+          "codeExample": "#include <stdio.h>\n#include <stdlib.h>\n#include <time.h>\n\nint main() {\n    srand((unsigned)time(NULL));\n    int target = rand() % 100 + 1;\n    int guess, count = 0;\n    do {\n        printf(\"猜一个1-100的数: \");\n        scanf(\"%d\", &guess);\n        count++;\n        if (guess > target) printf(\"大了\\n\");\n        else if (guess < target) printf(\"小了\\n\");\n        else printf(\"猜中了！用了%d次\\n\", count);\n    } while (guess != target);\n    return 0;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "rand()函数返回的随机数范围是？",
+          "options": ["0-1", "0-RAND_MAX", "1-100", "任意整数"],
+          "answer": 1,
+          "explanation": "rand()返回0到RAND_MAX之间的整数。要得到1-100用rand()%100+1。"
+        },
+        {
+          "type": "choice",
+          "question": "srand()的作用是？",
+          "options": ["生成随机数", "设置随机数种子", "返回当前时间", "初始化变量"],
+          "answer": 1,
+          "explanation": "srand()设置随机数生成器的种子。不调用srand，rand()每次程序运行结果相同。"
+        },
+        {
+          "type": "fill",
+          "question": "要生成1-100的随机数，表达式为rand()%____+1。",
+          "answer": "100",
+          "explanation": "rand()%100得到0-99，加1得到1-100。"
+        },
+        {
+          "type": "code",
+          "question": "编写猜数字游戏：生成1-50的随机数，用户循环猜测，提示大小，猜中显示次数并退出。",
+          "keywords": ["srand", "rand", "%", "50", "while", "if", "else", "printf"],
+          "explanation": "参考答案：srand(time(NULL)); int t=rand()%50+1,g,c=0; do{scanf(\"%d\",&g);c++; if(g>t)printf(\"大\"); else if(g<t)printf(\"小\");}while(g!=t); printf(\"%d\",c);"
+        }
+      ]
+    }
+  ]
+}

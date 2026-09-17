@@ -1,0 +1,334 @@
+{
+  "course": {
+    "title": "嵌入式英语零基础学习",
+    "description": "面向嵌入式开发零基础英语学习者，从字母发音到技术文档阅读，循序渐进掌握嵌入式领域必备英语",
+    "target": "能够阅读芯片数据手册、看懂技术文档、用英语进行简单的工程沟通",
+    "totalLevels": 6,
+    "levels": [
+      {
+        "id": 1,
+        "title": "入门篇 - 字母与基础发音",
+        "goal": "掌握26个字母的名称与发音，了解嵌入式常用缩写",
+        "lessons": [
+          {
+            "id": 1,
+            "title": "26个字母与读音",
+            "goal": "认全26个英文字母，能正确读出每个字母",
+            "words": [
+              { "word": "A", "phonetic": "/eɪ/", "pos": "字母", "meaning": "字母A", "example_en": "A is the first letter.", "example_cn": "A是第一个字母。" },
+              { "word": "B", "phonetic": "/biː/", "pos": "字母", "meaning": "字母B", "example_en": "B is for Board.", "example_cn": "B代表板子(Board)。" },
+              { "word": "C", "phonetic": "/siː/", "pos": "字母", "meaning": "字母C", "example_en": "C is for Chip.", "example_cn": "C代表芯片(Chip)。" },
+              { "word": "D", "phonetic": "/diː/", "pos": "字母", "meaning": "字母D", "example_en": "D is for Digital.", "example_cn": "D代表数字(Digital)。" },
+              { "word": "E", "phonetic": "/iː/", "pos": "字母", "meaning": "字母E", "example_en": "E is for Electronic.", "example_cn": "E代表电子(Electronic)。" }
+            ],
+            "sentences": [
+              { "en": "What is this letter?", "cn": "这是什么字母？" },
+              { "en": "It is the letter A.", "cn": "这是字母A。" },
+              { "en": "Can you say the alphabet?", "cn": "你会念字母表吗？" }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "嵌入式常见缩写",
+            "goal": "认识嵌入式领域最常用的英文缩写",
+            "words": [
+              { "word": "MCU", "phonetic": "/ˌem siː ˈjuː/", "pos": "abbr.", "meaning": "微控制器单元 (Microcontroller Unit)", "example_en": "This MCU has 64KB flash.", "example_cn": "这个MCU有64KB闪存。" },
+              { "word": "CPU", "phonetic": "/ˌsiː piː ˈjuː/", "pos": "abbr.", "meaning": "中央处理器 (Central Processing Unit)", "example_en": "The CPU runs at 72MHz.", "example_cn": "CPU运行在72MHz。" },
+              { "word": "RAM", "phonetic": "/ræm/", "pos": "abbr.", "meaning": "随机存取存储器 (Random Access Memory)", "example_en": "It has 20KB RAM.", "example_cn": "它有20KB内存。" },
+              { "word": "ROM", "phonetic": "/rɒm/", "pos": "abbr.", "meaning": "只读存储器 (Read-Only Memory)", "example_en": "The ROM stores firmware.", "example_cn": "ROM存储固件。" },
+              { "word": "I/O", "phonetic": "/aɪ oʊ/", "pos": "abbr.", "meaning": "输入/输出 (Input/Output)", "example_en": "Configure the I/O port.", "example_cn": "配置I/O端口。" },
+              { "word": "LED", "phonetic": "/ˌel iː ˈdiː/", "pos": "abbr.", "meaning": "发光二极管 (Light Emitting Diode)", "example_en": "Turn on the LED.", "example_cn": "打开LED。" },
+              { "word": "USB", "phonetic": "/ˌjuː es ˈbiː/", "pos": "abbr.", "meaning": "通用串行总线 (Universal Serial Bus)", "example_en": "Connect via USB.", "example_cn": "通过USB连接。" },
+              { "word": "UART", "phonetic": "/ˈjuːɑːrt/", "pos": "abbr.", "meaning": "通用异步收发传输器 (Universal Asynchronous Receiver-Transmitter)", "example_en": "Use UART for serial output.", "example_cn": "用UART做串口输出。" }
+            ],
+            "sentences": [
+              { "en": "What does MCU mean?", "cn": "MCU是什么意思？" },
+              { "en": "MCU stands for Microcontroller Unit.", "cn": "MCU代表微控制器单元。" },
+              { "en": "How much RAM does it have?", "cn": "它有多少内存？" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "基础篇 - 嵌入式硬件词汇",
+        "goal": "掌握嵌入式硬件相关的基础英语词汇",
+        "lessons": [
+          {
+            "id": 1,
+            "title": "基本元器件",
+            "goal": "认识电阻、电容、二极管等基础元器件的英文",
+            "words": [
+              { "word": "resistor", "phonetic": "/rɪˈzɪstər/", "pos": "n.", "meaning": "电阻", "example_en": "A resistor limits current.", "example_cn": "电阻限制电流。" },
+              { "word": "capacitor", "phonetic": "/kəˈpæsɪtər/", "pos": "n.", "meaning": "电容", "example_en": "A capacitor stores charge.", "example_cn": "电容存储电荷。" },
+              { "word": "diode", "phonetic": "/ˈdaɪoʊd/", "pos": "n.", "meaning": "二极管", "example_en": "A diode allows current in one direction.", "example_cn": "二极管让电流单向通过。" },
+              { "word": "transistor", "phonetic": "/trænˈzɪstər/", "pos": "n.", "meaning": "三极管/晶体管", "example_en": "A transistor can amplify signals.", "example_cn": "三极管可以放大信号。" },
+              { "word": "inductor", "phonetic": "/ɪnˈdʌktər/", "pos": "n.", "meaning": "电感", "example_en": "An inductor resists current changes.", "example_cn": "电感阻碍电流变化。" },
+              { "word": "crystal", "phonetic": "/ˈkrɪstl/", "pos": "n.", "meaning": "晶振", "example_en": "The crystal provides clock signal.", "example_cn": "晶振提供时钟信号。" },
+              { "word": "breadboard", "phonetic": "/ˈbredbɔːrd/", "pos": "n.", "meaning": "面包板", "example_en": "Build circuits on a breadboard.", "example_cn": "在面包板上搭建电路。" }
+            ],
+            "sentences": [
+              { "en": "Pass me a 10k resistor.", "cn": "递给我一个10k电阻。" },
+              { "en": "We need a 100uF capacitor.", "cn": "我们需要一个100微法电容。" },
+              { "en": "The diode is broken.", "cn": "二极管坏了。" }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "芯片与板卡",
+            "goal": "学习芯片、开发板相关词汇",
+            "words": [
+              { "word": "chip", "phonetic": "/tʃɪp/", "pos": "n.", "meaning": "芯片", "example_en": "This chip has 48 pins.", "example_cn": "这个芯片有48个引脚。" },
+              { "word": "pin", "phonetic": "/pɪn/", "pos": "n.", "meaning": "引脚", "example_en": "Pin 1 is VCC.", "example_cn": "1号脚是VCC。" },
+              { "word": "board", "phonetic": "/bɔːrd/", "pos": "n.", "meaning": "电路板", "example_en": "The board is powered by USB.", "example_cn": "板子由USB供电。" },
+              { "word": "module", "phonetic": "/ˈmɒdʒuːl/", "pos": "n.", "meaning": "模块", "example_en": "This is a WiFi module.", "example_cn": "这是一个WiFi模块。" },
+              { "word": "sensor", "phonetic": "/ˈsensər/", "pos": "n.", "meaning": "传感器", "example_en": "A temperature sensor reads 25°C.", "example_cn": "温度传感器读数25度。" },
+              { "word": "display", "phonetic": "/dɪˈspleɪ/", "pos": "n.", "meaning": "显示屏", "example_en": "The display shows the value.", "example_cn": "显示屏显示数值。" },
+              { "word": "battery", "phonetic": "/ˈbætəri/", "pos": "n.", "meaning": "电池", "example_en": "The battery is 3.7V.", "example_cn": "电池是3.7V。" }
+            ],
+            "sentences": [
+              { "en": "Where is pin 1?", "cn": "1号引脚在哪？" },
+              { "en": "The module is not working.", "cn": "模块不工作。" },
+              { "en": "Connect the sensor to the board.", "cn": "把传感器接到板子上。" }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "电气参数词汇",
+            "goal": "学习电压、电流、功率等电气参数英语",
+            "words": [
+              { "word": "voltage", "phonetic": "/ˈvoʊltɪdʒ/", "pos": "n.", "meaning": "电压", "example_en": "The voltage is 3.3V.", "example_cn": "电压是3.3V。" },
+              { "word": "current", "phonetic": "/ˈkʌrənt/", "pos": "n.", "meaning": "电流", "example_en": "The current is 20mA.", "example_cn": "电流是20毫安。" },
+              { "word": "resistance", "phonetic": "/rɪˈzɪstəns/", "pos": "n.", "meaning": "电阻值", "example_en": "The resistance is 10kΩ.", "example_cn": "电阻值是10千欧。" },
+              { "word": "power", "phonetic": "/ˈpaʊər/", "pos": "n.", "meaning": "功率/电源", "example_en": "Power consumption is low.", "example_cn": "功耗很低。" },
+              { "word": "frequency", "phonetic": "/ˈfriːkwənsi/", "pos": "n.", "meaning": "频率", "example_en": "The frequency is 16MHz.", "example_cn": "频率是16兆赫兹。" },
+              { "word": "ground", "phonetic": "/ɡraʊnd/", "pos": "n.", "meaning": "地/接地", "example_en": "Connect to ground.", "example_cn": "连接到地。" },
+              { "word": "signal", "phonetic": "/ˈsɪɡnəl/", "pos": "n.", "meaning": "信号", "example_en": "The signal is stable.", "example_cn": "信号稳定。" }
+            ],
+            "sentences": [
+              { "en": "What is the output voltage?", "cn": "输出电压是多少？" },
+              { "en": "Check the power supply.", "cn": "检查电源。" },
+              { "en": "The signal is too weak.", "cn": "信号太弱了。" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "进阶篇 - 嵌入式软件词汇",
+        "goal": "掌握嵌入式软件开发相关英语词汇",
+        "lessons": [
+          {
+            "id": 1,
+            "title": "编程基础词汇",
+            "goal": "学习编程相关基础英语",
+            "words": [
+              { "word": "variable", "phonetic": "/ˈveriəbl/", "pos": "n.", "meaning": "变量", "example_en": "Declare a variable.", "example_cn": "声明一个变量。" },
+              { "word": "function", "phonetic": "/ˈfʌŋkʃn/", "pos": "n.", "meaning": "函数", "example_en": "Call this function.", "example_cn": "调用这个函数。" },
+              { "word": "parameter", "phonetic": "/pəˈræmɪtər/", "pos": "n.", "meaning": "参数", "example_en": "Pass two parameters.", "example_cn": "传递两个参数。" },
+              { "word": "return", "phonetic": "/rɪˈtɜːrn/", "pos": "v.", "meaning": "返回", "example_en": "The function returns 0.", "example_cn": "函数返回0。" },
+              { "word": "loop", "phonetic": "/luːp/", "pos": "n.", "meaning": "循环", "example_en": "Infinite loop.", "example_cn": "无限循环。" },
+              { "word": "condition", "phonetic": "/kənˈdɪʃn/", "pos": "n.", "meaning": "条件", "example_en": "Check the condition.", "example_cn": "检查条件。" },
+              { "word": "statement", "phonetic": "/ˈsteɪtmənt/", "pos": "n.", "meaning": "语句", "example_en": "This statement is wrong.", "example_cn": "这条语句错了。" }
+            ],
+            "sentences": [
+              { "en": "Define a global variable.", "cn": "定义一个全局变量。" },
+              { "en": "The function takes two parameters.", "cn": "函数接收两个参数。" },
+              { "en": "Break out of the loop.", "cn": "跳出循环。" }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "数据类型与运算",
+            "goal": "学习数据类型、运算相关词汇",
+            "words": [
+              { "word": "integer", "phonetic": "/ˈɪntɪdʒər/", "pos": "n.", "meaning": "整数", "example_en": "Use an integer variable.", "example_cn": "使用整数变量。" },
+              { "word": "float", "phonetic": "/floʊt/", "pos": "n.", "meaning": "浮点数", "example_en": "Use float for decimals.", "example_cn": "用浮点数表示小数。" },
+              { "word": "character", "phonetic": "/ˈkærəktər/", "pos": "n.", "meaning": "字符", "example_en": "A character is one byte.", "example_cn": "字符占一个字节。" },
+              { "word": "string", "phonetic": "/strɪŋ/", "pos": "n.", "meaning": "字符串", "example_en": "The string is too long.", "example_cn": "字符串太长。" },
+              { "word": "array", "phonetic": "/əˈreɪ/", "pos": "n.", "meaning": "数组", "example_en": "An array of 10 elements.", "example_cn": "10个元素的数组。" },
+              { "word": "pointer", "phonetic": "/ˈpɔɪntər/", "pos": "n.", "meaning": "指针", "example_en": "Use a pointer carefully.", "example_cn": "小心使用指针。" },
+              { "word": "structure", "phonetic": "/ˈstrʌktʃər/", "pos": "n.", "meaning": "结构体", "example_en": "Define a structure.", "example_cn": "定义一个结构体。" }
+            ],
+            "sentences": [
+              { "en": "Cast to integer.", "cn": "转换为整数。" },
+              { "en": "Access the array by index.", "cn": "通过索引访问数组。" },
+              { "en": "The pointer is NULL.", "cn": "指针为空。" }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "调试与排错",
+            "goal": "学习调试相关英语词汇",
+            "words": [
+              { "word": "bug", "phonetic": "/bʌɡ/", "pos": "n.", "meaning": "缺陷/漏洞", "example_en": "I found a bug.", "example_cn": "我发现了一个bug。" },
+              { "word": "debug", "phonetic": "/ˌdiːˈbʌɡ/", "pos": "v.", "meaning": "调试", "example_en": "Debug the program.", "example_cn": "调试程序。" },
+              { "word": "error", "phonetic": "/ˈerər/", "pos": "n.", "meaning": "错误", "example_en": "A syntax error.", "example_cn": "语法错误。" },
+              { "word": "warning", "phonetic": "/ˈwɔːrnɪŋ/", "pos": "n.", "meaning": "警告", "example_en": "Fix the warnings.", "example_cn": "修复警告。" },
+              { "word": "breakpoint", "phonetic": "/ˈbreɪkpɔɪnt/", "pos": "n.", "meaning": "断点", "example_en": "Set a breakpoint here.", "example_cn": "在这里设置断点。" },
+              { "word": "compile", "phonetic": "/kəmˈpaɪl/", "pos": "v.", "meaning": "编译", "example_en": "Compile the code.", "example_cn": "编译代码。" },
+              { "word": "run", "phonetic": "/rʌn/", "pos": "v.", "meaning": "运行", "example_en": "Run the program.", "example_cn": "运行程序。" }
+            ],
+            "sentences": [
+              { "en": "There is a bug in the code.", "cn": "代码里有bug。" },
+              { "en": "Set a breakpoint at line 10.", "cn": "在第10行设置断点。" },
+              { "en": "Compile and run.", "cn": "编译并运行。" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "数据手册篇 - 阅读Data Sheet",
+        "goal": "能够阅读芯片数据手册的关键章节",
+        "lessons": [
+          {
+            "id": 1,
+            "title": "数据手册结构",
+            "goal": "了解Data Sheet的常见章节与英语表述",
+            "words": [
+              { "word": "description", "phonetic": "/dɪˈskrɪpʃn/", "pos": "n.", "meaning": "描述", "example_en": "See the general description.", "example_cn": "见总体描述。" },
+              { "word": "feature", "phonetic": "/ˈfiːtʃər/", "pos": "n.", "meaning": "特性", "example_en": "Key features list.", "example_cn": "关键特性列表。" },
+              { "word": "specification", "phonetic": "/ˌspesɪfɪˈkeɪʃn/", "pos": "n.", "meaning": "规格", "example_en": "Electrical specifications.", "example_cn": "电气规格。" },
+              { "word": "application", "phonetic": "/ˌæplɪˈkeɪʃn/", "pos": "n.", "meaning": "应用", "example_en": "Application circuits.", "example_cn": "应用电路。" },
+              { "word": "package", "phonetic": "/ˈpækɪdʒ/", "pos": "n.", "meaning": "封装", "example_en": "QFP package.", "example_cn": "QFP封装。" },
+              { "word": "ordering", "phonetic": "/ˈɔːrdərɪŋ/", "pos": "n.", "meaning": "订货", "example_en": "Ordering information.", "example_cn": "订货信息。" },
+              { "word": "revision", "phonetic": "/rɪˈvɪʒn/", "pos": "n.", "meaning": "版本", "example_en": "Revision history.", "example_cn": "修订历史。" }
+            ],
+            "sentences": [
+              { "en": "Refer to the datasheet.", "cn": "参考数据手册。" },
+              { "en": "Check the pinout table.", "cn": "查看引脚分配表。" },
+              { "en": "See page 5 for details.", "cn": "详见第5页。" }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "引脚与封装",
+            "goal": "学习引脚功能与封装类型相关英语",
+            "words": [
+              { "word": "VCC", "phonetic": "/ˌviː siː ˈsiː/", "pos": "n.", "meaning": "正电源", "example_en": "Connect VCC to 3.3V.", "example_cn": "VCC接3.3V。" },
+              { "word": "GND", "phonetic": "/ɡraʊnd/", "pos": "n.", "meaning": "地", "example_en": "Connect GND to ground.", "example_cn": "GND接地。" },
+              { "word": "input", "phonetic": "/ˈɪnpʊt/", "pos": "n.", "meaning": "输入", "example_en": "Configure as input.", "example_cn": "配置为输入。" },
+              { "word": "output", "phonetic": "/ˈaʊtpʊt/", "pos": "n.", "meaning": "输出", "example_en": "Set as push-pull output.", "example_cn": "设为推挽输出。" },
+              { "word": "analog", "phonetic": "/ˈænəlɒɡ/", "pos": "adj.", "meaning": "模拟的", "example_en": "Analog input pin.", "example_cn": "模拟输入引脚。" },
+              { "word": "digital", "phonetic": "/ˈdɪdʒɪtl/", "pos": "adj.", "meaning": "数字的", "example_en": "Digital I/O port.", "example_cn": "数字I/O端口。" },
+              { "word": "QFP", "phonetic": "/ˌkjuː ef ˈpiː/", "pos": "abbr.", "meaning": "方形扁平封装 (Quad Flat Package)", "example_en": "Available in LQFP-48.", "example_cn": "有LQFP-48封装。" }
+            ],
+            "sentences": [
+              { "en": "VCC is pin 1.", "cn": "VCC是1号引脚。" },
+              { "en": "This pin is configurable.", "example_cn": "这个引脚可配置。", "example_en": "This pin is configurable." },
+              { "en": "Default state is input.", "cn": "默认状态是输入。" }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "电气特性表",
+            "goal": "读懂电气特性表格中的英语",
+            "words": [
+              { "word": "minimum", "phonetic": "/ˈmɪnɪməm/", "pos": "n./adj.", "meaning": "最小值/最小的", "example_en": "Minimum voltage: 2.7V.", "example_cn": "最低电压2.7V。" },
+              { "word": "maximum", "phonetic": "/ˈmæksɪməm/", "pos": "n./adj.", "meaning": "最大值/最大的", "example_en": "Maximum current: 20mA.", "example_cn": "最大电流20毫安。" },
+              { "word": "typical", "phonetic": "/ˈtɪpɪkl/", "pos": "adj.", "meaning": "典型的", "example_en": "Typical value: 3.3V.", "example_cn": "典型值3.3V。" },
+              { "word": "range", "phonetic": "/reɪndʒ/", "pos": "n.", "meaning": "范围", "example_en": "Operating range: -40 to 85°C.", "example_cn": "工作范围：-40到85度。" },
+              { "word": "tolerance", "phonetic": "/ˈtɒlərəns/", "pos": "n.", "meaning": "容差", "example_en": "Voltage tolerance ±5%.", "example_cn": "电压容差±5%。" },
+              { "word": "consumption", "phonetic": "/kənˈsʌmpʃn/", "pos": "n.", "meaning": "消耗", "example_en": "Low power consumption.", "example_cn": "低功耗。" },
+              { "word": "rating", "phonetic": "/ˈreɪtɪŋ/", "pos": "n.", "meaning": "额定值", "example_en": "Current rating: 40mA.", "example_cn": "额定电流40毫安。" }
+            ],
+            "sentences": [
+              { "en": "Min/Typ/Max values.", "cn": "最小/典型/最大值。" },
+              { "en": "Stay within the range.", "cn": "保持在范围内。" },
+              { "en": "Check the absolute maximum ratings.", "cn": "查看绝对最大额定值。" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "通信协议篇 - 串口/SPI/I2C",
+        "goal": "掌握通信协议相关英语术语",
+        "lessons": [
+          {
+            "id": 1,
+            "title": "串口通信UART",
+            "goal": "学习串口通信英语术语",
+            "words": [
+              { "word": "baud", "phonetic": "/bɔːd/", "pos": "n.", "meaning": "波特", "example_en": "Baud rate 115200.", "example_cn": "波特率115200。" },
+              { "word": "rate", "phonetic": "/reɪt/", "pos": "n.", "meaning": "率", "example_en": "Set the baud rate.", "example_cn": "设置波特率。" },
+              { "word": "parity", "phonetic": "/ˈpærəti/", "pos": "n.", "meaning": "校验", "example_en": "No parity bit.", "example_cn": "无校验位。" },
+              { "word": "stop bit", "phonetic": "/stɒp bɪt/", "pos": "n.", "meaning": "停止位", "example_en": "One stop bit.", "example_cn": "一个停止位。" },
+              { "word": "data bit", "phonetic": "/ˈdeɪtə bɪt/", "pos": "n.", "meaning": "数据位", "example_en": "8 data bits.", "example_cn": "8个数据位。" },
+              { "word": "transmit", "phonetic": "/trænsˈmɪt/", "pos": "v.", "meaning": "发送", "example_en": "Transmit data.", "example_cn": "发送数据。" },
+              { "word": "receive", "phonetic": "/rɪˈsiːv/", "pos": "v.", "meaning": "接收", "example_en": "Receive data.", "example_cn": "接收数据。" }
+            ],
+            "sentences": [
+              { "en": "Set baud rate to 9600.", "cn": "波特率设为9600。" },
+              { "en": "No parity, 8 data bits, 1 stop bit.", "cn": "无校验，8数据位，1停止位。" },
+              { "en": "Failed to receive data.", "cn": "接收数据失败。" }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "SPI与I2C",
+            "goal": "学习SPI/I2C通信协议英语",
+            "words": [
+              { "word": "master", "phonetic": "/ˈmæstər/", "pos": "n.", "meaning": "主机", "example_en": "The master initiates transfer.", "example_cn": "主机发起传输。" },
+              { "word": "slave", "phonetic": "/sleɪv/", "pos": "n.", "meaning": "从机", "example_en": "The slave responds.", "example_cn": "从机响应。" },
+              { "word": "clock", "phonetic": "/klɒk/", "pos": "n.", "meaning": "时钟", "example_en": "Clock signal SCK.", "example_cn": "时钟信号SCK。" },
+              { "word": "chip select", "phonetic": "/tʃɪp sɪˈlekt/", "pos": "n.", "meaning": "片选", "example_en": "Pull CS low.", "example_cn": "拉低CS。" },
+              { "word": "address", "phonetic": "/ˈædres/", "pos": "n.", "meaning": "地址", "example_en": "I2C address 0x50.", "example_cn": "I2C地址0x50。" },
+              { "word": "acknowledge", "phonetic": "/əkˈnɒlɪdʒ/", "pos": "v./n.", "meaning": "应答/ACK", "example_en": "Wait for ACK.", "example_cn": "等待ACK。" },
+              { "word": "synchronize", "phonetic": "/ˈsɪŋkrənaɪz/", "pos": "v.", "meaning": "同步", "example_en": "Synchronize the clock.", "example_cn": "同步时钟。" }
+            ],
+            "sentences": [
+              { "en": "SPI uses 4 wires.", "cn": "SPI用4根线。" },
+              { "en": "The slave sends ACK.", "cn": "从机发送ACK。" },
+              { "en": "Set the device address.", "cn": "设置设备地址。" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "工程沟通篇 - 邮件与会议",
+        "goal": "能用简单英语进行工程沟通",
+        "lessons": [
+          {
+            "id": 1,
+            "title": "邮件常用句",
+            "goal": "学习工程邮件常用英语句型",
+            "words": [
+              { "word": "attach", "phonetic": "/əˈtætʃ/", "pos": "v.", "meaning": "附上", "example_en": "I attach the schematic.", "example_cn": "我附上原理图。" },
+              { "word": "deadline", "phonetic": "/ˈdedlaɪn/", "pos": "n.", "meaning": "截止日期", "example_en": "The deadline is Friday.", "example_cn": "截止日期是周五。" },
+              { "word": "schedule", "phonetic": "/ˈʃedjuːl/", "pos": "n.", "meaning": "日程", "example_en": "Check the schedule.", "example_cn": "查看日程。" },
+              { "word": "review", "phonetic": "/rɪˈvjuː/", "pos": "v./n.", "meaning": "评审", "example_en": "Code review.", "example_cn": "代码评审。" },
+              { "word": "feedback", "phonetic": "/ˈfiːdbæk/", "pos": "n.", "meaning": "反馈", "example_en": "Please give feedback.", "example_cn": "请给反馈。" },
+              { "word": "update", "phonetic": "/ˈʌpdeɪt/", "pos": "n./v.", "meaning": "更新", "example_en": "Send weekly updates.", "example_cn": "发送周报。" }
+            ],
+            "sentences": [
+              { "en": "Please find the attached file.", "cn": "请查收附件。" },
+              { "en": "Could you review my code?", "cn": "能评审一下我的代码吗？" },
+              { "en": "Let's schedule a meeting.", "cn": "我们安排个会议吧。" }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "会议常用句",
+            "goal": "学习工程会议常用英语句型",
+            "words": [
+              { "word": "agenda", "phonetic": "/əˈdʒendə/", "pos": "n.", "meaning": "议程", "example_en": "Today's agenda.", "example_cn": "今天的议程。" },
+              { "word": "summary", "phonetic": "/ˈsʌməri/", "pos": "n.", "meaning": "总结", "example_en": "Meeting summary.", "example_cn": "会议总结。" },
+              { "word": "issue", "phonetic": "/ˈɪʃuː/", "pos": "n.", "meaning": "问题", "example_en": "Raise an issue.", "example_cn": "提出问题。" },
+              { "word": "progress", "phonetic": "/ˈprəʊɡres/", "pos": "n.", "meaning": "进展", "example_en": "Report progress.", "example_cn": "汇报进展。" },
+              { "word": "blocker", "phonetic": "/ˈblɒkər/", "pos": "n.", "meaning": "阻塞", "example_en": "Any blockers?", "example_cn": "有什么阻塞吗？" },
+              { "word": "action item", "phonetic": "/ˈækʃn ˈaɪtəm/", "pos": "n.", "meaning": "行动项", "example_en": "Action items listed.", "example_cn": "已列出行动项。" }
+            ],
+            "sentences": [
+              { "en": "Let's start with the agenda.", "cn": "我们从议程开始。" },
+              { "en": "Any updates on the issue?", "cn": "问题有什么进展吗？" },
+              { "en": "Who takes this action item?", "cn": "谁负责这个行动项？" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

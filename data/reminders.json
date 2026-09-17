@@ -1,0 +1,70 @@
+{
+  "schedule": [
+    {
+      "id": "morning_review",
+      "time": "08:00",
+      "title": "晨间复习",
+      "task": "复习昨日学过的知识点，看一遍昨日笔记和费曼解释",
+      "duration": "20 分钟",
+      "consequence": "不复习会导致昨日知识快速遗忘，今日新内容理解困难，漏洞像滚雪球一样越积越大，最后完全跟不上。",
+      "consequence_short": "昨日知识快速遗忘，今日内容听不懂",
+      "icon": "🌅",
+      "color": "warm"
+    },
+    {
+      "id": "core_learning",
+      "time": "10:00",
+      "title": "核心学习",
+      "task": "学习今日主课程（看知识点讲解 + 做费曼练习）",
+      "duration": "90 分钟",
+      "consequence": "不学会导致当日进度落后，后面的知识点是层层递进的，缺一天后面就会连环听不懂，最终放弃。",
+      "consequence_short": "进度落后，后面连环听不懂",
+      "icon": "📖",
+      "color": "green"
+    },
+    {
+      "id": "hands_on",
+      "time": "14:00",
+      "title": "动手练习",
+      "task": "做今日练习题，写代码、跑程序、调试",
+      "duration": "60 分钟",
+      "consequence": "只看不练等于没学，面试时让你写代码一个字都敲不出来，找工作时笔试直接挂。",
+      "consequence_short": "只会看不会做，面试笔试直接挂",
+      "icon": "💻",
+      "color": "blue"
+    },
+    {
+      "id": "english",
+      "time": "16:00",
+      "title": "英语学习",
+      "task": "背今日英语单词 + 做费曼英语练习（用英语解释概念）",
+      "duration": "30 分钟",
+      "consequence": "嵌入式的 datasheet 全是英文，英语不行连芯片手册都看不懂，遇到问题没法查英文资料，水平永远上不去。",
+      "consequence_short": "看不懂英文 datasheet，水平上不去",
+      "icon": "🔤",
+      "color": "purple"
+    },
+    {
+      "id": "feynman_review",
+      "time": "20:00",
+      "title": "费曼复盘",
+      "task": "用大白话把今日所有知识点讲一遍，卡壳的地方标记回去补",
+      "duration": "30 分钟",
+      "consequence": "不做费曼复盘 = 今天白学。你以为懂了其实没懂，一周后全忘光，时间全浪费了。",
+      "consequence_short": "今天白学，一周后全忘光",
+      "icon": "🎓",
+      "color": "teal"
+    },
+    {
+      "id": "checkin",
+      "time": "22:00",
+      "title": "打卡总结",
+      "task": "打卡今日学习，写学习笔记，记录今天的收获和疑问",
+      "duration": "10 分钟",
+      "consequence": "不打卡不总结，学习没有闭环，无法形成习惯，三天打鱼两天晒网，4个月计划大概率半途而废。",
+      "consequence_short": "无法形成习惯，计划半途而废",
+      "icon": "✅",
+      "color": "pink"
+    }
+  ]
+}

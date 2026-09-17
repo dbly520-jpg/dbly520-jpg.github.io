@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#10b981">
+  <meta name="description" content="每日学习详情">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon-192.svg">
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
+  <link rel="stylesheet" href="./css/style.css">
+  <title>日详情 - 嵌入式学习之旅</title>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-title">
+      <a href="#" id="back-to-week" class="btn btn-secondary" style="min-height:36px;padding:0 12px;font-size:14px;">&larr; 周详情</a>
+    </div>
+    <div class="navbar-actions">
+      <span id="day-nav-title" style="font-weight:700;font-size:16px;">日详情</span>
+      <button class="btn-checkin" id="checkin-btn">打卡</button>
+    </div>
+  </nav>
+
+  <!-- 主体内容 -->
+  <main class="container" id="main-content">
+    <div class="loading">加载中...</div>
+  </main>
+
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a class="bottom-nav-item" href="./index.html">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首页</span>
+    </a>
+    <a class="bottom-nav-item active" href="./day.html?week=1&day=1">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">学习</span>
+    </a>
+    <a class="bottom-nav-item" href="./english.html">
+      <span class="nav-icon">🔤</span>
+      <span class="nav-label">英语</span>
+    </a>
+    <a class="bottom-nav-item" href="./index.html#months-container">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">课程</span>
+    </a>
+  </nav>
+
+  <!-- 引入JS文件 -->
+  <script src="./js/data.js"></script>
+  <script src="./js/progress.js"></script>
+  <script src="./js/notification.js"></script>
+  <script src="./js/quiz.js"></script>
+  <script src="./js/notes.js"></script>
+  <script src="./js/feynman.js"></script>
+  <script src="./js/reminder.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      /**
+       * 从URL参数获取周数和天数
+       * @returns {Object} { weekId, dayInWeek }
+       */
+      function getParams() {
+        const params = new URLSearchParams(window.location.search);
+        const weekId = parseInt(params.get('week')) || 1;
+        const dayInWeek = parseInt(params.get('day')) || 1;
+        return { weekId, dayInWeek };
+      }
+
+      /**
+       * HTML 转义
+       */
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      /**
+       * 简单代码语法高亮（基于正则的轻量着色）
+       * @param {string} code - 原始代码
+       * @returns {string} 带span标签的HTML
+       */
+      function highlightCode(code) {
+        // 先转义HTML
+        let html = escapeHtml(code);
+        // 注释（行注释和块注释）
+        html = html.replace(/(\/\/[^\n]*)/g, '<span class="code-comment">$1</span>');
+        html = html.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="code-comment">$1</span>');
+        // 字符串
+        html = html.replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, '<span class="code-string">$1</span>');
+        // 关键字
+        const keywords = ['int', 'char', 'float', 'double', 'void', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'return', 'struct', 'union', 'enum', 'typedef', 'const', 'static', 'extern', 'volatile', 'unsigned', 'signed', 'short', 'long', 'sizeof', 'default', 'goto'];
+        const kwPattern = new RegExp('\\b(' + keywords.join('|') + ')\\b', 'g');
+        html = html.replace(kwPattern, '<span class="code-keyword">$1</span>');
+        // 数字
+        html = html.replace(/\b(0x[0-9a-fA-F]+|\d+\.?\d*[fFlL]?)\b/g, '<span class="code-number">$1</span>');
+        // 函数调用（标识符后跟括号）
+        html = html.replace(/\b([a-zA-Z_]\w*)(\s*\()/g, '<span class="code-func">$1</span>$2');
+        return html;
+      }
+
+      /**
+       * 渲染日详情页面
+       */
+      async function renderDay() {
+        const { weekId, dayInWeek } = getParams();
+
+        try {
+          await CourseData.load();
+        } catch (err) {
+          document.getElementById('main-content').innerHTML =
+            '<div class="error-msg">数据加载失败: ' + err.message + '</div>';
+          return;
+        }
+
+        const week = CourseData.getWeek(weekId);
+        const day = CourseData.getDay(weekId, dayInWeek);
+
+        if (!day || !week) {
+          document.getElementById('main-content').innerHTML =
+            '<div class="error-msg">未找到第' + weekId + '周第' + dayInWeek + '天的数据</div>';
+          return;
+        }
+
+        // 计算全局天ID
+        const dayId = day.id;
+
+        // 更新导航
+        document.getElementById('day-nav-title').textContent =
+          week.title + ' · 第' + dayInWeek + '天';
+        const backLink = document.getElementById('back-to-week');
+        backLink.href = './week.html?week=' + weekId;
+
+        // 打卡按钮状态
+        const checkinBtn = document.getElementById('checkin-btn');
+        updateCheckinButton(checkinBtn, dayId);
+        checkinBtn.addEventListener('click', () => {
+          if (Progress.isDayComplete(dayId)) {
+            Progress.unmarkDay(dayId);
+          } else {
+            Progress.markDayComplete(dayId);
+          }
+          updateCheckinButton(checkinBtn, dayId);
+        });
+
+        // 构建页面内容
+        const main = document.getElementById('main-content');
+        main.innerHTML = '';
+
+        // 1. 日期标题
+        const titleSection = document.createElement('div');
+        titleSection.className = 'card mb-16';
+        titleSection.innerHTML = `
+          <div class="card-subtitle">${week.title} · 第${dayInWeek}天</div>
+          <h1 style="font-size:24px;font-weight:800;">${day.title}</h1>
+        `;
+        main.appendChild(titleSection);
+
+        // 2. 学习目标卡片
+        const goalCard = document.createElement('div');
+        goalCard.className = 'goal-card';
+        goalCard.innerHTML = `
+          <h3>🎯 学习目标</h3>
+          <p>${day.goal}</p>
+        `;
+        main.appendChild(goalCard);
+
+        // 3. 时间分配卡片
+        if (day.schedule && day.schedule.length > 0) {
+          const scheduleCard = document.createElement('div');
+          scheduleCard.className = 'card schedule-card mb-16';
+          scheduleCard.innerHTML = '<h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">⏰ 时间分配</h3>';
+          const ul = document.createElement('ul');
+          day.schedule.forEach((item) => {
+            const li = document.createElement('li');
+            li.className = 'schedule-item';
+            li.innerHTML = `
+              <span class="schedule-time">${item.time}</span>
+              <span class="schedule-task">${item.task}</span>
+            `;
+            ul.appendChild(li);
+          });
+          scheduleCard.appendChild(ul);
+          main.appendChild(scheduleCard);
+        }
+
+        // 4. 知识点讲解区域
+        if (day.knowledge && day.knowledge.length > 0) {
+          const knowledgeSection = document.createElement('section');
+          knowledgeSection.className = 'knowledge-section';
+          knowledgeSection.innerHTML = '<h2 class="section-title"><span class="icon">📖</span> 知识点讲解</h2>';
+
+          day.knowledge.forEach((kp, kpIdx) => {
+            const point = document.createElement('div');
+            point.className = 'knowledge-point';
+            let html = '<h4>' + escapeHtml(kp.heading) + '</h4>';
+            if (kp.content) {
+              html += '<p>' + escapeHtml(kp.content) + '</p>';
+            }
+            if (kp.list && kp.list.length > 0) {
+              html += '<ul>';
+              kp.list.forEach((item) => {
+                html += '<li>' + escapeHtml(item) + '</li>';
+              });
+              html += '</ul>';
+            }
+            if (kp.code) {
+              html += '<pre><code>' + highlightCode(kp.code) + '</code></pre>';
+            }
+            point.innerHTML = html;
+            knowledgeSection.appendChild(point);
+
+            // 费曼学习法卡片：每个知识点后让用户"教别人"
+            const feynmanHost = document.createElement('div');
+            feynmanHost.className = 'feynman-host';
+            const conceptKey = 'd' + dayId + '_' + kpIdx;
+            // 提取类比提示词：从 heading 和 list 中
+            const hints = [kp.heading];
+            if (kp.list && kp.list.length > 0) {
+              kp.list.slice(0, 2).forEach((li) => {
+                if (li && li.length < 30) hints.push('类比: ' + li);
+              });
+            }
+            Feynman.render(feynmanHost, conceptKey, kp.heading, hints);
+            knowledgeSection.appendChild(feynmanHost);
+          });
+          main.appendChild(knowledgeSection);
+        }
+
+        // 5. 练习题区域
+        const exerciseSection = document.createElement('section');
+        exerciseSection.className = 'exercise-section';
+        exerciseSection.innerHTML = '<h2 class="section-title"><span class="icon">✏️</span> 练习题</h2>';
+        const exerciseContainer = document.createElement('div');
+        exerciseContainer.id = 'exercise-container';
+        exerciseSection.appendChild(exerciseContainer);
+        main.appendChild(exerciseSection);
+
+        // 渲染练习题
+        Quiz.render(day.exercises || [], exerciseContainer);
+
+        // 6. 笔记区域
+        const notesSection = document.createElement('section');
+        notesSection.className = 'notes-section';
+        notesSection.innerHTML = '<h2 class="section-title"><span class="icon">📝</span> 学习笔记</h2>';
+        const notesTextarea = document.createElement('textarea');
+        notesTextarea.className = 'notes-textarea';
+        notesTextarea.placeholder = '在此记录你的学习笔记，自动保存...';
+        notesSection.appendChild(notesTextarea);
+        const notesStatus = document.createElement('div');
+        notesStatus.className = 'notes-status';
+        notesSection.appendChild(notesStatus);
+        main.appendChild(notesSection);
+
+        // 初始化笔记自动保存
+        Notes.init(dayId, notesTextarea, notesStatus);
+
+        // 7. 底部上一日/下一日导航
+        const navSection = document.createElement('div');
+        navSection.className = 'day-nav-bottom';
+
+        const totalDaysInWeek = week.days.length;
+        const prevDay = dayInWeek > 1
+          ? { week: weekId, day: dayInWeek - 1 }
+          : (weekId > 1 ? { week: weekId - 1, day: CourseData.getDaysByWeek(weekId - 1).length } : null);
+        const nextDay = dayInWeek < totalDaysInWeek
+          ? { week: weekId, day: dayInWeek + 1 }
+          : (weekId < CourseData.getTotalWeeks() ? { week: weekId + 1, day: 1 } : null);
+
+        if (prevDay) {
+          const prevBtn = document.createElement('a');
+          prevBtn.className = 'btn btn-secondary';
+          prevBtn.href = `./day.html?week=${prevDay.week}&day=${prevDay.day}`;
+          prevBtn.textContent = '← 上一日';
+          navSection.appendChild(prevBtn);
+        } else {
+          const spacer = document.createElement('span');
+          navSection.appendChild(spacer);
+        }
+
+        if (nextDay) {
+          const nextBtn = document.createElement('a');
+          nextBtn.className = 'btn btn-primary';
+          nextBtn.href = `./day.html?week=${nextDay.week}&day=${nextDay.day}`;
+          nextBtn.textContent = '下一日 →';
+          navSection.appendChild(nextBtn);
+        } else {
+          const done = document.createElement('a');
+          done.className = 'btn btn-primary';
+          done.href = './index.html';
+          done.textContent = '完成全部 🎉';
+          navSection.appendChild(done);
+        }
+        main.appendChild(navSection);
+
+        // 滚动到顶部
+        window.scrollTo(0, 0);
+      }
+
+      /**
+       * 更新打卡按钮状态
+       * @param {HTMLElement} btn - 按钮元素
+       * @param {number} dayId - 全局天ID
+       */
+      function updateCheckinButton(btn, dayId) {
+        const isDone = Progress.isDayComplete(dayId);
+        if (isDone) {
+          btn.classList.add('checked');
+          btn.textContent = '✓ 已打卡';
+        } else {
+          btn.classList.remove('checked');
+          btn.textContent = '打卡';
+        }
+      }
+
+      // 启动
+      document.addEventListener('DOMContentLoaded', function () {
+        renderDay();
+        // 启动提醒引擎
+        if (window.Reminder) {
+          Reminder.load().then(function () { Reminder.start(); });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+{
+  "week": 10,
+  "month": 3,
+  "title": "第10周：ADC、DAC",
+  "goal": "掌握ADC采样原理、STM32 ADC配置和DAC输出。",
+  "days": [
+    {
+      "day": 1,
+      "title": "ADC概念",
+      "goal": "理解分辨率、采样率、参考电压等ADC概念",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "ADC基础概念",
+          "content": "ADC(模数转换器)将模拟电压转为数字值。关键参数：1.分辨率(位数，12位=4096级)；2.采样率(每秒采样次数)；3.参考电压(通常3.3V)；4.转换时间。STM32F103有2个12位ADC，共16个外部通道+2个内部(温度/参考)。转换公式：电压=ADC值/4096*参考电压。",
+          "codeExample": "/* ADC参数\n\n分辨率：12位\n  数字值范围：0-4095\n  精度：3.3V/4096 ≈ 0.8mV\n\n参考电压：VREF+（通常3.3V）\n  范围：0V→0, 3.3V→4095\n\n通道：\n  ADC1: 16外部+2内部\n  ADC2: 16外部\n  引脚：PA0-PA7,PB0-PB1,PC0-PC5\n\n转换时间：\n  1.5周期+12位 = 13.5周期\n  72MHz/6=12MHz → 1.125us\n*/"
+        },
+        {
+          "title": "ADC电压计算",
+          "content": "ADC将电压转为数字值。公式：ADC值=Vin/VREF*4095；电压=ADC值/4095*VREF。如3.3V参考，读到2048则电压≈1.65V(一半)。温度传感器等模拟传感器输出电压经ADC读取再转换为物理量。",
+          "codeExample": "/* 电压计算\n\nADC值 = Vin / VREF × 4095\n电压 = ADC值 / 4095 × 3.3V\n\n示例：\n  Vin=1.65V → ADC≈2048\n  Vin=3.3V  → ADC=4095\n  Vin=0V    → ADC=0\n\n温度传感器(NTC)：\n  读ADC → 算电压 → 算电阻 → 查表算温度\n\n光敏电阻：\n  读ADC → 算电压 → 算电阻 → 算光照度\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32F103 ADC的分辨率是？",
+          "options": ["8位", "10位", "12位", "16位"],
+          "answer": 2,
+          "explanation": "STM32F103 ADC是12位，数字值范围0-4095，共4096级。"
+        },
+        {
+          "type": "choice",
+          "question": "参考电压3.3V，ADC读到2048，对应电压约为？",
+          "options": ["1.0V", "1.65V", "2.0V", "3.3V"],
+          "answer": 1,
+          "explanation": "2048/4095*3.3≈1.65V，约为一半，符合预期。"
+        },
+        {
+          "type": "fill",
+          "question": "ADC将____信号转换为数字信号。",
+          "answer": "模拟",
+          "explanation": "ADC是模数转换器，将模拟电压信号转换为数字值。"
+        },
+        {
+          "type": "code",
+          "question": "写出ADC值转电压的公式(参考电压3.3V)。",
+          "keywords": ["adc_value", "/", "4095", "*", "3.3"],
+          "explanation": "参考答案：voltage = adc_value / 4095.0f * 3.3f;"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "STM32 ADC配置",
+      "goal": "在CubeMX中配置ADC通道",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX配置ADC",
+          "content": "CubeMX配置ADC步骤：1.选择ADC1，勾选IN0(对应PA0)；2.设置参数：连续转换模式、采样时间等；3.使能ADC中断(可选)；4.生成代码。ADC通道与引脚对应：ADC1_IN0=PA0，IN1=PA1...常用单次转换模式读取传感器。",
+          "codeExample": "/* CubeMX ADC1配置\n1. Analog → ADC1\n2. 勾选 IN0 (PA0)\n3. Parameter Settings:\n   - Continuous Conversion: Disable(单次)\n   - Scan Conversion: Disable\n   - 采样时间：55.5 Cycles\n4. 可选：使能ADC中断\n\nCubeMX生成：\n  MX_ADC1_Init() 初始化\n  hadc1 句柄\n*/"
+        },
+        {
+          "title": "ADC初始化",
+          "content": "ADC初始化结构体配置：时钟分频、分辨率、对齐、扫描模式、连续转换、触发方式等。CubeMX自动生成，用户主要在main中调用启动和读取函数。",
+          "codeExample": "ADC_HandleTypeDef hadc1;\n\nvoid MX_ADC1_Init(void) {\n    ADC_ChannelConfTypeDef sConfig = {0};\n    hadc1.Instance = ADC1;\n    hadc1.Init.ScanConvMode = DISABLE;\n    hadc1.Init.ContinuousConvMode = DISABLE;\n    hadc1.Init.DiscontinuousConvMode = DISABLE;\n    hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;\n    hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;\n    hadc1.Init.NbrOfConversion = 1;\n    HAL_ADC_Init(&hadc1);\n    sConfig.Channel = ADC_CHANNEL_0;\n    sConfig.Rank = 1;\n    sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;\n    HAL_ADC_ConfigChannel(&hadc1, &sConfig);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "ADC1通道0对应哪个引脚？",
+          "options": ["PA0", "PA1", "PB0", "PC0"],
+          "answer": 0,
+          "explanation": "ADC1_IN0对应PA0，IN1对应PA1，依次类推。"
+        },
+        {
+          "type": "choice",
+          "question": "ADC数据对齐方式通常选择？",
+          "options": ["左对齐", "右对齐", "居中", "任意"],
+          "answer": 1,
+          "explanation": "右对齐(ADC_DATAALIGN_RIGHT)使12位数据低位对齐，读取直接是0-4095。"
+        },
+        {
+          "type": "fill",
+          "question": "ADC单次转换需用____模式(非连续)。",
+          "answer": "Disable",
+          "explanation": "ContinuousConvMode=DISABLE表示单次转换，每次需手动启动。"
+        },
+        {
+          "type": "code",
+          "question": "写出ADC1通道配置的核心代码段(配置IN0为通道0)。",
+          "keywords": ["sConfig.Channel", "ADC_CHANNEL_0", "sConfig.Rank", "1", "HAL_ADC_ConfigChannel"],
+          "explanation": "参考答案：sConfig.Channel=ADC_CHANNEL_0; sConfig.Rank=1; HAL_ADC_ConfigChannel(&hadc1,&sConfig);"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "单次ADC采样",
+      "goal": "掌握HAL_ADC_Start和HAL_ADC_GetValue的使用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "ADC采样流程",
+          "content": "ADC单次采样流程：1.HAL_ADC_Start启动转换；2.HAL_ADC_PollForConversion等待转换完成；3.HAL_ADC_GetValue读取结果；4.HAL_ADC_Stop停止。简化封装为函数便于调用。读取的值是12位(0-4095)，需转换为电压。",
+          "codeExample": "// ADC读取函数\nuint16_t readADC(void) {\n    HAL_ADC_Start(&hadc1);\n    HAL_ADC_PollForConversion(&hadc1, 10);  // 等待10ms\n    uint16_t value = HAL_ADC_GetValue(&hadc1);\n    HAL_ADC_Stop(&hadc1);\n    return value;\n}\n\n// 转换为电压\nfloat readVoltage(void) {\n    uint16_t adc = readADC();\n    return (float)adc / 4095.0f * 3.3f;\n}\n\n// 使用\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_ADC1_Init();\n    while (1) {\n        float v = readVoltage();\n        printf(\"电压:%.2fV\\r\\n\", v);\n        HAL_Delay(500);\n    }\n}"
+        },
+        {
+          "title": "多次采样平均",
+          "content": "ADC读取可能有噪声，多次采样取平均可提高稳定性。常见方法：1.简单平均；2.滑动平均；3.中值滤波。采样次数越多越稳定但速度慢。推荐10-20次平均。",
+          "codeExample": "// 多次采样平均\nuint16_t readADCAverage(uint8_t times) {\n    uint32_t sum = 0;\n    for (int i = 0; i < times; i++) {\n        HAL_ADC_Start(&hadc1);\n        HAL_ADC_PollForConversion(&hadc1, 10);\n        sum += HAL_ADC_GetValue(&hadc1);\n    }\n    return sum / times;\n}\n\n// 滑动平均(环形缓冲)\n#define BUF_SIZE 10\nuint16_t buf[BUF_SIZE];\nuint8_t idx = 0;\n\nuint16_t readADCMoving(void) {\n    HAL_ADC_Start(&hadc1);\n    HAL_ADC_PollForConversion(&hadc1, 10);\n    buf[idx] = HAL_ADC_GetValue(&hadc1);\n    idx = (idx + 1) % BUF_SIZE;\n    uint32_t sum = 0;\n    for (int i = 0; i < BUF_SIZE; i++) sum += buf[i];\n    return sum / BUF_SIZE;\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "等待ADC转换完成的函数是？",
+          "options": ["HAL_ADC_Start", "HAL_ADC_GetValue", "HAL_ADC_PollForConversion", "HAL_ADC_Stop"],
+          "answer": 2,
+          "explanation": "HAL_ADC_PollForConversion等待转换完成，超时返回。"
+        },
+        {
+          "type": "choice",
+          "question": "ADC采样的正确顺序是？",
+          "options": ["Start→GetValue→PollFor→Stop", "Start→PollFor→GetValue→Stop", "GetValue→Start→PollFor→Stop", "PollFor→Start→GetValue→Stop"],
+          "answer": 1,
+          "explanation": "顺序：启动→等待转换完成→读取结果→停止。"
+        },
+        {
+          "type": "fill",
+          "question": "提高ADC稳定性常用____采样平均法。",
+          "answer": "多次",
+          "explanation": "多次采样取平均可滤除噪声，10-20次较常用。"
+        },
+        {
+          "type": "code",
+          "question": "写readADC函数：启动ADC、等待转换、读取值、停止。",
+          "keywords": ["HAL_ADC_Start", "HAL_ADC_PollForConversion", "HAL_ADC_GetValue", "HAL_ADC_Stop", "return"],
+          "explanation": "参考答案：uint16_t readADC(){HAL_ADC_Start(&hadc1);HAL_ADC_PollForConversion(&hadc1,10);uint16_t v=HAL_ADC_GetValue(&hadc1);HAL_ADC_Stop(&hadc1);return v;}"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "DMA方式ADC",
+      "goal": "理解ADC+DMA连续采样",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "DMA概念",
+          "content": "DMA(直接存储器访问)可不经过CPU直接在外设和内存间传输数据。ADC+DMA可实现连续采样，CPU不参与。适合多通道、高速采样。DMA传输完成后触发中断通知CPU处理。大幅降低CPU占用。",
+          "codeExample": "/* DMA优势\n\n无DMA：\n  CPU启动ADC→等待→读值→存数组→重复\n  CPU全程参与，无法做其他事\n\n有DMA：\n  CPU配置DMA→启动→CPU做其他事\n  DMA自动采集到缓冲区→满→中断通知CPU\n  CPU只在数据满时处理\n*/"
+        },
+        {
+          "title": "ADC+DMA配置",
+          "content": "CubeMX配置ADC+DMA步骤：1.配置ADC连续转换模式(Continuous Conversion: Enable)；2.添加DMA请求(ADC1)；3.设置DMA模式(循环)、数据宽度、缓冲区地址；4.生成代码。HAL_ADC_Start_DMA启动DMA传输。",
+          "codeExample": "/* CubeMX ADC+DMA配置\n1. ADC1 → Continuous Conv: Enable\n2. DMA Settings → Add → ADC1\n3. DMA配置：\n   - Mode: Circular(循环)\n   - Data Width: Half Word(16位)\n4. 生成代码\n*/\n\n// 用户代码\nuint16_t adcBuf[8];  // DMA缓冲区\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_DMA_Init();\n    MX_ADC1_Init();\n    \n    // 启动ADC+DMA\n    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adcBuf, 8);\n    \n    while (1) {\n        // adcBuf自动更新\n        printf(\"ADC0=%d\\r\\n\", adcBuf[0]);\n        HAL_Delay(500);\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "DMA的主要作用是？",
+          "options": ["提高CPU速度", "不占用CPU传输数据", "增加内存", "提高ADC精度"],
+          "answer": 1,
+          "explanation": "DMA直接在内存和外设间传输，不需CPU参与，降低CPU占用。"
+        },
+        {
+          "type": "choice",
+          "question": "ADC+DMA连续采样需设置ADC为？",
+          "options": ["单次模式", "连续转换模式", "扫描模式", "中断模式"],
+          "answer": 1,
+          "explanation": "ContinuousConvMode=Enable连续转换，配合DMA自动传输。"
+        },
+        {
+          "type": "fill",
+          "question": "启动ADC+DMA采样的函数是____。",
+          "answer": "HAL_ADC_Start_DMA",
+          "explanation": "HAL_ADC_Start_DMA(&hadc, buf, length)启动DMA方式ADC采样。"
+        },
+        {
+          "type": "code",
+          "question": "写代码：启动ADC1 DMA采样到adcBuf数组(8个数据)。",
+          "keywords": ["HAL_ADC_Start_DMA", "&hadc1", "uint32_t*", "adcBuf", "8"],
+          "explanation": "参考答案：HAL_ADC_Start_DMA(&hadc1,(uint32_t*)adcBuf,8);"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "读取光敏/温度传感器",
+      "goal": "使用ADC读取模拟传感器并转换为物理量",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "光敏电阻读取",
+          "content": "光敏电阻随光照变化阻值。与固定电阻分压，ADC读取电压变化。光照强阻值小电压高(或低，取决于接法)。通过ADC值范围映射光照等级(0-100)。用于自动灯光、亮度调节等。",
+          "codeExample": "// 光敏电阻读取\n// 接法：3.3V→光敏→ADC引脚→固定电阻→GND\n// 光强：阻值小→电压高\n\nfloat readLight(void) {\n    uint16_t adc = readADCAverage(10);\n    float voltage = adc / 4095.0f * 3.3f;\n    // 映射到0-100光照等级\n    int level = (int)(adc / 4095.0f * 100);\n    return level;\n}\n\n// 使用\nint light = readLight();\nif (light < 20) {\n    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);  // 暗，开灯\n} else {\n    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);    // 亮，关灯\n}"
+        },
+        {
+          "title": "NTC温度传感器",
+          "content": "NTC热敏电阻随温度升高阻值降低。通过分压电路读ADC电压，算出电阻值，再用公式或查表转换为温度。公式：温度=1/(ln(R/R0)/B+1/T0)-273.15。B值和R0是传感器参数。简化用查表法更准确。",
+          "codeExample": "// NTC温度读取(B值法)\n// 接法：3.3V→固定电阻(10k)→ADC→NTC→GND\n\nfloat readTemperature(void) {\n    uint16_t adc = readADCAverage(10);\n    float voltage = adc / 4095.0f * 3.3f;\n    // 算NTC电阻\n    float Rntc = 10000.0f * voltage / (3.3f - voltage);\n    // B值法算温度\n    float B = 3950.0f;\n    float T0 = 298.15f;  // 25°C\n    float R0 = 10000.0f;\n    float tempK = 1.0f / (logf(Rntc / R0) / B + 1.0f / T0);\n    return tempK - 273.15f;\n}\n\n// 使用\nfloat temp = readTemperature();\nprintf(\"温度:%.1f°C\\r\\n\", temp);"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "光敏电阻的特性是？",
+          "options": ["光照强阻值大", "光照强阻值小", "阻值恒定", "阻值与光照无关"],
+          "answer": 1,
+          "explanation": "光敏电阻光照越强阻值越小，通过分压电路转换为电压变化。"
+        },
+        {
+          "type": "choice",
+          "question": "NTC热敏电阻温度升高时阻值？",
+          "options": ["增大", "减小", "不变", "为零"],
+          "answer": 1,
+          "explanation": "NTC(负温度系数)温度升高阻值减小，可用于测温。"
+        },
+        {
+          "type": "fill",
+          "question": "传感器通过____电路将阻值变化转换为电压变化供ADC读取。",
+          "answer": "分压",
+          "explanation": "分压电路将电阻变化转换为电压变化，固定电阻和传感器电阻串联。"
+        },
+        {
+          "type": "code",
+          "question": "写readLight函数读取ADC并映射到0-100光照等级。",
+          "keywords": ["readADCAverage", "adc", "/", "4095.0f", "*", "100", "return"],
+          "explanation": "参考答案：int readLight(){uint16_t adc=readADCAverage(10); return adc/4095.0f*100;}"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "DAC输出",
+      "goal": "使用DAC输出模拟电压",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "DAC概念",
+          "content": "DAC(数模转换器)将数字值转为模拟电压。STM32F103的DAC有2通道，12位分辨率，输出0-3.3V。数字值0-4095对应0-3.3V。公式：电压=DAC值/4095*3.3V。DAC引脚PA4(DAC_OUT1)和PA5(DAC_OUT2)。可用于生成模拟信号、音频、可变基准电压等。",
+          "codeExample": "/* STM32 DAC\n\n通道：DAC_OUT1(PA4), DAC_OUT2(PA5)\n分辨率：12位\n输出范围：0-3.3V\n\n电压 = DAC值 / 4095 × 3.3V\n  DAC=0    → 0V\n  DAC=2048 → 1.65V\n  DAC=4095 → 3.3V\n\n应用：\n- 可编程电压源\n- 音频信号\n- 波形发生器\n*/"
+        },
+        {
+          "title": "DAC配置和使用",
+          "content": "CubeMX配置DAC：选择DAC1，使能输出，生成代码。HAL_DAC_Start启动，HAL_DAC_SetValue设置输出值。DAC常配合定时器和DMA生成波形(正弦波等)。",
+          "codeExample": "// DAC配置和使用\nDAC_HandleTypeDef hdac;\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_DAC_Init();\n    \n    HAL_DAC_Start(&hdac, DAC_CHANNEL_1);\n    \n    while (1) {\n        // 输出1.65V(一半)\n        HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2048);\n        HAL_Delay(1000);\n        // 输出0.825V(四分之一)\n        HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1024);\n        HAL_Delay(1000);\n    }\n}\n\n// 正弦波(查表法)\nconst uint16_t sineTable[100] = { ... };  // 预计算\nfor (int i = 0; i < 100; i++) {\n    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sineTable[i]);\n    HAL_Delay(1);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32 DAC的分辨率是？",
+          "options": ["8位", "10位", "12位", "16位"],
+          "answer": 2,
+          "explanation": "STM32 DAC是12位，数字值0-4095对应0-3.3V输出。"
+        },
+        {
+          "type": "choice",
+          "question": "DAC输出1.65V应设置的值是？",
+          "options": ["1024", "2048", "4095", "1"],
+          "answer": 1,
+          "explanation": "1.65V是3.3V的一半，对应DAC值4095/2≈2048。"
+        },
+        {
+          "type": "fill",
+          "question": "设置DAC输出值的函数是____。",
+          "answer": "HAL_DAC_SetValue",
+          "explanation": "HAL_DAC_SetValue(&hdac, channel, align, value)设置DAC输出。"
+        },
+        {
+          "type": "code",
+          "question": "写代码用DAC输出2V电压。",
+          "keywords": ["HAL_DAC_SetValue", "&hdac", "DAC_CHANNEL_1", "DAC_ALIGN_12B_R", "2482"],
+          "explanation": "参考答案：HAL_DAC_SetValue(&hdac,DAC_CHANNEL_1,DAC_ALIGN_12B_R,2482); 2482≈2/3.3*4095。"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+练习",
+      "goal": "总结本周知识，巩固ADC和DAC",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.ADC概念(分辨率/采样率/参考电压)；2.CubeMX配置ADC；3.单次ADC采样(Start/PollFor/GetValue/Stop)；4.DMA方式ADC(连续采样)；5.读取传感器(光敏/NTC温度)；6.DAC输出。ADC是嵌入式获取模拟世界信息的关键，传感器都依赖它。",
+          "codeExample": "// 综合示例：传感器数据采集\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_ADC1_Init();\n    MX_USART1_UART_Init();\n    printf(\"传感器数据采集\\r\\n\");\n    while (1) {\n        uint16_t adc = readADCAverage(10);\n        float voltage = adc / 4095.0f * 3.3f;\n        int light = adc / 4095.0f * 100;\n        printf(\"ADC=%d 电压=%.2fV 光照=%d%%\\r\\n\", \n               adc, voltage, light);\n        HAL_Delay(1000);\n    }\n}"
+        },
+        {
+          "title": "ADC应用场景",
+          "content": "ADC典型应用：1.温度传感器(NTC/PT100)；2.光敏检测(自动灯控)；3.电压电流检测(电池监控)；4.气体传感器(MQ系列)；5.电位器(旋钮输入)；6.音频采集(麦克风)；7.压力传感器。DAC应用：波形发生、音频输出、可调基准。",
+          "codeExample": "/* ADC/DAC 应用\n\nADC：\n1. 温度传感器 → NTC/PT100/DS18B20\n2. 光敏检测   → 自动照明\n3. 电压检测   → 电池电压监控\n4. 气体传感器 → MQ-2/MQ-135\n5. 电位器     → 旋钮输入\n6. 音频       → 麦克风采集\n\nDAC：\n1. 波形发生   → 正弦/方波/三角波\n2. 音频输出   → 简单蜂鸣器音乐\n3. 可调电压   → 基准/控制\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下哪个传感器不需要ADC？",
+          "options": ["NTC温度", "光敏电阻", "DHT11温湿度", "电位器"],
+          "answer": 2,
+          "explanation": "DHT11是数字传感器，单总线通信，不需要ADC。其他是模拟传感器。"
+        },
+        {
+          "type": "choice",
+          "question": "ADC采样的稳定性可通过什么提高？",
+          "options": ["增大分辨率", "多次采样平均", "提高频率", "降低电压"],
+          "answer": 1,
+          "explanation": "多次采样取平均可滤除噪声，是提高稳定性的常用方法。"
+        },
+        {
+          "type": "fill",
+          "question": "STM32 ADC读取函数HAL_ADC_GetValue返回____位数据。",
+          "answer": "12",
+          "explanation": "STM32F103 ADC是12位，返回值范围0-4095。"
+        },
+        {
+          "type": "code",
+          "question": "写代码：读取ADC并打印电压值(保留2位小数)。",
+          "keywords": ["readADCAverage", "adc", "/", "4095.0f", "*", "3.3f", "printf", "%.2f"],
+          "explanation": "参考答案：uint16_t adc=readADCAverage(10); printf(\"%.2fV\",adc/4095.0f*3.3f);"
+        }
+      ]
+    }
+  ]
+}

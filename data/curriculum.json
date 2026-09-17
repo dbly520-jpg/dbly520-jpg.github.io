@@ -1,0 +1,621 @@
+{
+  "course": {
+    "title": "嵌入式学习之旅",
+    "subtitle": "4个月嵌入式开发零基础学习计划",
+    "totalDays": 112,
+    "totalWeeks": 16,
+    "months": [
+      {
+        "id": 1,
+        "title": "第1月",
+        "theme": "C语言基础",
+        "weeks": [
+          {
+            "id": 1,
+            "title": "第1周",
+            "theme": "环境搭建与C语言入门",
+            "goal": "搭建开发环境，理解C程序基本结构，编写第一个Hello World程序",
+            "days": [
+              {
+                "id": 1,
+                "title": "开发环境搭建",
+                "goal": "安装编译器与IDE，配置开发环境，成功编译运行第一个程序",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "安装GCC编译器（MinGW/Linux）"},
+                  {"time": "10:00-11:00", "task": "安装VS Code与C/C++插件"},
+                  {"time": "14:00-15:00", "task": "配置环境变量与编译路径"},
+                  {"time": "15:00-17:00", "task": "编写并运行第一个Hello World程序"}
+                ],
+                "knowledge": [
+                  {
+                    "heading": "什么是嵌入式开发",
+                    "content": "嵌入式开发是指在嵌入式硬件平台上进行软件开发的过程。嵌入式系统是以应用为中心、以计算机技术为基础、软硬件可裁剪、适应应用系统对功能、可靠性、成本、体积、功耗严格要求的专用计算机系统。C语言是嵌入式开发的核心语言，因为它兼具高级语言的易用性和低级语言对硬件的直接操控能力。",
+                    "list": [
+                      "嵌入式系统特点：专用性强、实时性要求、资源受限",
+                      "C语言优势：执行效率高、可操作硬件、可移植性好",
+                      "学习路线：C语言 → 嵌入式C进阶 → 单片机 → 项目实战"
+                    ]
+                  },
+                  {
+                    "heading": "C程序基本结构",
+                    "content": "一个C程序由预处理指令、函数、变量、语句和表达式组成。main函数是程序的入口点。下面是一个最简单的C程序：",
+                    "code": "#include <stdio.h>\n\n/* 主函数 - 程序入口 */\nint main(void)\n{\n    // 打印输出到标准输出\n    printf(\"Hello, Embedded World!\\n\");\n    \n    return 0;  // 返回0表示程序正常结束\n}"
+                  },
+                  {
+                    "heading": "编译过程详解",
+                    "content": "C程序从源代码到可执行文件需要经过四个阶段：预处理、编译、汇编、链接。使用gcc命令可以控制每个阶段。",
+                    "code": "# 编译命令示例\ngcc -o hello hello.c    # 直接编译链接\ngcc -E hello.c          # 只做预处理\ngcc -S hello.c          # 生成汇编代码\ngcc -c hello.c          # 生成目标文件(.o)\ngcc -Wall -g hello.c -o hello  # 开启所有警告+调试信息"
+                  }
+                ],
+                "exercises": [
+                  {
+                    "type": "choice",
+                    "question": "C语言程序的入口函数是哪个？",
+                    "options": ["start()", "main()", "begin()", "init()"],
+                    "answer": 1,
+                    "explanation": "C语言程序总是从main函数开始执行，main函数是程序的标准入口点。"
+                  },
+                  {
+                    "type": "choice",
+                    "question": "gcc编译时哪个选项用于生成调试信息？",
+                    "options": ["-O", "-g", "-Wall", "-c"],
+                    "answer": 1,
+                    "explanation": "-g选项会在编译产物中嵌入调试信息，配合GDB调试器使用。-Wall开启警告，-c只编译不链接，-O是优化选项。"
+                  },
+                  {
+                    "type": "fill",
+                    "question": "C程序从源代码到可执行文件需要经过预处理、编译、____和链接四个阶段。",
+                    "answer": "汇编",
+                    "explanation": "完整的编译流程：预处理(展开宏/头文件) → 编译(生成汇编) → 汇编(生成机器码目标文件) → 链接(合并目标文件生成可执行文件)。"
+                  }
+                ]
+              },
+              {
+                "id": 2,
+                "title": "变量与数据类型",
+                "goal": "理解C语言基本数据类型，掌握变量声明与初始化",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "学习基本数据类型（int/char/float/double）"},
+                  {"time": "10:00-11:00", "task": "练习变量声明与初始化"},
+                  {"time": "14:00-15:00", "task": "学习sizeof运算符与类型范围"},
+                  {"time": "15:00-17:00", "task": "编写类型转换示例程序"}
+                ],
+                "knowledge": [
+                  {
+                    "heading": "基本数据类型",
+                    "content": "C语言提供了丰富的数据类型，基本类型包括整型、字符型和浮点型。在嵌入式开发中，准确选择数据类型对节省内存和提高效率至关重要。",
+                    "list": [
+                      "int：整型，通常4字节，范围-2^31到2^31-1",
+                      "char：字符型，1字节，可存储ASCII字符",
+                      "float：单精度浮点，4字节",
+                      "double：双精度浮点，8字节",
+                      "short：短整型，2字节",
+                      "long：长整型，4或8字节"
+                    ]
+                  },
+                  {
+                    "heading": "变量声明与初始化",
+                    "content": "变量在使用前必须先声明。良好的编程习惯是在声明时进行初始化，避免使用未初始化的变量导致未定义行为。",
+                    "code": "#include <stdio.h>\n\nint main(void)\n{\n    int age = 25;           // 整型变量\n    char grade = 'A';       // 字符型变量\n    float pi = 3.14f;       // 单精度浮点\n    double e = 2.71828;     // 双精度浮点\n    \n    printf(\"age = %d\\n\", age);\n    printf(\"grade = %c\\n\", grade);\n    printf(\"pi = %.2f\\n\", pi);\n    printf(\"e = %.5lf\\n\", e);\n    \n    // 使用sizeof查看各类型占用字节数\n    printf(\"sizeof(int) = %zu\\n\", sizeof(int));\n    printf(\"sizeof(char) = %zu\\n\", sizeof(char));\n    \n    return 0;\n}"
+                  },
+                  {
+                    "heading": "类型转换",
+                    "content": "C语言支持隐式类型转换（自动转换）和显式类型转换（强制转换）。隐式转换发生在不同类型混合运算时，由编译器自动完成；显式转换使用强制转换运算符。",
+                    "code": "int a = 10;\nfloat b = 3.14f;\n\n// 隐式转换：int自动转为float\nfloat result1 = a + b;  // 13.14\n\n// 显式转换（强制转换）\nint result2 = (int)(a + b);  // 13，截断小数部分\nfloat result3 = (float)a / 3;  // 3.333..."
+                  }
+                ],
+                "exercises": [
+                  {
+                    "type": "choice",
+                    "question": "在32位系统中，int类型通常占用多少字节？",
+                    "options": ["2字节", "4字节", "8字节", "16字节"],
+                    "answer": 1,
+                    "explanation": "在32位和64位系统中，int类型通常占用4字节（32位）。使用sizeof(int)可以准确获取当前平台上的大小。"
+                  },
+                  {
+                    "type": "fill",
+                    "question": "char类型变量 'A' 的ASCII码值是____。（填数字）",
+                    "answer": "65",
+                    "explanation": "字符'A'的ASCII码值为65，'a'的ASCII码值为97，'0'的ASCII码值为48。"
+                  },
+                  {
+                    "type": "code",
+                    "question": "编写一段代码：声明一个整型变量a=10和一个浮点型变量b=3.0，计算a/b的值并打印结果（保留2位小数）。",
+                    "answer": "int a = 10;\nfloat b = 3.0;\nprintf(\"%.2f\\n\", a / b);",
+                    "explanation": "a/b=3.33...，使用%.2f保留2位小数输出3.33。注意整除与浮点除法的区别。"
+                  }
+                ]
+              },
+              {
+                "id": 3,
+                "title": "运算符与表达式",
+                "goal": "掌握算术、关系、逻辑、位运算符的使用",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "学习算术运算符与运算优先级"},
+                  {"time": "10:00-11:00", "task": "学习关系与逻辑运算符"},
+                  {"time": "14:00-15:30", "task": "学习位运算符（嵌入式重点）"},
+                  {"time": "15:30-17:00", "task": "编写位运算综合练习"}
+                ],
+                "knowledge": [
+                  {
+                    "heading": "算术运算符",
+                    "content": "C语言提供丰富的运算符。算术运算符包括+、-、*、/、%、++、--。注意整数除法会截断小数部分，取模运算%只能用于整数。",
+                    "code": "int a = 7, b = 2;\nint sum = a + b;    // 9\nint diff = a - b;   // 5\nint prod = a * b;  // 14\nint quot = a / b;  // 3（整数除法，截断）\nint mod = a % b;   // 1（取余数）"
+                  },
+                  {
+                    "heading": "位运算符（嵌入式核心）",
+                    "content": "位运算是嵌入式开发的灵魂，用于直接操作硬件寄存器的每一位。掌握位运算对后续单片机开发至关重要。",
+                    "list": [
+                      "& 按位与：两位都为1结果为1",
+                      "| 按位或：任一位为1结果为1",
+                      "^ 按位异或：两位不同结果为1",
+                      "~ 按位取反：0变1，1变0",
+                      "<< 左移：高位左移，低位补0",
+                      ">> 右移：低位右移，高位补符号位"
+                    ],
+                    "code": "unsigned char reg = 0xF0;  // 11110000\n\n// 设置第0位为1（置位）\nreg = reg | 0x01;    // 11110001 → 0xF1\n\n// 清除第4位为0（清零）\nreg = reg & ~0x10;   // ~0x10 = 11101111\n// 11110001 & 11101111 = 11100001 → 0xE1\n\n// 翻转第7位\nreg = reg ^ 0x80;    // 01100001 → 0x61\n\n// 判断第0位是否为1\nif (reg & 0x01) {\n    // 第0位为1\n}"
+                  }
+                ],
+                "exercises": [
+                  {
+                    "type": "choice",
+                    "question": "表达式 7 / 2 的结果是？",
+                    "options": ["3.5", "3", "4", "3.0"],
+                    "answer": 1,
+                    "explanation": "7和2都是整数，整数除法会截断小数部分，结果为3。若要得到3.5，需写成7.0/2或(float)7/2。"
+                  },
+                  {
+                    "type": "choice",
+                    "question": "将寄存器reg的第3位设置为1，正确的操作是？",
+                    "options": ["reg = reg & 0x08", "reg = reg | 0x08", "reg = reg ^ 0x08", "reg = reg ~ 0x08"],
+                    "answer": 1,
+                    "explanation": "置位使用按位或|，0x08即二进制00001000，第3位为1。reg | 0x08可将第3位置1而不影响其他位。"
+                  },
+                  {
+                    "type": "fill",
+                    "question": "0xF0 & 0x0F 的结果是____。（填十六进制，不含0x前缀）",
+                    "answer": "00",
+                    "explanation": "0xF0=11110000，0x0F=00001111，按位与后全0，结果为0x00。"
+                  }
+                ]
+              },
+              {
+                "id": 4,
+                "title": "输入输出与格式化",
+                "goal": "掌握printf和scanf的格式化输入输出",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "深入学习printf格式化输出"},
+                  {"time": "10:00-11:00", "task": "学习scanf输入与缓冲区"},
+                  {"time": "14:00-15:00", "task": "练习字符输入getchar/putchar"},
+                  {"time": "15:00-17:00", "task": "编写简易计算器程序"}
+                ],
+                "knowledge": [
+                  {
+                    "heading": "printf格式化输出",
+                    "content": "printf是C语言标准输出函数，通过格式控制字符串指定输出格式。常用格式说明符：",
+                    "list": [
+                      "%d - 输出十进制整数",
+                      "%f - 输出浮点数（%.2f保留2位小数）",
+                      "%c - 输出单个字符",
+                      "%s - 输出字符串",
+                      "%x - 输出十六进制",
+                      "%o - 输出八进制",
+                      "%% - 输出百分号本身"
+                    ],
+                    "code": "int num = 255;\nprintf(\"十进制: %d\\n\", num);   // 255\nprintf(\"十六进制: %x\\n\", num); // ff\nprintf(\"八进制: %o\\n\", num);   // 377\nprintf(\"宽度: %5d\\n\", num);    // 右对齐，宽度5\nprintf(\"补零: %05d\\n\", num);  // 00255"
+                  },
+                  {
+                    "heading": "scanf输入",
+                    "content": "scanf从标准输入读取数据。注意scanf的格式控制字符串中变量前需要加&取地址符（字符串数组除外）。scanf读取时遇到空格、回车会停止。",
+                    "code": "int age;\nfloat score;\nchar name[20];\n\nprintf(\"请输入姓名: \");\nscanf(\"%s\", name);  // 字符串数组不需要&\n\nprintf(\"请输入年龄和成绩: \");\nscanf(\"%d %f\", &age, &score);\n\nprintf(\"%s, %d岁, 成绩%.1f\\n\", name, age, score);"
+                  }
+                ],
+                "exercises": [
+                  {
+                    "type": "choice",
+                    "question": "printf(\"%.3f\\n\", 3.14159) 的输出是？",
+                    "options": ["3.14", "3.142", "3.141", "3.14159"],
+                    "answer": 1,
+                    "explanation": "%.3f表示保留3位小数，3.14159第三位小数后四舍五入，结果为3.142。"
+                  },
+                  {
+                    "type": "fill",
+                    "question": "scanf读取int变量age，应写为scanf(\"%d\", ____);",
+                    "answer": "&age",
+                    "explanation": "scanf需要变量的地址来存储输入值，使用取地址符&获取age的地址。"
+                  }
+                ]
+              },
+              {
+                "id": 5,
+                "title": "流程控制 - 分支结构",
+                "goal": "掌握if-else和switch分支语句",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "学习if-else语句"},
+                  {"time": "10:00-11:00", "task": "学习嵌套if与else-if链"},
+                  {"time": "14:00-15:00", "task": "学习switch-case语句"},
+                  {"time": "15:00-17:00", "task": "编写成绩等级判定程序"}
+                ],
+                "knowledge": [
+                  {
+                    "heading": "if-else语句",
+                    "content": "if-else是条件分支语句，根据条件真假执行不同代码块。注意else总是与最近的未配对的if匹配。",
+                    "code": "int score = 85;\n\nif (score >= 90) {\n    printf(\"优秀\\n\");\n} else if (score >= 80) {\n    printf(\"良好\\n\");  // 输出这个\n} else if (score >= 60) {\n    printf(\"及格\\n\");\n} else {\n    printf(\"不及格\\n\");\n}"
+                  },
+                  {
+                    "heading": "switch-case语句",
+                    "content": "switch用于多分支选择，case后面必须是常量表达式。每个case后通常用break跳出，否则会继续执行后续case（fall-through特性）。",
+                    "code": "int day = 3;\nswitch (day) {\n    case 1:\n        printf(\"星期一\\n\");\n        break;\n    case 2:\n        printf(\"星期二\\n\");\n        break;\n    case 3:\n        printf(\"星期三\\n\");  // 输出这个\n        break;\n    default:\n        printf(\"无效输入\\n\");\n        break;\n}"
+                  }
+                ],
+                "exercises": [
+                  {
+                    "type": "choice",
+                    "question": "switch语句中，省略break会发生什么？",
+                    "options": ["编译错误", "只执行匹配的case", "继续执行后续所有case", "程序崩溃"],
+                    "answer": 2,
+                    "explanation": "switch语句中如果省略break，会发生fall-through（贯穿）现象，继续执行后续case的代码，直到遇到break或switch结束。"
+                  },
+                  {
+                    "type": "code",
+                    "question": "编写if-else语句：如果变量temperature>30打印\"高温\"，否则打印\"正常\"。",
+                    "answer": "if (temperature > 30) {\n    printf(\"高温\\n\");\n} else {\n    printf(\"正常\\n\");\n}",
+                    "explanation": "简单的if-else分支结构，条件为真执行第一个代码块，否则执行else块。"
+                  }
+                ]
+              },
+              {
+                "id": 6,
+                "title": "流程控制 - 循环结构",
+                "goal": "掌握for、while、do-while三种循环",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "学习for循环"},
+                  {"time": "10:00-11:00", "task": "学习while与do-while循环"},
+                  {"time": "14:00-15:00", "task": "学习break与continue"},
+                  {"time": "15:00-17:00", "task": "编写九九乘法表程序"}
+                ],
+                "knowledge": [
+                  {
+                    "heading": "for循环",
+                    "content": "for循环是最常用的循环结构，由初始化、条件判断、更新三部分组成。适合已知循环次数的场景。",
+                    "code": "// 打印1到10\nfor (int i = 1; i <= 10; i++) {\n    printf(\"%d \", i);\n}\n// 输出: 1 2 3 4 5 6 7 8 9 10\n\n// 九九乘法表\nfor (int i = 1; i <= 9; i++) {\n    for (int j = 1; j <= i; j++) {\n        printf(\"%d*%d=%-2d \", j, i, i * j);\n    }\n    printf(\"\\n\");\n}"
+                  },
+                  {
+                    "heading": "while与do-while",
+                    "content": "while循环先判断后执行，可能一次都不执行；do-while先执行后判断，至少执行一次。",
+                    "code": "// while: 先判断后执行\nint i = 1;\nwhile (i <= 5) {\n    printf(\"%d \", i);\n    i++;\n}\n// 输出: 1 2 3 4 5\n\n// do-while: 先执行后判断\nint j = 1;\ndo {\n    printf(\"%d \", j);\n    j++;\n} while (j <= 5);\n// 输出: 1 2 3 4 5\n\n// break: 跳出循环\n// continue: 跳过本次，继续下次循环"
+                  }
+                ],
+                "exercises": [
+                  {
+                    "type": "choice",
+                    "question": "do-while循环至少执行几次？",
+                    "options": ["0次", "1次", "2次", "不确定"],
+                    "answer": 1,
+                    "explanation": "do-while是先执行后判断的循环结构，循环体至少执行一次，即使条件一开始就为假。"
+                  },
+                  {
+                    "type": "fill",
+                    "question": "for(int i=0; i<10; i++) 循环体执行____次。",
+                    "answer": "10",
+                    "explanation": "i从0开始，每次递增1，当i<10为假时停止。i取值0,1,2,...,9，共执行10次。"
+                  }
+                ]
+              },
+              {
+                "id": 7,
+                "title": "第1周总结与练习",
+                "goal": "复习本周知识，完成综合练习，巩固基础",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "复习本周所有知识点"},
+                  {"time": "10:00-12:00", "task": "完成综合编程练习"},
+                  {"time": "14:00-15:00", "task": "代码审查与优化"},
+                  {"time": "15:00-17:00", "task": "撰写学习笔记与总结"}
+                ],
+                "knowledge": [
+                  {
+                    "heading": "本周知识回顾",
+                    "content": "本周我们学习了C语言基础语法：环境搭建、变量与数据类型、运算符（特别是位运算）、输入输出、分支结构和循环结构。这些是嵌入式开发的基石。",
+                    "list": [
+                      "环境搭建：GCC编译器 + VS Code",
+                      "数据类型：int/char/float/double及类型转换",
+                      "运算符：算术、关系、逻辑、位运算（嵌入式核心）",
+                      "输入输出：printf/scanf格式化",
+                      "流程控制：if-else/switch/for/while/do-while"
+                    ]
+                  },
+                  {
+                    "heading": "综合练习：简易计算器",
+                    "content": "综合运用本周所学知识，编写一个支持加减乘除的简易计算器程序。",
+                    "code": "#include <stdio.h>\n\nint main(void)\n{\n    char op;\n    double a, b;\n    \n    printf(\"输入表达式(如 3+5): \");\n    scanf(\"%lf%c%lf\", &a, &op, &b);\n    \n    switch (op) {\n        case '+':\n            printf(\"%.2f\\n\", a + b);\n            break;\n        case '-':\n            printf(\"%.2f\\n\", a - b);\n            break;\n        case '*':\n            printf(\"%.2f\\n\", a * b);\n            break;\n        case '/':\n            if (b != 0)\n                printf(\"%.2f\\n\", a / b);\n            else\n                printf(\"错误: 除数不能为0\\n\");\n            break;\n        default:\n            printf(\"不支持的运算符\\n\");\n    }\n    return 0;\n}"
+                  }
+                ],
+                "exercises": [
+                  {
+                    "type": "choice",
+                    "question": "以下哪个不是C语言的基本数据类型？",
+                    "options": ["int", "char", "string", "float"],
+                    "answer": 2,
+                    "explanation": "string不是C语言的基本数据类型。C语言中字符串通过char数组实现，C++才有std::string类。"
+                  },
+                  {
+                    "type": "fill",
+                    "question": "位运算中，要将变量的某位置0应使用____运算符。（填符号）",
+                    "answer": "&",
+                    "explanation": "清零（复位）使用按位与&配合取反~，如reg & ~(1<<n)可将第n位清零。置1用|，翻转用^。"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "第2周",
+            "theme": "数组与字符串",
+            "goal": "掌握一维/多维数组，理解字符串处理",
+            "days": [
+              {
+                "id": 8, "title": "一维数组",
+                "goal": "掌握一维数组的声明、初始化与遍历",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "学习一维数组声明与初始化"},
+                  {"time": "10:00-11:00", "task": "练习数组遍历与访问"},
+                  {"time": "14:00-17:00", "task": "编写数组求和/求最大值程序"}
+                ],
+                "knowledge": [{"heading": "一维数组", "content": "数组是相同类型数据的集合，在内存中连续存储。数组名代表首元素地址。", "code": "int arr[5] = {10, 20, 30, 40, 50};\nint sum = 0;\nfor (int i = 0; i < 5; i++) {\n    sum += arr[i];\n}\nprintf(\"总和: %d\\n\", sum); // 110"}],
+                "exercises": [{"type": "choice", "question": "数组int arr[5]的有效下标范围是？", "options": ["1到5", "0到4", "0到5", "1到4"], "answer": 1, "explanation": "C语言数组下标从0开始，长度为5的数组有效下标为0到4。"}]
+              },
+              {
+                "id": 9, "title": "二维数组",
+                "goal": "掌握二维数组的声明与遍历",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "学习二维数组声明与初始化"},
+                  {"time": "10:00-11:00", "task": "练习嵌套循环遍历二维数组"},
+                  {"time": "14:00-17:00", "task": "编写矩阵转置程序"}
+                ],
+                "knowledge": [{"heading": "二维数组", "content": "二维数组可看作数组的数组，常用于表示矩阵。", "code": "int matrix[3][3] = {\n    {1, 2, 3},\n    {4, 5, 6},\n    {7, 8, 9}\n};\nfor (int i = 0; i < 3; i++) {\n    for (int j = 0; j < 3; j++)\n        printf(\"%d \", matrix[i][j]);\n    printf(\"\\n\");\n}"}],
+                "exercises": [{"type": "fill", "question": "int arr[3][4]数组共有____个元素。", "answer": "12", "explanation": "二维数组元素总数 = 行数 × 列数 = 3 × 4 = 12。"}]
+              },
+              {
+                "id": 10, "title": "字符数组与字符串",
+                "goal": "理解C语言字符串的本质与处理方式",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "学习字符数组与字符串结束符'\\0'"},
+                  {"time": "10:00-12:00", "task": "学习string.h常用函数"},
+                  {"time": "14:00-17:00", "task": "编写字符串处理程序"}
+                ],
+                "knowledge": [{"heading": "字符串与字符数组", "content": "C语言没有专门的字符串类型，字符串通过char数组存储，以'\\0'作为结束标志。", "code": "char str[] = \"Hello\";  // 自动补\\0，长度6\nchar str2[6] = {'H','e','l','l','o','\\0'};\n\n// string.h常用函数\nstrlen(str);   // 字符串长度 5\nstrcpy(a, b);  // 复制\nstrcat(a, b);  // 拼接\nstrcmp(a, b);  // 比较"}],
+                "exercises": [{"type": "choice", "question": "C语言字符串的结束标志是？", "options": ["\\n", "\\0", "EOF", "NULL"], "answer": 1, "explanation": "C语言字符串以空字符'\\0'结尾，strlen函数计算长度时遇到'\\0'停止。"}]
+              },
+              {
+                "id": 11, "title": "数组排序算法",
+                "goal": "掌握冒泡排序与选择排序",
+                "schedule": [
+                  {"time": "09:00-10:30", "task": "学习冒泡排序算法"},
+                  {"time": "10:30-12:00", "task": "学习选择排序算法"},
+                  {"time": "14:00-17:00", "task": "实现排序并测试"}
+                ],
+                "knowledge": [{"heading": "冒泡排序", "content": "冒泡排序通过相邻元素比较交换，每轮将最大元素冒泡到末尾。", "code": "for (int i = 0; i < n - 1; i++)\n    for (int j = 0; j < n - 1 - i; j++)\n        if (arr[j] > arr[j+1]) {\n            int tmp = arr[j];\n            arr[j] = arr[j+1];\n            arr[j+1] = tmp;\n        }"}],
+                "exercises": [{"type": "choice", "question": "冒泡排序的时间复杂度是？", "options": ["O(n)", "O(n log n)", "O(n²)", "O(1)"], "answer": 2, "explanation": "冒泡排序使用双重嵌套循环，时间复杂度为O(n²)，效率较低但实现简单。"}]
+              },
+              {
+                "id": 12, "title": "数组查找算法",
+                "goal": "掌握线性查找与二分查找",
+                "schedule": [
+                  {"time": "09:00-10:00", "task": "学习线性查找"},
+                  {"time": "10:00-12:00", "task": "学习二分查找（要求数组有序）"},
+                  {"time": "14:00-17:00", "task": "实现并对比两种查找算法"}
+                ],
+                "knowledge": [{"heading": "二分查找", "content": "二分查找要求数组有序，每次将查找范围缩小一半，效率高O(log n)。", "code": "int binarySearch(int arr[], int n, int key) {\n    int low = 0, high = n - 1;\n    while (low <= high) {\n        int mid = (low + high) / 2;\n        if (arr[mid] == key) return mid;\n        else if (arr[mid] < key) low = mid + 1;\n        else high = mid - 1;\n    }\n    return -1; // 未找到\n}"}],
+                "exercises": [{"type": "fill", "question": "二分查找的时间复杂度是O(____)。（填log以2为底n）", "answer": "log n", "explanation": "二分查找每次将范围缩小一半，时间复杂度为O(log n)，远优于线性查找的O(n)。"}]
+              },
+              {
+                "id": 13, "title": "数组综合应用",
+                "goal": "综合运用数组知识解决实际问题",
+                "schedule": [
+                  {"time": "09:00-12:00", "task": "编写学生成绩管理系统"},
+                  {"time": "14:00-17:00", "task": "优化代码，添加输入验证"}
+                ],
+                "knowledge": [{"heading": "成绩管理示例", "content": "综合运用数组、循环、分支，实现成绩录入、统计、排序功能。", "code": "float scores[5];\nfloat sum = 0, max = 0;\nfor (int i = 0; i < 5; i++) {\n    scanf(\"%f\", &scores[i]);\n    sum += scores[i];\n    if (scores[i] > max) max = scores[i];\n}\nprintf(\"平均: %.1f, 最高: %.1f\\n\", sum/5, max);"}],
+                "exercises": [{"type": "code", "question": "编写代码：声明一个含5个元素的int数组，求出最大值并打印。", "answer": "int arr[5] = {3,7,1,9,4};\nint max = arr[0];\nfor (int i = 1; i < 5; i++)\n    if (arr[i] > max) max = arr[i];\nprintf(\"%d\\n\", max);", "explanation": "先假设第一个元素为最大值，然后遍历比较更新最大值。"}]
+              },
+              {
+                "id": 14, "title": "第2周总结与练习",
+                "goal": "复习数组知识，完成综合练习",
+                "schedule": [
+                  {"time": "09:00-12:00", "task": "复习本周知识点"},
+                  {"time": "14:00-17:00", "task": "完成综合编程练习"}
+                ],
+                "knowledge": [{"heading": "本周回顾", "content": "本周学习了数组：一维数组、二维数组、字符串处理、排序与查找算法。", "list": ["一维/二维数组声明与遍历", "字符串与string.h函数库", "冒泡排序与选择排序O(n²)", "线性查找与二分查找O(log n)"]}],
+                "exercises": [{"type": "choice", "question": "strlen(\"Hello\\0World\")的结果是？", "options": ["11", "5", "6", "10"], "answer": 1, "explanation": "strlen遇到第一个'\\0'即停止计数，\"Hello\"长度为5。"}]
+              }
+            ]
+          },
+          {
+            "id": 3, "title": "第3周", "theme": "函数与作用域", "goal": "掌握函数定义、调用、参数传递与作用域规则",
+            "days": [
+              {"id": 15, "title": "函数基础", "goal": "理解函数的定义、声明与调用", "schedule": [{"time": "09:00-10:00","task": "学习函数定义语法"},{"time": "10:00-12:00","task": "练习函数声明与调用"},{"time": "14:00-17:00","task": "编写简单函数程序"}], "knowledge": [{"heading": "函数定义", "content": "函数是完成特定任务的代码块，包括返回类型、函数名、参数列表和函数体。", "code": "// 函数声明（原型）\nint add(int a, int b);\n\n// 函数定义\nint add(int a, int b) {\n    return a + b;\n}\n\n// 调用\nint result = add(3, 5); // 8"}], "exercises": [{"type": "choice", "question": "函数原型声明的作用是？", "options": ["定义函数体", "告诉编译器函数签名", "调用函数", "优化性能"], "answer": 1, "explanation": "函数原型声明让编译器在调用前知道函数的返回类型和参数类型，便于类型检查。"}]},
+              {"id": 16, "title": "参数传递", "goal": "掌握值传递与地址传递的区别", "schedule": [{"time": "09:00-10:00","task": "学习值传递"},{"time": "10:00-12:00","task": "学习指针参数与引用传递"},{"time": "14:00-17:00","task": "编写swap函数练习"}], "knowledge": [{"heading": "值传递与地址传递", "content": "C语言默认是值传递（拷贝副本）。要通过函数修改实参，需传地址（指针）。", "code": "// 值传递：无法交换\nvoid swap1(int a, int b) {\n    int t = a; a = b; b = t;\n}\n\n// 地址传递：可以交换\nvoid swap2(int *a, int *b) {\n    int t = *a; *a = *b; *b = t;\n}\n// 调用: swap2(&x, &y);"}], "exercises": [{"type": "choice", "question": "C语言函数参数默认采用哪种传递方式？", "options": ["引用传递", "值传递", "名称传递", "宏传递"], "answer": 1, "explanation": "C语言函数参数默认是值传递，实参的值被拷贝给形参，形参改变不影响实参。"}]},
+              {"id": 17, "title": "递归函数", "goal": "理解递归思想，掌握递归终止条件", "schedule": [{"time": "09:00-10:00","task": "学习递归概念与终止条件"},{"time": "10:00-12:00","task": "实现阶乘递归"},{"time": "14:00-17:00","task": "实现斐波那契数列"}], "knowledge": [{"heading": "递归", "content": "递归是函数调用自身。必须要有终止条件（基线条件），否则无限递归导致栈溢出。", "code": "int factorial(int n) {\n    if (n <= 1) return 1;   // 终止条件\n    return n * factorial(n - 1); // 递归调用\n}\n// factorial(5) = 120"}], "exercises": [{"type": "fill", "question": "递归函数必须包含____条件，否则会导致栈溢出。", "answer": "终止", "explanation": "递归函数必须有终止条件（基线条件），否则会无限递归调用导致栈溢出。"}]},
+              {"id": 18, "title": "局部与全局变量", "goal": "理解变量作用域与生命周期", "schedule": [{"time": "09:00-10:00","task": "学习局部变量与全局变量"},{"time": "10:00-12:00","task": "学习static与extern关键字"},{"time": "14:00-17:00","task": "编写作用域练习"}], "knowledge": [{"heading": "作用域与生命周期", "content": "局部变量在函数内定义，作用域限于函数内，存储在栈上。全局变量在函数外定义，整个文件可见。", "code": "int count = 0; // 全局变量\n\nvoid increment(void) {\n    static int n = 0; // 静态局部变量，只初始化一次\n    n++; count++;\n}"}], "exercises": [{"type": "choice", "question": "static局部变量的特点是？", "options": ["每次调用重新初始化", "只初始化一次，值在调用间保持", "存储在堆上", "作用域为全局"], "answer": 1, "explanation": "static局部变量只在首次执行到声明处初始化一次，后续调用保持上次的值，生命周期贯穿整个程序。"}]},
+              {"id": 19, "title": "函数与数组", "goal": "掌握数组作为函数参数的传递方式", "schedule": [{"time": "09:00-12:00","task": "学习数组传参（退化为指针）"},{"time": "14:00-17:00","task": "编写数组处理函数库"}], "knowledge": [{"heading": "数组作为函数参数", "content": "数组名作为参数传递时退化为指向首元素的指针，函数内无法用sizeof获取数组长度，需额外传长度参数。", "code": "void printArr(int arr[], int n) {\n    for (int i = 0; i < n; i++)\n        printf(\"%d \", arr[i]);\n}\n// 调用: printArr(myArr, 5);"}], "exercises": [{"type": "fill", "question": "数组名作为函数参数时，实际传递的是数组首元素的____。", "answer": "地址", "explanation": "数组名传参退化为指针，传递的是首元素地址，因此函数内sizeof(arr)得到的是指针大小而非数组大小。"}]},
+              {"id": 20, "title": "常用库函数", "goal": "掌握math.h和stdlib.h常用函数", "schedule": [{"time": "09:00-12:00","task": "学习math.h数学函数"},{"time": "14:00-17:00","task": "学习stdlib.h实用函数"}], "knowledge": [{"heading": "常用库函数", "content": "C标准库提供了大量实用函数，math.h含数学函数，stdlib.h含内存分配、类型转换等。", "code": "#include <math.h>\ndouble s = sqrt(16.0);  // 4.0\ndouble p = pow(2, 10); // 1024\n\n#include <stdlib.h>\nint n = atoi(\"123\");    // 字符串转int\nsrand(time(0));\nint r = rand() % 100;   // 0-99随机数"}], "exercises": [{"type": "choice", "question": "atoi函数的作用是？", "options": ["整数转字符串", "字符串转整数", "浮点转整数", "字符串比较"], "answer": 1, "explanation": "atoi将字符串转换为整数，定义在stdlib.h中，如atoi(\"123\")返回123。"}]},
+              {"id": 21, "title": "第3周总结", "goal": "复习函数知识，完成综合练习", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合编程练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了函数：定义与调用、值传递与地址传递、递归、作用域、数组传参、常用库函数。", "list": ["函数定义/声明/调用", "值传递vs地址传递", "递归与终止条件", "static/extern/作用域", "数组传参与库函数"]}], "exercises": [{"type": "choice", "question": "以下哪个关键字修饰的变量生命周期为整个程序？", "options": ["auto", "register", "static", "volatile"], "answer": 2, "explanation": "static修饰的变量存储在全局数据区，生命周期贯穿整个程序运行过程，即使它是局部变量。"}]}
+            ]
+          },
+          {
+            "id": 4, "title": "第4周", "theme": "预处理与多文件编程", "goal": "掌握宏定义、条件编译与多文件项目组织",
+            "days": [
+              {"id": 22, "title": "宏定义", "goal": "掌握#define宏定义与带参数宏", "schedule": [{"time": "09:00-10:00","task": "学习无参数宏"},{"time": "10:00-12:00","task": "学习带参数宏与括号陷阱"},{"time": "14:00-17:00","task": "编写宏定义练习"}], "knowledge": [{"heading": "宏定义", "content": "宏定义在预处理阶段进行文本替换。带参数宏要注意括号包裹防止优先级问题。", "code": "#define PI 3.14159\n#define MAX(a, b) ((a) > (b) ? (a) : (b))\n#define SQUARE(x) ((x) * (x))\n\nint m = MAX(3, 5);  // 5\nint s = SQUARE(4);   // 16"}], "exercises": [{"type": "choice", "question": "宏定义展开发生在哪个编译阶段？", "options": ["编译", "预处理", "汇编", "链接"], "answer": 1, "explanation": "宏定义在预处理阶段由预处理器进行文本替换，早于编译阶段。"}]},
+              {"id": 23, "title": "条件编译", "goal": "掌握#ifdef/#ifndef/#if条件编译", "schedule": [{"time": "09:00-12:00","task": "学习条件编译指令"},{"time": "14:00-17:00","task": "编写跨平台代码示例"}], "knowledge": [{"heading": "条件编译", "content": "条件编译根据条件选择性编译代码，常用于跨平台和调试开关。", "code": "#ifdef DEBUG\n    printf(\"debug info\\n\");\n#endif\n\n#ifndef PI\n    #define PI 3.14\n#endif\n\n#if defined(STM32)\n    // STM32相关代码\n#elif defined(ESP32)\n    // ESP32相关代码\n#endif"}], "exercises": [{"type": "fill", "question": "防止头文件重复包含的预处理指令是#ifndef和____。", "answer": "#define", "explanation": "使用#ifndef/#define/#endif组合（头文件保护）防止头文件被重复包含。"}]},
+              {"id": 24, "title": "头文件与多文件", "goal": "掌握头文件编写与多文件项目组织", "schedule": [{"time": "09:00-12:00","task": "学习头文件编写规范"},{"time": "14:00-17:00","task": "创建多文件项目练习"}], "knowledge": [{"heading": "多文件编程", "content": "将代码分到多个.c文件，通过.h头文件声明共享函数和变量。", "code": "// math_utils.h\n#ifndef MATH_UTILS_H\n#define MATH_UTILS_H\nint add(int a, int b);\n#endif\n\n// math_utils.c\n#include \"math_utils.h\"\nint add(int a, int b) { return a + b; }\n\n// main.c\n#include \"math_utils.h\"\nint main() { return add(1,2); }"}], "exercises": [{"type": "choice", "question": "头文件中应该放置什么？", "options": ["函数实现", "函数声明与宏定义", "全局变量定义", "main函数"], "answer": 1, "explanation": "头文件应放函数声明（原型）、宏定义、类型定义、extern变量声明，不应放函数实现和变量定义。"}]},
+              {"id": 25, "title": "枚举与typedef", "goal": "掌握枚举类型与类型别名", "schedule": [{"time": "09:00-12:00","task": "学习enum枚举与typedef"},{"time": "14:00-17:00","task": "编写枚举应用练习"}], "knowledge": [{"heading": "枚举与typedef", "content": "enum定义整数常量集合，typedef给类型起别名，提高可读性。", "code": "typedef enum {\n    LED_OFF = 0,\n    LED_ON = 1,\n    LED_BLINK = 2\n} LedState;\n\ntypedef unsigned char u8;\ntypedef unsigned int u32;\n\nLedState state = LED_ON;"}], "exercises": [{"type": "choice", "question": "typedef的作用是？", "options": ["定义新类型", "给已有类型起别名", "定义宏", "声明变量"], "answer": 1, "explanation": "typedef为已有类型创建别名，不创建新类型，提高代码可读性和可移植性。"}]},
+              {"id": 26, "title": "编译与链接", "goal": "理解编译链接过程，掌握Makefile基础", "schedule": [{"time": "09:00-10:00","task": "复习编译链接四阶段"},{"time": "10:00-12:00","task": "学习Makefile基础"},{"time": "14:00-17:00","task": "编写Makefile练习"}], "knowledge": [{"heading": "Makefile基础", "content": "Makefile管理多文件编译，定义编译规则和依赖关系。", "code": "# Makefile示例\nCC = gcc\nCFLAGS = -Wall -g\n\nmain: main.o utils.o\n\t$(CC) $(CFLAGS) -o main main.o utils.o\n\nmain.o: main.c utils.h\n\t$(CC) $(CFLAGS) -c main.c\n\nutils.o: utils.c utils.h\n\t$(CC) $(CFLAGS) -c utils.c\n\nclean:\n\trm -f *.o main"}], "exercises": [{"type": "fill", "question": "Makefile中变量引用的语法是$(____)。", "answer": "变量名", "explanation": "Makefile中引用变量使用$(变量名)语法，如$(CC)引用编译器变量。"}]},
+              {"id": 27, "title": "调试基础", "goal": "掌握GDB基本调试技巧", "schedule": [{"time": "09:00-12:00","task": "学习GDB基本命令"},{"time": "14:00-17:00","task": "调试练习程序"}], "knowledge": [{"heading": "GDB调试", "content": "GDB是强大的命令行调试器，支持断点、单步、查看变量等。", "code": "# 编译时加-g\ngcc -g -o prog prog.c\n\n# 启动GDB\ngdb ./prog\n# (gdb) break main    # 设断点\n# (gdb) run           # 运行\n# (gdb) next          # 单步\n# (gdb) print var     # 查看变量\n# (gdb) continue      # 继续\n# (gdb) quit          # 退出"}], "exercises": [{"type": "choice", "question": "GDB中设置断点的命令是？", "options": ["set", "break", "stop", "pause"], "answer": 1, "explanation": "GDB中使用break（简写b）命令设置断点，如break main在main函数设断点。"}]},
+              {"id": 28, "title": "第1月总结", "goal": "复习第1月所有知识，完成综合测试", "schedule": [{"time": "09:00-12:00","task": "复习第1月全部知识点"},{"time": "14:00-17:00","task": "完成月度综合测试"}], "knowledge": [{"heading": "第1月回顾", "content": "第1月我们完成了C语言基础学习：环境搭建、数据类型、运算符、流程控制、数组字符串、函数、预处理与多文件。", "list": ["第1周：环境搭建与C入门", "第2周：数组与字符串", "第3周：函数与作用域", "第4周：预处理与多文件编程"]}], "exercises": [{"type": "choice", "question": "以下哪个不是预处理指令？", "options": ["#define", "#include", "#ifdef", "return"], "answer": 3, "explanation": "return是C语言关键字，不是预处理指令。#define、#include、#ifdef都是预处理指令。"}]}
+            ]
+          }
+        ]
+      },
+      {
+        "id": 2, "title": "第2月", "theme": "嵌入式C进阶",
+        "weeks": [
+          {
+            "id": 5, "title": "第5周", "theme": "指针基础", "goal": "理解指针概念，掌握指针的声明与使用",
+            "days": [
+              {"id": 29, "title": "指针概念与声明", "goal": "理解内存地址与指针变量", "schedule": [{"time": "09:00-10:00","task": "学习内存地址概念"},{"time": "10:00-12:00","task": "学习指针声明与取地址"},{"time": "14:00-17:00","task": "编写指针基础练习"}], "knowledge": [{"heading": "指针基础", "content": "指针是存储内存地址的变量。通过指针可以间接访问和修改内存中的数据。", "code": "int a = 10;\nint *p = &a;  // p存储a的地址\n\nprintf(\"a的值: %d\\n\", a);     // 10\nprintf(\"a的地址: %p\\n\", &a);  // 0x...\nprintf(\"p指向的值: %d\\n\", *p); // 10（解引用）\n*p = 20;  // 通过指针修改a\nprintf(\"a = %d\\n\", a);  // 20"}], "exercises": [{"type": "choice", "question": "取地址运算符是？", "options": ["*", "&", "#", "@"], "answer": 1, "explanation": "&是取地址运算符，*是解引用运算符。&a获取变量a的地址，*p获取指针p指向的值。"}]},
+              {"id": 30, "title": "指针与数组", "goal": "理解数组名与指针的关系", "schedule": [{"time": "09:00-12:00","task": "学习数组名的指针含义"},{"time": "14:00-17:00","task": "练习指针遍历数组"}], "knowledge": [{"heading": "指针与数组", "content": "数组名是指向首元素的常量指针。指针算术运算按元素大小自动缩放。", "code": "int arr[5] = {10,20,30,40,50};\nint *p = arr;  // 等价于 &arr[0]\n\nprintf(\"%d\\n\", *p);     // 10\nprintf(\"%d\\n\", *(p+1)); // 20\nprintf(\"%d\\n\", p[2]);   // 30\n// arr[i] 等价于 *(arr+i)"}], "exercises": [{"type": "fill", "question": "数组名arr等价于指向第____个元素的指针。（填数字）", "answer": "0", "explanation": "数组名arr等价于&arr[0]，即指向数组第0个元素（首元素）的指针。"}]},
+              {"id": 31, "title": "指针算术", "goal": "掌握指针加减运算与移动", "schedule": [{"time": "09:00-12:00","task": "学习指针加减运算规则"},{"time": "14:00-17:00","task": "编写指针操作练习"}], "knowledge": [{"heading": "指针算术", "content": "指针加减整数时按元素大小自动缩放。p+1实际移动sizeof(基类型)字节。", "code": "int arr[5] = {10,20,30,40,50};\nint *p = arr;\nint *q = &arr[4];\n\nprintf(\"%ld\\n\", q - p);  // 4（元素个数差）\np++;  // p指向arr[1]\np += 2; // p指向arr[3]"}], "exercises": [{"type": "choice", "question": "int *p指向int数组首元素，p+2实际偏移多少字节？", "options": ["2", "4", "8", "不确定"], "answer": 2, "explanation": "int占4字节，p+2偏移2个int元素 = 2×4 = 8字节。指针算术自动按基类型大小缩放。"}]},
+              {"id": 32, "title": "指针与字符串", "goal": "掌握用指针操作字符串", "schedule": [{"time": "09:00-12:00","task": "学习字符指针与字符串"},{"time": "14:00-17:00","task": "实现字符串操作函数"}], "knowledge": [{"heading": "字符指针", "content": "字符指针可指向字符串常量，也可遍历字符数组。", "code": "char *s = \"Hello\";  // 指向字符串常量\nchar arr[] = \"World\"; // 字符数组\n\n// 用指针遍历字符串\nchar *p = arr;\nwhile (*p != '\\0') {\n    printf(\"%c\", *p);\n    p++;\n}"}], "exercises": [{"type": "choice", "question": "char *s = \"Hello\"; 以下操作哪个是危险的？", "options": ["printf(s)", "s[0]", "*s = 'h'", "s += 1"], "answer": 2, "explanation": "字符串常量存储在只读区，通过指针修改*s会导致段错误。数组形式char arr[]=\"Hello\"则可修改。"}]},
+              {"id": 33, "title": "指针作为函数参数", "goal": "掌握用指针参数实现引用传递效果", "schedule": [{"time": "09:00-12:00","task": "学习指针传参修改实参"},{"time": "14:00-17:00","task": "实现指针版工具函数"}], "knowledge": [{"heading": "指针传参", "content": "通过传递指针，函数可以修改调用者的变量，实现引用传递效果。", "code": "void divide(int a, int b, int *q, int *r) {\n    *q = a / b;\n    *r = a % b;\n}\n// 一次返回多个结果\nint q, r;\ndivide(17, 5, &q, &r);\n// q=3, r=2"}], "exercises": [{"type": "code", "question": "编写函数void swap(int *a, int *b)交换两个整数。", "answer": "void swap(int *a, int *b) {\n    int t = *a;\n    *a = *b;\n    *b = t;\n}", "explanation": "通过指针解引用交换实参的值，调用方式为swap(&x, &y)。"}]},
+              {"id": 34, "title": "const指针", "goal": "掌握const修饰指针的各种用法", "schedule": [{"time": "09:00-12:00","task": "学习const指针三种形式"},{"time": "14:00-17:00","task": "编写const安全代码"}], "knowledge": [{"heading": "const指针", "content": "const修饰指针有三种情况，区分指针本身和指向数据的只读性。", "code": "int a = 10, b = 20;\nconst int *p1 = &a;   // 指向const int：不能改*p1，能改p1\nint * const p2 = &a;  // const指针：能改*p2，不能改p2\nconst int * const p3 = &a; // 都不能改"}], "exercises": [{"type": "choice", "question": "const int *p中，以下哪个不能修改？", "options": ["p的指向", "*p的值", "p本身", "p的类型"], "answer": 1, "explanation": "const int *p表示指向的数据是只读的，不能通过*p修改值，但可以改变p的指向。"}]},
+              {"id": 35, "title": "第5周总结", "goal": "复习指针基础知识", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了指针基础：地址概念、指针声明、指针与数组、指针算术、字符串指针、指针传参、const指针。", "list": ["指针=存储地址的变量", "数组名=首元素指针", "指针算术按元素缩放", "指针传参实现引用传递", "const指针三种形式"]}], "exercises": [{"type": "choice", "question": "以下哪段代码能正确通过指针修改变量a的值为5？", "options": ["int *p; *p = 5;", "int a; int *p = &a; *p = 5;", "int a; int *p; a = p;", "int a; &a = 5;"], "answer": 1, "explanation": "正确做法：先让指针指向变量（p=&a），再解引用赋值（*p=5）。未初始化指针解引用是未定义行为。"}]}
+            ]
+          },
+          {
+            "id": 6, "title": "第6周", "theme": "指针进阶", "goal": "掌握二级指针、函数指针、指针数组等高级用法",
+            "days": [
+              {"id": 36, "title": "指针数组与数组指针", "goal": "区分指针数组与数组指针", "schedule": [{"time": "09:00-12:00","task": "学习指针数组与数组指针区别"},{"time": "14:00-17:00","task": "编写字符串数组程序"}], "knowledge": [{"heading": "指针数组vs数组指针", "content": "指针数组是元素为指针的数组；数组指针是指向数组的指针。", "code": "// 指针数组：5个char指针\nchar *arr[5] = {\"red\",\"blue\",\"green\"};\n\n// 数组指针：指向含5个int的数组\nint (*p)[5];\nint matrix[3][5];\np = matrix;"}], "exercises": [{"type": "choice", "question": "int *arr[5]是什么？", "options": ["数组指针", "指针数组", "二级指针", "函数指针"], "answer": 1, "explanation": "int *arr[5]是指针数组，包含5个int*指针元素。[]优先级高于*。"}]},
+              {"id": 37, "title": "二级指针", "goal": "理解指向指针的指针", "schedule": [{"time": "09:00-12:00","task": "学习二级指针概念"},{"time": "14:00-17:00","task": "编写二级指针练习"}], "knowledge": [{"heading": "二级指针", "content": "二级指针是指向指针的指针，常用于修改一级指针的指向。", "code": "int a = 10;\nint *p = &a;\nint **pp = &p;\n\nprintf(\"%d\\n\", **pp);  // 10\n// 修改一级指针指向\nint b = 20;\n*pp = &b;  // 现在p指向b"}], "exercises": [{"type": "fill", "question": "int **pp中，**pp解引用____次后得到最终数据值。", "answer": "2", "explanation": "二级指针需要解引用两次：*pp得到一级指针，**pp得到最终数据。"}]},
+              {"id": 38, "title": "函数指针", "goal": "掌握函数指针与回调机制", "schedule": [{"time": "09:00-12:00","task": "学习函数指针声明与调用"},{"time": "14:00-17:00","task": "实现回调函数示例"}], "knowledge": [{"heading": "函数指针", "content": "函数指针指向函数代码入口，常用于回调函数和状态机实现。", "code": "int (*fp)(int, int);  // 函数指针声明\n\nint add(int a, int b) { return a+b; }\nfp = add;\nint result = fp(3, 5);  // 8\nint result2 = (*fp)(3,5); // 8 等价写法"}], "exercises": [{"type": "choice", "question": "函数指针int (*fp)(int,int)中，fp是什么？", "options": ["返回int的函数", "指向函数的指针", "函数名", "int变量"], "answer": 1, "explanation": "fp是指向接收两个int参数、返回int的函数的指针变量。"}]},
+              {"id": 39, "title": "动态内存分配", "goal": "掌握malloc/calloc/free动态内存管理", "schedule": [{"time": "09:00-12:00","task": "学习malloc与free"},{"time": "14:00-17:00","task": "编写动态数组程序"}], "knowledge": [{"heading": "动态内存分配", "content": "malloc在堆上分配内存，使用后必须free释放，否则内存泄漏。", "code": "// 分配5个int的内存\nint *arr = malloc(5 * sizeof(int));\nif (arr == NULL) {\n    // 分配失败处理\n    return -1;\n}\nfor (int i = 0; i < 5; i++)\n    arr[i] = i * 10;\nfree(arr);  // 必须释放\narr = NULL;  // 良好习惯"}], "exercises": [{"type": "fill", "question": "malloc分配的内存必须用____函数释放。", "answer": "free", "explanation": "malloc/calloc/realloc分配的堆内存必须用free释放，否则导致内存泄漏。"}]},
+              {"id": 40, "title": "内存管理与陷阱", "goal": "理解常见内存错误与避免方法", "schedule": [{"time": "09:00-12:00","task": "学习常见内存错误"},{"time": "14:00-17:00","task": "使用valgrind检测内存泄漏"}], "knowledge": [{"heading": "内存陷阱", "content": "常见内存错误：野指针、悬空指针、内存泄漏、越界访问。", "list": ["野指针：未初始化就使用", "悬空指针：free后仍使用", "内存泄漏：分配不释放", "越界访问：访问超出分配范围", "重复释放：同一块内存free两次"]}], "exercises": [{"type": "choice", "question": "以下哪种情况会导致内存泄漏？", "options": ["free(NULL)", "malloc后未free", "使用栈变量", "使用const指针"], "answer": 1, "explanation": "malloc分配的内存如果不free释放，在程序结束前无法回收，导致内存泄漏。free(NULL)是安全的空操作。"}]},
+              {"id": 41, "title": "void指针与回调", "goal": "掌握void*通用指针与回调函数模式", "schedule": [{"time": "09:00-12:00","task": "学习void*指针"},{"time": "14:00-17:00","task": "实现通用排序回调"}], "knowledge": [{"heading": "void指针与回调", "content": "void*是通用指针，可指向任何类型。配合回调函数实现通用算法。", "code": "// qsort回调比较函数\nint cmp(const void *a, const void *b) {\n    return *(int*)a - *(int*)b;\n}\nint arr[5] = {5,3,1,4,2};\nqsort(arr, 5, sizeof(int), cmp);\n// arr: {1,2,3,4,5}"}], "exercises": [{"type": "choice", "question": "void*指针的特点是？", "options": ["不能解引用", "可指向任意类型，使用前需强制转换", "不能赋值", "只能指向void"], "answer": 1, "explanation": "void*是通用指针，可指向任意类型数据，但不能直接解引用，使用前需强制转换为具体类型指针。"}]},
+              {"id": 42, "title": "第6周总结", "goal": "复习指针进阶知识", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了指针进阶：指针数组、二级指针、函数指针、动态内存、内存陷阱、void指针与回调。", "list": ["指针数组vs数组指针", "二级指针修改一级指针", "函数指针与回调", "malloc/free动态内存", "常见内存错误防范"]}], "exercises": [{"type": "choice", "question": "回调函数通常通过什么实现？", "options": ["宏定义", "函数指针", "枚举", "typedef"], "answer": 1, "explanation": "回调函数通过函数指针实现，调用者将函数指针传递给被调用者，被调用者在适当时候回调该函数。"}]}
+            ]
+          },
+          {
+            "id": 7, "title": "第7周", "theme": "结构体与联合", "goal": "掌握struct、union、位域等自定义类型",
+            "days": [
+              {"id": 43, "title": "结构体基础", "goal": "掌握结构体定义与使用", "schedule": [{"time": "09:00-12:00","task": "学习struct定义与初始化"},{"time": "14:00-17:00","task": "编写学生信息结构体"}], "knowledge": [{"heading": "结构体", "content": "结构体将不同类型数据组合成一条记录，是嵌入式寄存器映射的基础。", "code": "struct Student {\n    char name[20];\n    int age;\n    float score;\n};\n\nstruct Student s = {\"张三\", 20, 89.5};\nprintf(\"%s %d %.1f\\n\", s.name, s.age, s.score);"}], "exercises": [{"type": "fill", "question": "访问结构体成员用____运算符，通过指针访问用->运算符。", "answer": ".", "explanation": "结构体变量用.访问成员，结构体指针用->访问成员（等价于(*p).member）。"}]},
+              {"id": 44, "title": "结构体指针", "goal": "掌握结构体指针与->运算符", "schedule": [{"time": "09:00-12:00","task": "学习结构体指针"},{"time": "14:00-17:00","task": "实现动态结构体数组"}], "knowledge": [{"heading": "结构体指针", "content": "通过指针访问结构体成员使用->运算符，是(*p).member的简写。", "code": "struct Point { int x; int y; };\nstruct Point p = {3, 4};\nstruct Point *ptr = &p;\n\nprintf(\"%d %d\\n\", ptr->x, ptr->y);  // 3 4\nptr->x = 10;  // 等价于 (*ptr).x = 10"}], "exercises": [{"type": "choice", "question": "struct Point *p; 访问成员x应写为？", "options": ["p.x", "p->x", "p::x", "*p.x"], "answer": 1, "explanation": "结构体指针用->运算符访问成员，p->x等价于(*p).x。"}]},
+              {"id": 45, "title": "typedef与结构体", "goal": "使用typedef简化结构体使用", "schedule": [{"time": "09:00-12:00","task": "学习typedef与结构体配合"},{"time": "14:00-17:00","task": "编写typedef结构体程序"}], "knowledge": [{"heading": "typedef结构体", "content": "用typedef给结构体起别名，避免每次写struct关键字。", "code": "typedef struct {\n    uint32_t MODER;\n    uint32_t ODR;\n    uint32_t IDR;\n} GPIO_Type;\n\nGPIO_Type gpio;\ngpio.ODR = 0xFF;"}], "exercises": [{"type": "choice", "question": "typedef struct{...} Name的作用是？", "options": ["定义变量", "创建类型别名Name", "声明指针", "分配内存"], "answer": 1, "explanation": "typedef给匿名结构体创建别名Name，之后可直接用Name声明变量，无需struct关键字。"}]},
+              {"id": 46, "title": "结构体与数组", "goal": "掌握结构体数组与动态分配", "schedule": [{"time": "09:00-12:00","task": "学习结构体数组"},{"time": "14:00-17:00","task": "实现通讯录程序"}], "knowledge": [{"heading": "结构体数组", "content": "结构体数组管理多条结构体记录。", "code": "typedef struct {\n    char name[20];\n    char phone[12];\n} Contact;\n\nContact contacts[100];\nint count = 0;\n\nstrcpy(contacts[0].name, \"张三\");\nstrcpy(contacts[0].phone, \"13800138000\");\ncount++;"}], "exercises": [{"type": "fill", "question": "Contact arr[10]是一个含10个____类型的数组。", "answer": "Contact", "explanation": "结构体数组的每个元素都是Contact结构体类型，可存储多条结构体记录。"}]},
+              {"id": 47, "title": "联合体union", "goal": "理解联合体内存共享机制", "schedule": [{"time": "09:00-12:00","task": "学习union定义与使用"},{"time": "14:00-17:00","task": "编写寄存器映射练习"}], "knowledge": [{"heading": "联合体union", "content": "联合体所有成员共享同一段内存，大小等于最大成员。同一时刻只能有效使用一个成员。", "code": "union Data {\n    uint32_t word;   // 4字节\n    uint8_t bytes[4]; // 4字节\n};\n\nunion Data d;\nd.word = 0x12345678;\nprintf(\"%02x\\n\", d.bytes[0]); // 小端: 78"}], "exercises": [{"type": "choice", "question": "union中所有成员的关系是？", "options": ["各自独立内存", "共享同一段内存", "按顺序排列", "动态分配"], "answer": 1, "explanation": "union所有成员共享同一段内存起始地址，修改一个成员会影响其他成员的值。大小为最大成员的大小。"}]},
+              {"id": 48, "title": "位域", "goal": "掌握位域实现位级数据压缩", "schedule": [{"time": "09:00-12:00","task": "学习位域定义"},{"time": "14:00-17:00","task": "编写寄存器位域映射"}], "knowledge": [{"heading": "位域", "content": "位域允许在结构体中按位分配成员，用于精确控制内存位的使用，在寄存器映射中常用。", "code": "struct GPIO_CR {\n    unsigned MODE  : 2;  // 2位\n    unsigned CNF   : 2;  // 2位\n    unsigned reserved : 28;\n};\n// 共4字节，精确控制每位的含义"}], "exercises": [{"type": "fill", "question": "unsigned x : 4; 表示x占用____位。", "answer": "4", "explanation": "位域语法 类型 成员名 : 位数;，冒号后数字指定该成员占用的位数。"}]},
+              {"id": 49, "title": "第7周总结", "goal": "复习结构体与联合知识", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了结构体与联合：struct定义/指针/数组、typedef、union共享内存、位域位级控制。", "list": ["struct定义与.运算符", "结构体指针与->运算符", "typedef简化类型名", "union共享内存", "位域位级压缩"]}], "exercises": [{"type": "choice", "question": "结构体和联合体的主要区别是？", "options": ["语法不同", "结构体成员各自独立内存，联合体共享内存", "联合体更大", "结构体只能存整数"], "answer": 1, "explanation": "结构体每个成员有独立内存，大小为各成员之和（考虑对齐）；联合体所有成员共享同一段内存，大小为最大成员。"}]}
+            ]
+          },
+          {
+            "id": 8, "title": "第8周", "theme": "嵌入式C核心特性", "goal": "掌握volatile、位操作、寄存器映射等嵌入式核心技术",
+            "days": [
+              {"id": 50, "title": "volatile关键字", "goal": "理解volatile在嵌入式中的关键作用", "schedule": [{"time": "09:00-12:00","task": "学习volatile原理与使用场景"},{"time": "14:00-17:00","task": "编写volatile示例"}], "knowledge": [{"heading": "volatile", "content": "volatile告诉编译器变量可能被外部因素修改，禁止优化。用于硬件寄存器、中断变量、多线程共享变量。", "code": "// 不加volatile，编译器可能优化掉循环读取\n// volatile确保每次从内存重新读取\nvolatile uint32_t *reg = (uint32_t*)0x40020000;\nwhile (*reg & 0x01) {\n    // 等待标志位\n}"}], "exercises": [{"type": "choice", "question": "volatile关键字的作用是？", "options": ["加速访问", "禁止编译器优化该变量", "使变量只读", "使变量全局可见"], "answer": 1, "explanation": "volatile告诉编译器该变量可能被外部因素（硬件/中断/其他线程）修改，禁止将其缓存到寄存器或优化掉重复访问。"}]},
+              {"id": 51, "title": "寄存器映射", "goal": "掌握通过指针访问硬件寄存器", "schedule": [{"time": "09:00-12:00","task": "学习寄存器映射原理"},{"time": "14:00-17:00","task": "编写GPIO寄存器操作示例"}], "knowledge": [{"heading": "寄存器映射", "content": "通过将结构体指针指向硬件地址，直接操作寄存器。这是嵌入式开发的核心技术。", "code": "typedef struct {\n    volatile uint32_t MODER;\n    volatile uint32_t OTYPER;\n    volatile uint32_t OSPEEDR;\n    volatile uint32_t PUPDR;\n    volatile uint32_t IDR;\n    volatile uint32_t ODR;\n} GPIO_Reg;\n\n#define GPIOA ((GPIO_Reg*)0x40020000)\n\nGPIOA->ODR |= (1 << 5);  // PA5输出高"}], "exercises": [{"type": "fill", "question": "访问硬件寄存器的指针必须加____关键字防止编译器优化。", "answer": "volatile", "explanation": "硬件寄存器必须用volatile修饰，防止编译器将多次读取优化为一次缓存读取，确保每次真正访问硬件。"}]},
+              {"id": 52, "title": "位操作实战", "goal": "综合运用位运算操作寄存器", "schedule": [{"time": "09:00-12:00","task": "复习位运算"},{"time": "14:00-17:00","task": "编写寄存器位操作宏"}], "knowledge": [{"heading": "位操作宏", "content": "定义宏简化寄存器位操作：置位、清零、读取、翻转。", "code": "#define BIT(n) (1UL << (n))\n#define SET_BIT(reg, n) ((reg) |= BIT(n))\n#define CLR_BIT(reg, n) ((reg) &= ~BIT(n))\n#define GET_BIT(reg, n) ((reg) & BIT(n))\n#define TOG_BIT(reg, n) ((reg) ^= BIT(n))\n\n// 使用\nSET_BIT(GPIOA->ODR, 5);  // PA5置高\nCLR_BIT(GPIOA->ODR, 5);  // PA5置低"}], "exercises": [{"type": "choice", "question": "宏#define CLR_BIT(reg,n) ((reg) &= ~(1<<(n)))的作用是？", "options": ["置位第n位", "清零第n位", "读取第n位", "翻转第n位"], "answer": 1, "explanation": "~(1<<n)生成第n位为0其余为1的掩码，与寄存器按位与可将第n位清零而不影响其他位。"}]},
+              {"id": 53, "title": "结构体对齐", "goal": "理解内存对齐与#pragma pack", "schedule": [{"time": "09:00-12:00","task": "学习结构体内存对齐规则"},{"time": "14:00-17:00","task": "使用#pragma pack控制对齐"}], "knowledge": [{"heading": "内存对齐", "content": "结构体成员按自然边界对齐，可能产生填充。嵌入式通信协议需精确控制对齐。", "code": "// 默认对齐\nstruct A { char c; int i; };  // sizeof=8 (c后填3字节)\n\n// 取消对齐\n#pragma pack(1)\nstruct B { char c; int i; };  // sizeof=5\n#pragma pack()"}], "exercises": [{"type": "choice", "question": "struct{char c; int i;}在默认4字节对齐下sizeof是？", "options": ["5", "8", "6", "4"], "answer": 1, "explanation": "char占1字节，int需4字节对齐，所以c后填充3字节，总大小1+3+4=8字节。"}]},
+              {"id": 54, "title": "状态机编程", "goal": "掌握有限状态机设计模式", "schedule": [{"time": "09:00-12:00","task": "学习状态机原理"},{"time": "14:00-17:00","task": "实现按键消抖状态机"}], "knowledge": [{"heading": "状态机", "content": "状态机通过switch-case实现状态流转，是嵌入式事件驱动的核心设计模式。", "code": "typedef enum { IDLE, PRESSED, DEBOUNCE, RELEASED } State;\nState state = IDLE;\n\nswitch (state) {\n    case IDLE:\n        if (key_pressed) state = PRESSED;\n        break;\n    case PRESSED:\n        // 动作\n        state = DEBOUNCE;\n        break;\n    case DEBOUNCE:\n        if (timer_done) state = IDLE;\n        break;\n}"}], "exercises": [{"type": "choice", "question": "嵌入式状态机通常用什么结构实现？", "options": ["if-else", "switch-case", "for循环", "递归"], "answer": 1, "explanation": "状态机通常用switch(state)结构，每个case对应一个状态，根据事件/条件切换到下一状态。"}]},
+              {"id": 55, "title": "中断编程基础", "goal": "理解中断概念与中断服务函数", "schedule": [{"time": "09:00-12:00","task": "学习中断原理"},{"time": "14:00-17:00","task": "编写中断服务函数模板"}], "knowledge": [{"heading": "中断", "content": "中断是硬件事件触发的异步处理机制。中断服务函数(ISR)应短小精悍，避免耗时操作。", "code": "// 中断服务函数特点\n// 1. 无参数无返回值\n// 2. 尽量短\n// 3. 不调用阻塞函数\nvoid EXTI0_IRQHandler(void) {\n    // 清除中断标志\n    // 处理事件（设标志位，主循环处理）\n    flag = 1;\n}"}], "exercises": [{"type": "choice", "question": "中断服务函数中应该避免什么？", "options": ["清除中断标志", "设置标志位", "调用延时函数", "操作寄存器"], "answer": 2, "explanation": "ISR应短小精悍，避免调用延时/阻塞函数，复杂处理应放在主循环中通过标志位触发。"}]},
+              {"id": 56, "title": "第8周总结", "goal": "复习嵌入式C核心特性", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了嵌入式C核心：volatile、寄存器映射、位操作宏、内存对齐、状态机、中断编程。", "list": ["volatile禁止优化", "结构体指针映射寄存器", "置位/清零/翻转宏", "#pragma pack控制对齐", "switch-case状态机", "中断服务函数设计原则"]}], "exercises": [{"type": "choice", "question": "以下哪个变量必须用volatile修饰？", "options": ["局部循环变量", "中断中修改的全局标志", "常量", "静态变量"], "answer": 1, "explanation": "在中断和主循环间共享的全局标志变量必须用volatile，否则编译器可能优化主循环中的读取，导致看不到中断修改。"}]}
+            ]
+          }
+        ]
+      },
+      {
+        "id": 3, "title": "第3月", "theme": "单片机基础",
+        "weeks": [
+          {
+            "id": 9, "title": "第9周", "theme": "STM32开发环境", "goal": "搭建STM32开发环境，理解芯片架构",
+            "days": [
+              {"id": 57, "title": "STM32芯片架构", "goal": "了解Cortex-M内核与STM32系列", "schedule": [{"time": "09:00-10:00","task": "学习Cortex-M架构"},{"time": "10:00-12:00","task": "了解STM32系列选型"},{"time": "14:00-17:00","task": "阅读芯片数据手册"}], "knowledge": [{"heading": "STM32架构", "content": "STM32基于ARM Cortex-M内核，常用系列有F1/F4/H7等。Cortex-M采用Thumb-2指令集，适合实时控制。", "list": ["Cortex-M0/M3/M4/M7内核", "哈佛架构：指令与数据总线分离", "NVIC嵌套向量中断控制器", "SysTick定时器", "丰富的外设：GPIO/USART/SPI/I2C/ADC/DMA"]}], "exercises": [{"type": "choice", "question": "STM32F1系列基于哪个ARM内核？", "options": ["Cortex-A", "Cortex-M3", "Cortex-R", "Cortex-M0"], "answer": 1, "explanation": "STM32F1系列基于Cortex-M3内核，STM32F0基于M0，F4基于M4F（带浮点单元）。"}]},
+              {"id": 58, "title": "开发工具链", "goal": "安装Keil/STM32CubeIDE与下载工具", "schedule": [{"time": "09:00-12:00","task": "安装IDE与工具链"},{"time": "14:00-17:00","task": "配置ST-Link下载器"}], "knowledge": [{"heading": "开发工具", "content": "常用STM32开发环境：Keil MDK（商业）、STM32CubeIDE（免费）、VS Code+CMake。", "list": ["Keil MDK: 最流行，需License", "STM32CubeIDE: ST官方免费IDE", "ST-Link/J-Link: 下载调试器", "STM32CubeMX: 图形化配置工具"]}], "exercises": [{"type": "fill", "question": "ST官方提供的图形化配置工具叫STM32Cube____。", "answer": "MX", "explanation": "STM32CubeMX是ST官方图形化引脚配置和代码生成工具，可生成初始化代码框架。"}]},
+              {"id": 59, "title": "第一个STM32程序", "goal": "使用HAL库点灯LED", "schedule": [{"time": "09:00-12:00","task": "用CubeMX生成工程"},{"time": "14:00-17:00","task": "编写LED闪烁程序"}], "knowledge": [{"heading": "LED闪烁", "content": "使用HAL库函数控制GPIO输出，实现LED闪烁。", "code": "/* 主循环中LED闪烁 */\nwhile (1) {\n    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);\n    HAL_Delay(500); // 延时500ms\n}"}], "exercises": [{"type": "choice", "question": "HAL库延时函数是？", "options": ["delay()", "HAL_Delay()", "sleep()", "wait()"], "answer": 1, "explanation": "HAL库提供HAL_Delay(ms)函数实现毫秒级阻塞延时，基于SysTick中断。"}]},
+              {"id": 60, "title": "HAL库与LL库", "goal": "理解HAL/LL/寄存器三种开发层次", "schedule": [{"time": "09:00-12:00","task": "对比HAL/LL/寄存器开发"},{"time": "14:00-17:00","task": "用三种方式点灯对比"}], "knowledge": [{"heading": "开发层次", "content": "STM32有三层开发方式：寄存器（最底层高效）、LL库（轻量）、HAL库（高级抽象易用）。", "list": ["寄存器：直接操作地址，最高效", "LL库：薄封装，接近寄存器", "HAL库：高级抽象，可移植性好但开销大"]}], "exercises": [{"type": "choice", "question": "三种开发方式中代码效率最高的是？", "options": ["HAL库", "LL库", "直接寄存器", "都一样"], "answer": 2, "explanation": "直接操作寄存器效率最高、代码最小，但可移植性差。HAL库最易用但开销大。LL库是折中方案。"}]},
+              {"id": 61, "title": "工程结构与启动", "goal": "理解STM32工程文件与启动流程", "schedule": [{"time": "09:00-12:00","task": "分析工程结构"},{"time": "14:00-17:00","task": "理解启动文件与SystemClock"}], "knowledge": [{"heading": "启动流程", "content": "STM32上电后从启动文件startup_stm32xx.s开始，初始化堆栈，调用SystemInit设置时钟，最后跳转到main。", "list": ["startup_xxx.s: 初始化堆栈向量表", "SystemInit: 配置系统时钟", "__main: 初始化C库", "main: 用户程序入口"]}], "exercises": [{"type": "fill", "question": "STM32上电后第一个执行的是____文件中的复位中断服务函数。", "answer": "启动", "explanation": "上电后CPU从向量表第一项获取栈指针，第二项获取复位中断地址，执行startup文件中的Reset_Handler。"}]},
+              {"id": 62, "title": "时钟系统", "goal": "理解STM32时钟树与配置", "schedule": [{"time": "09:00-12:00","task": "学习时钟树结构"},{"time": "14:00-17:00","task": "配置系统时钟72MHz"}], "knowledge": [{"heading": "时钟系统", "content": "STM32时钟源有HSI/HSE内部/外部晶振，通过PLL倍频到系统时钟。", "code": "// 典型配置：HSE 8MHz → PLL ×9 = 72MHz\n// CubeMX自动生成：\nSystemClock_Config();\n// SYSCLK = 72MHz\n// HCLK = 72MHz\n// PCLK1 = 36MHz\n// PCLK2 = 72MHz"}], "exercises": [{"type": "choice", "question": "STM32F1最大系统时钟频率是？", "options": ["48MHz", "72MHz", "168MHz", "84MHz"], "answer": 1, "explanation": "STM32F103最大系统时钟72MHz（8MHz HSE × PLL 9倍）。F4系列可达168MHz。"}]},
+              {"id": 63, "title": "第9周总结", "goal": "复习STM32开发环境知识", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周搭建了STM32开发环境，学习了芯片架构、工具链、HAL库、工程结构、时钟系统。", "list": ["Cortex-M架构与STM32系列", "CubeMX+IDE工具链", "HAL库点灯", "三层开发方式", "启动流程与时钟树"]}], "exercises": [{"type": "choice", "question": "STM32系统时钟配置在哪个函数中？", "options": ["main()", "SystemClock_Config()", "SystemInit()", "HAL_Init()"], "answer": 1, "explanation": "SystemClock_Config()由CubeMX生成，配置RCC寄存器设置PLL和分频，定义系统时钟频率。"}]}
+            ]
+          },
+          {
+            "id": 10, "title": "第10周", "theme": "GPIO与中断", "goal": "掌握GPIO配置与外部中断使用",
+            "days": [
+              {"id": 64, "title": "GPIO工作模式", "goal": "掌握8种GPIO模式与配置", "schedule": [{"time": "09:00-12:00","task": "学习GPIO 8种模式"},{"time": "14:00-17:00","task": "配置GPIO点灯/按键"}], "knowledge": [{"heading": "GPIO模式", "content": "STM32 GPIO有8种工作模式，涵盖输入/输出/复用/模拟。", "list": ["推挽输出：驱动LED/总线", "开漏输出：I2C/线与", "浮空输入：不确定电平", "上拉输入：默认高电平", "下拉输入：默认低电平", "复用推挽/开漏：外设输出", "模拟模式：ADC/DAC"]}], "exercises": [{"type": "choice", "question": "驱动LED应选用哪种GPIO输出模式？", "options": ["开漏输出", "推挽输出", "浮空输入", "模拟模式"], "answer": 1, "explanation": "推挽输出能主动输出高/低电平驱动LED。开漏输出只能输出低电平，需外部上拉电阻。"}]},
+              {"id": 65, "title": "GPIO输出控制", "goal": "用HAL库控制GPIO输出", "schedule": [{"time": "09:00-12:00","task": "学习HAL GPIO函数"},{"time": "14:00-17:00","task": "实现流水灯"}], "knowledge": [{"heading": "GPIO输出函数", "content": "HAL库提供GPIO写/读/翻转函数。", "code": "// 写高电平\nHAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);\n// 写低电平\nHAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);\n// 翻转\nHAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);\n// 读取输入\nGPIO_PinState state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);"}], "exercises": [{"type": "fill", "question": "HAL库翻转GPIO引脚电平的函数是HAL_GPIO____。", "answer": "TogglePin", "explanation": "HAL_GPIO_TogglePin翻转指定引脚电平，常用于LED闪烁。"}]},
+              {"id": 66, "title": "GPIO输入与按键", "goal": "实现按键检测与消抖", "schedule": [{"time": "09:00-12:00","task": "学习GPIO输入配置"},{"time": "14:00-17:00","task": "实现按键消抖"}], "knowledge": [{"heading": "按键消抖", "content": "机械按键有抖动，需软件消抖：延时后再次确认或定时器采样。", "code": "uint8_t KeyScan(void) {\n    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == 0) {\n        HAL_Delay(10); // 消抖延时\n        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == 0) {\n            while (!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0));\n            return 1; // 按键按下\n        }\n    }\n    return 0;\n}"}], "exercises": [{"type": "choice", "question": "按键消抖通常延时多少ms？", "options": ["1ms", "10-20ms", "100ms", "500ms"], "answer": 1, "explanation": "机械按键抖动持续5-10ms，通常延时10-20ms后再次检测确认。"}]},
+              {"id": 67, "title": "外部中断EXTI", "goal": "配置外部中断响应按键", "schedule": [{"time": "09:00-12:00","task": "学习EXTI配置"},{"time": "14:00-17:00","task": "实现中断方式按键"}], "knowledge": [{"heading": "外部中断", "content": "EXTI可配置上升沿/下降沿/双沿触发中断，响应速度快于轮询。", "code": "// CubeMX配置PA0为EXTI0下降沿中断\n// 回调函数\nvoid HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {\n    if (GPIO_Pin == GPIO_PIN_0) {\n        // 按键中断处理\n        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);\n    }\n}"}], "exercises": [{"type": "choice", "question": "EXTI中断回调函数名是？", "options": ["HAL_GPIO_EXTI_Callback", "EXTI_IRQHandler", "HAL_GPIO_Callback", "GPIO_EXTI_Handler"], "answer": 0, "explanation": "HAL库弱定义了HAL_GPIO_EXTI_Callback回调，用户重写此函数处理外部中断。"}]},
+              {"id": 68, "title": "NVIC中断管理", "goal": "理解NVIC中断优先级与嵌套", "schedule": [{"time": "09:00-12:00","task": "学习NVIC优先级分组"},{"time": "14:00-17:00","task": "配置中断优先级"}], "knowledge": [{"heading": "NVIC", "content": "NVIC管理中断优先级，有抢占优先级和子优先级，支持中断嵌套。", "code": "// 优先级分组：4位抢占\nHAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);\n\n// 设置EXTI0优先级（数字越小越高）\nHAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);\nHAL_NVIC_EnableIRQ(EXTI0_IRQn);"}], "exercises": [{"type": "fill", "question": "中断优先级数字越____表示优先级越高。", "answer": "小", "explanation": "Cortex-M中断优先级数字越小优先级越高，0是最高优先级。"}]},
+              {"id": 69, "title": "中断综合应用", "goal": "实现按键中断控制LED多种模式", "schedule": [{"time": "09:00-12:00","task": "设计多模式LED控制"},{"time": "14:00-17:00","task": "实现中断驱动状态切换"}], "knowledge": [{"heading": "中断状态切换", "content": "中断中设置标志位，主循环根据标志切换LED模式。", "code": "volatile uint8_t mode = 0;\nvoid HAL_GPIO_EXTI_Callback(uint16_t pin) {\n    if (pin == GPIO_PIN_0) {\n        mode = (mode + 1) % 4; // 切换模式\n    }\n}\n// 主循环\nswitch (mode) {\n    case 0: /* 常亮 */ break;\n    case 1: /* 闪烁 */ break;\n    case 2: /* 呼吸 */ break;\n    case 3: /* 关闭 */ break;\n}"}], "exercises": [{"type": "choice", "question": "中断中与主循环共享的变量需要什么修饰？", "options": ["static", "const", "volatile", "extern"], "answer": 2, "explanation": "中断和主循环共享的变量必须用volatile修饰，防止主循环中编译器优化读取。"}]},
+              {"id": 70, "title": "第10周总结", "goal": "复习GPIO与中断知识", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了GPIO 8种模式、输出输入控制、按键消抖、外部中断EXTI、NVIC优先级管理。", "list": ["GPIO 8种工作模式", "HAL GPIO读写翻转函数", "按键软件消抖", "EXTI外部中断配置", "NVIC优先级与嵌套"]}], "exercises": [{"type": "choice", "question": "按键检测使用外部中断相比轮询的优势是？", "options": ["代码更短", "响应快且CPU占用低", "不需要消抖", "更省内存"], "answer": 1, "explanation": "中断方式在事件发生时才触发处理，CPU平时可休眠或处理其他任务，响应速度快且效率高。"}]}
+            ]
+          },
+          {
+            "id": 11, "title": "第11周", "theme": "定时器与串口通信", "goal": "掌握定时器PWM与UART串口通信",
+            "days": [
+              {"id": 71, "title": "基本定时器", "goal": "理解定时器原理与配置", "schedule": [{"time": "09:00-12:00","task": "学习定时器原理"},{"time": "14:00-17:00","task": "配置定时器中断"}], "knowledge": [{"heading": "定时器", "content": "定时器基于时钟计数，溢出产生中断。用于精确延时、PWM、输入捕获等。", "code": "// 配置1ms定时中断\n// 定时频率 = 时钟 / (预分频+1) / (周期+1)\n// 72MHz / 72 / 1000 = 1kHz = 1ms\nTIM_HandleTypeDef htim;\nhtim.Init.Prescaler = 71;   // 72分频\nhtim.Init.Period = 999;      // 1000计数\nHAL_TIM_Base_Start_IT(&htim);"}], "exercises": [{"type": "fill", "question": "72MHz时钟，预分频71，周期999，定时周期是____ms。", "answer": "1", "explanation": "定时周期 = (71+1)×(999+1)/72MHz = 72000/72000000 = 1ms。"}]},
+              {"id": 72, "title": "PWM输出", "goal": "用PWM控制LED亮度与电机", "schedule": [{"time": "09:00-12:00","task": "学习PWM原理"},{"time": "14:00-17:00","task": "实现呼吸灯效果"}], "knowledge": [{"heading": "PWM", "content": "PWM通过调节占空比控制平均电压，用于调光、调速、D/A转换。", "code": "// PWM配置\nTIM_OC_InitTypeDef sConfig;\nsConfig.OCMode = TIM_OCMODE_PWM1;\nsConfig.Pulse = 50;  // CCR值\n// 占空比 = Pulse / (Period+1)\n\n// 呼吸灯：循环改变占空比\nfor (int i = 0; i <= 100; i++) {\n    __HAL_TIM_SET_COMPARE(&htim, TIM_CHANNEL_1, i);\n    HAL_Delay(10);\n}"}], "exercises": [{"type": "choice", "question": "PWM控制LED亮度是通过调节什么实现的？", "options": ["电压", "频率", "占空比", "电流"], "answer": 2, "explanation": "PWM调光通过改变占空比（高电平时间占比）控制LED平均亮度，占空比越大越亮。"}]},
+              {"id": 73, "title": "UART串口通信", "goal": "掌握串口配置与收发数据", "schedule": [{"time": "09:00-12:00","task": "学习UART协议"},{"time": "14:00-17:00","task": "实现串口收发"}], "knowledge": [{"heading": "UART串口", "content": "UART是异步串行通信，常用波特率9600/115200。通过TX/RX两线通信。", "code": "// 发送\nHAL_UART_Transmit(&huart, (uint8_t*)\"Hello\", 5, 100);\n\n// 接收（阻塞）\nuint8_t rx[10];\nHAL_UART_Receive(&huart, rx, 5, 100);\n\n// 中断接收\nHAL_UART_Receive_IT(&huart, rx, 1);\n// 回调\nvoid HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {\n    // 处理接收数据\n}"}], "exercises": [{"type": "fill", "question": "UART通信最少需要____根线（不含地线）。", "answer": "2", "explanation": "UART全双工通信需要TX（发送）和RX（接收）两根线，加共地线。"}]},
+              {"id": 74, "title": "printf重定向", "goal": "实现printf输出到串口", "schedule": [{"time": "09:00-12:00","task": "重定向fputc"},{"time": "14:00-17:00","task": "测试printf调试输出"}], "knowledge": [{"heading": "printf重定向", "content": "重写fputc函数，将printf输出重定向到串口，方便调试。", "code": "#include <stdio.h>\n\n// 重定向fputc到UART\nint fputc(int ch, FILE *f) {\n    HAL_UART_Transmit(&huart1, (uint8_t*)&ch, 1, 100);\n    return ch;\n}\n\n// 现在可用printf\nprintf(\"value = %d\\n\", 123);"}], "exercises": [{"type": "choice", "question": "重定向printf到串口需要重写哪个函数？", "options": ["printf", "fputc", "putchar", "write"], "answer": 1, "explanation": "C标准库printf底层调用fputc输出单个字符，重写fputc将其重定向到UART即可。"}]},
+              {"id": 75, "title": "串口中断与DMA", "goal": "掌握串口中断接收与DMA传输", "schedule": [{"time": "09:00-12:00","task": "学习串口中断接收"},{"time": "14:00-17:00","task": "配置DMA接收"}], "knowledge": [{"heading": "串口DMA", "content": "DMA直接内存访问，无需CPU干预搬运数据，适合大批量数据传输。", "code": "// DMA接收配置\nHAL_UART_Receive_DMA(&huart, rxBuffer, 100);\n// DMA自动接收数据到rxBuffer，CPU可处理其他任务\n\n// 空闲中断\n__HAL_UART_ENABLE_IT(&huart, UART_IT_IDLE);"}], "exercises": [{"type": "choice", "question": "DMA的优势是？", "options": ["代码更短", "不占用CPU即可传输数据", "速度更慢", "更省内存"], "answer": 1, "explanation": "DMA直接控制外设与内存间数据传输，无需CPU逐字节搬运，CPU可处理其他任务。"}]},
+              {"id": 76, "title": "串口协议设计", "goal": "设计自定义通信协议", "schedule": [{"time": "09:00-12:00","task": "设计帧格式"},{"time": "14:00-17:00","task": "实现协议解析"}], "knowledge": [{"heading": "通信协议", "content": "自定义串口协议通常包含：帧头、长度、命令、数据、校验、帧尾。", "code": "// 帧格式: [0xAA][LEN][CMD][DATA...][CRC][0x55]\ntypedef struct {\n    uint8_t head;   // 0xAA\n    uint8_t len;\n    uint8_t cmd;\n    uint8_t data[16];\n    uint8_t crc;\n    uint8_t tail;   // 0x55\n} Packet;"}], "exercises": [{"type": "fill", "question": "通信协议中用于检测传输错误的字段叫____。", "answer": "校验", "explanation": "校验字段（如CRC/异或校验和）用于检测传输过程中是否出错。"}]},
+              {"id": 77, "title": "第11周总结", "goal": "复习定时器与串口知识", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了定时器中断、PWM输出、UART串口通信、printf重定向、DMA传输、通信协议设计。", "list": ["定时器中断配置", "PWM占空比控制", "UART收发与中断", "printf重定向fputc", "DMA免CPU传输"]}], "exercises": [{"type": "choice", "question": "以下哪个不是UART的特点？", "options": ["异步通信", "全双工", "需要时钟线", "常用115200波特率"], "answer": 2, "explanation": "UART是异步通信，不需要时钟线（不同于SPI/I2C的同步通信），只需TX/RX+GND。"}]}
+            ]
+          },
+          {
+            "id": 12, "title": "第12周", "theme": "ADC与总线通信", "goal": "掌握ADC采集与SPI/I2C总线通信",
+            "days": [
+              {"id": 78, "title": "ADC模数转换", "goal": "掌握ADC配置与采集", "schedule": [{"time": "09:00-12:00","task": "学习ADC原理"},{"time": "14:00-17:00","task": "采集电位器电压"}], "knowledge": [{"heading": "ADC", "content": "ADC将模拟电压转为数字值。STM32 ADC通常12位，0-3.3V对应0-4095。", "code": "// 启动ADC转换\nHAL_ADC_Start(&hadc);\nHAL_ADC_PollForConversion(&hadc, 100);\nuint32_t val = HAL_ADC_GetValue(&hadc);\n// 转换为电压\nfloat voltage = val * 3.3 / 4096.0;"}], "exercises": [{"type": "fill", "question": "12位ADC，参考电压3.3V，读到值2048对应电压约____V。", "answer": "1.65", "explanation": "2048/4096×3.3 = 1.65V，约为参考电压的一半。"}]},
+              {"id": 79, "title": "ADC多通道DMA", "goal": "实现多通道ADC DMA采集", "schedule": [{"time": "09:00-12:00","task": "配置多通道ADC+DMA"},{"time": "14:00-17:00","task": "实现多传感器采集"}], "knowledge": [{"heading": "多通道ADC", "content": "ADC扫描模式配合DMA可自动采集多通道数据到数组。", "code": "uint16_t adc_values[4]; // 4通道\nHAL_ADC_Start_DMA(&hadc, (uint32_t*)adc_values, 4);\n// DMA自动将4个通道结果存入adc_values\nfloat v0 = adc_values[0] * 3.3 / 4096.0;"}], "exercises": [{"type": "choice", "question": "多通道ADC采集通常配合什么提高效率？", "options": ["中断", "DMA", "轮询", "定时器"], "answer": 1, "explanation": "多通道ADC扫描模式配合DMA，自动将各通道结果搬运到内存数组，无需CPU逐个读取。"}]},
+              {"id": 80, "title": "I2C总线", "goal": "掌握I2C协议与HAL库使用", "schedule": [{"time": "09:00-12:00","task": "学习I2C协议"},{"time": "14:00-17:00","task": "读写EEPROM/传感器"}], "knowledge": [{"heading": "I2C", "content": "I2C是两线同步总线（SCL/SDA），支持多设备，有主从之分，通过地址区分。", "code": "// HAL库I2C读温度传感器\nuint8_t buf[2];\nHAL_I2C_Mem_Read(&hi2c, 0x90, 0x00, 1, buf, 2, 100);\nint16_t temp = (buf[0] << 8) | buf[1];\ntemp >>= 4;  // 12位分辨率\nfloat t = temp * 0.0625;"}], "exercises": [{"type": "fill", "question": "I2C总线需要____根线通信。", "answer": "2", "explanation": "I2C只需SCL（时钟）和SDA（数据）两根线，所有设备共享，通过地址区分。"}]},
+              {"id": 81, "title": "SPI总线", "goal": "掌握SPI协议与HAL库使用", "schedule": [{"time": "09:00-12:00","task": "学习SPI协议"},{"time": "14:00-17:00","task": "读写Flash/显示屏"}], "knowledge": [{"heading": "SPI", "content": "SPI是4线同步总线（SCK/MOSI/MISO/CS），全双工，速度比I2C快。", "code": "// SPI读写Flash\nuint8_t cmd[4] = {0x03, 0x00, 0x10, 0x00};\nHAL_SPI_Transmit(&hspi, cmd, 4, 100);\nuint8_t data[256];\nHAL_SPI_Receive(&hspi, data, 256, 100);"}], "exercises": [{"type": "choice", "question": "SPI总线相比I2C的优势是？", "options": ["更少线", "全双工速度更快", "支持更多设备", "更简单"], "answer": 1, "explanation": "SPI是全双工（独立MOSI/MISO），速度比I2C快。但需要4线，设备多时CS线增加。"}]},
+              {"id": 82, "title": "传感器驱动开发", "goal": "为传感器编写驱动封装", "schedule": [{"time": "09:00-12:00","task": "设计驱动接口"},{"time": "14:00-17:00","task": "实现MPU6050驱动"}], "knowledge": [{"heading": "驱动封装", "content": "好的驱动应封装硬件细节，提供简洁API接口，便于移植。", "code": "// MPU6050驱动接口\ntypedef struct {\n    float accel_x, accel_y, accel_z;\n    float gyro_x, gyro_y, gyro_z;\n    float temp;\n} MPU6050_Data;\n\nvoid MPU6050_Init(I2C_HandleTypeDef *hi2c);\nvoid MPU6050_Read(MPU6050_Data *data);"}], "exercises": [{"type": "choice", "question": "好的驱动设计应？", "options": ["直接操作寄存器", "封装硬件细节提供统一接口", "只在main中写", "使用全局变量"], "answer": 1, "explanation": "好的驱动封装底层硬件细节，提供与硬件无关的简洁API，上层代码无需关心底层寄存器操作。"}]},
+              {"id": 83, "title": "数据显示与OLED", "goal": "驱动OLED显示屏显示数据", "schedule": [{"time": "09:00-12:00","task": "学习OLED驱动"},{"time": "14:00-17:00","task": "实现数据显示界面"}], "knowledge": [{"heading": "OLED显示", "content": "0.96寸OLED常用SSD1306驱动芯片，I2C接口，128×64像素。", "code": "// OLED显示字符\nOLED_Init();\nOLED_ShowString(0, 0, \"Hello World\", 16);\n// 显示数据\nchar buf[20];\nsprintf(buf, \"Temp: %.1fC\", temp);\nOLED_ShowString(0, 2, buf, 16);"}], "exercises": [{"type": "fill", "question": "0.96寸OLED常用的驱动芯片是SSD____。", "answer": "1306", "explanation": "0.96寸OLED屏最常用SSD1306驱动芯片，支持I2C/SPI接口，分辨率128×64。"}]},
+              {"id": 84, "title": "第12周总结", "goal": "复习ADC与总线通信知识", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了ADC模数转换、多通道DMA采集、I2C/SPI总线通信、传感器驱动、OLED显示。", "list": ["ADC采集与电压转换", "多通道ADC+DMA", "I2C两线总线", "SPI四线全双工", "传感器驱动封装", "OLED显示驱动"]}], "exercises": [{"type": "choice", "question": "I2C和SPI的共同点是？", "options": ["都是异步", "都是同步通信（有时钟线）", "都全双工", "都用4线"], "answer": 1, "explanation": "I2C（SCL）和SPI（SCK）都是同步通信，有独立时钟线同步数据传输。UART是异步无时钟线。"}]}
+            ]
+          }
+        ]
+      },
+      {
+        "id": 4, "title": "第4月", "theme": "项目实战",
+        "weeks": [
+          {
+            "id": 13, "title": "第13周", "theme": "传感器综合应用", "goal": "综合运用多种传感器构建数据采集系统",
+            "days": [
+              {"id": 85, "title": "温湿度传感器DHT11", "goal": "实现DHT11单总线通信驱动", "schedule": [{"time": "09:00-12:00","task": "学习DHT11协议"},{"time": "14:00-17:00","task": "实现DHT11驱动"}], "knowledge": [{"heading": "DHT11", "content": "DHT11是单总线数字温湿度传感器，通过精确时序读取40位数据。", "code": "// DHT11读取时序\n// 1. 主机拉低18ms\n// 2. 拉高20-40us\n// 3. 读取40位数据（湿度整数/小数/温度整数/小数/校验）\nuint8_t data[5];\nDHT11_Read(data);\nuint8_t humidity = data[0];\nuint8_t temp = data[2];"}], "exercises": [{"type": "choice", "question": "DHT11使用什么通信方式？", "options": ["I2C", "SPI", "单总线", "UART"], "answer": 2, "explanation": "DHT11使用单总线（One-Wire）通信，一根数据线完成双向通信，时序要求严格。"}]},
+              {"id": 86, "title": "超声波测距", "goal": "实现HC-SR04超声波测距", "schedule": [{"time": "09:00-12:00","task": "学习HC-SR04原理"},{"time": "14:00-17:00","task": "用定时器输入捕获测距"}], "knowledge": [{"heading": "超声波测距", "content": "HC-SR04通过发射超声波测量回波时间计算距离。", "code": "// 触发：Trick引脚10us高脉冲\n// 测量：Echo高电平时间 × 声速/2\n// 距离(cm) = 时间(us) × 0.017\ndistance = echo_time * 0.017;"}], "exercises": [{"type": "fill", "question": "超声波测距中，距离 = 回波时间 × 声速 / ____。", "answer": "2", "explanation": "声波往返，需除以2得到单程距离。声速340m/s = 0.034cm/us，距离=时间×0.034/2=时间×0.017。"}]},
+              {"id": 87, "title": "红外遥控", "goal": "实现红外解码控制", "schedule": [{"time": "09:00-12:00","task": "学习NEC红外协议"},{"time": "14:00-17:00","task": "实现红外解码"}], "knowledge": [{"heading": "红外NEC协议", "content": "NEC协议通过红外接收头解调，包含引导码+地址+地址反码+命令+命令反码。", "code": "// NEC协议时序\n// 引导码: 9ms低+4.5ms高\n// 0: 560us低+560us高\n// 1: 560us低+1680us高\n// 使用输入捕获解码"}], "exercises": [{"type": "choice", "question": "红外遥控常用的编码协议是？", "options": ["UART", "NEC", "SPI", "I2C"], "answer": 1, "explanation": "NEC是红外遥控最常用的编码协议，通过不同脉宽表示0和1。"}]},
+              {"id": 88, "title": "电机控制", "goal": "实现直流电机PWM调速与舵机控制", "schedule": [{"time": "09:00-12:00","task": "学习电机驱动"},{"time": "14:00-17:00","task": "实现PWM调速与舵机控制"}], "knowledge": [{"heading": "电机控制", "content": "直流电机用PWM调速，舵机用50Hz PWM信号控制角度（0.5-2.5ms脉宽对应0-180度）。", "code": "// 舵机控制\n// 50Hz PWM，周期20ms\n// 0度: 0.5ms (CCR=500)\n// 90度: 1.5ms (CCR=1500)\n// 180度: 2.5ms (CCR=2500)\n__HAL_TIM_SET_COMPARE(&htim, TIM_CHANNEL_1, 1500); // 90度"}], "exercises": [{"type": "fill", "question": "舵机控制信号频率通常为____Hz。", "answer": "50", "explanation": "标准舵机使用50Hz PWM信号（周期20ms），脉宽0.5-2.5ms对应0-180度角度。"}]},
+              {"id": 89, "title": "数据显示集成", "goal": "在OLED上实时显示传感器数据", "schedule": [{"time": "09:00-12:00","task": "设计显示界面"},{"time": "14:00-17:00","task": "实现多传感器数据刷新"}], "knowledge": [{"heading": "数据界面", "content": "设计多行显示界面，定时刷新传感器数据。", "code": "// 定时刷新显示\nvoid Display_Update(void) {\n    char buf[20];\n    sprintf(buf, \"T:%.1fC H:%d%%\", temp, humi);\n    OLED_ShowString(0, 0, buf, 16);\n    sprintf(buf, \"Dist:%.1fcm\", dist);\n    OLED_ShowString(0, 2, buf, 16);\n}"}], "exercises": [{"type": "choice", "question": "OLED显示界面更新频率通常多少？", "options": ["1Hz", "10Hz", "1000Hz", "不需要刷新"], "answer": 1, "explanation": "人眼舒适刷新约10Hz（每100ms更新一次），太慢会闪烁，太快浪费CPU。"}]},
+              {"id": 90, "title": "数据记录与存储", "goal": "实现Flash/EEPROM数据存储", "schedule": [{"time": "09:00-12:00","task": "学习Flash读写"},{"time": "14:00-17:00","task": "实现数据存储功能"}], "knowledge": [{"heading": "Flash存储", "content": "STM32内部Flash可存储配置参数。HAL库提供擦写接口。", "code": "// 写Flash需先擦除\nHAL_FLASH_Unlock();\nFLASH_EraseInitTypeDef ei;\nei.TypeErase = FLASH_TYPEERASE_PAGES;\nei.PageAddress = 0x08060000;\nei.NbPages = 1;\nHAL_FLASHEx_Erase(&ei, &err);\n// 写入\nHAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, addr, data);\nHAL_FLASH_Lock();"}], "exercises": [{"type": "choice", "question": "Flash写入前必须先做什么？", "options": ["读取", "擦除", "解锁", "校验"], "answer": 1, "explanation": "Flash特性是只能将1写为0，写新数据前必须先擦除（将所有位恢复为1）。"}]},
+              {"id": 91, "title": "第13周总结", "goal": "复习传感器综合应用", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周综合应用了DHT11温湿度、超声波测距、红外遥控、电机控制、OLED显示、Flash存储。", "list": ["DHT11单总线温湿度", "HC-SR04超声波测距", "NEC红外解码", "PWM电机/舵机控制", "OLED数据显示", "Flash数据存储"]}], "exercises": [{"type": "choice", "question": "以下哪个传感器使用单总线通信？", "options": ["MPU6050", "DHT11", "HC-SR04", "OLED"], "answer": 1, "explanation": "DHT11使用单总线（One-Wire）通信。MPU6050用I2C，HC-SR04用Trig/Echo双线，OLED用I2C/SPI。"}]}
+            ]
+          },
+          {
+            "id": 14, "title": "第14周", "theme": "RTOS实时操作系统", "goal": "掌握FreeRTOS任务调度与通信",
+            "days": [
+              {"id": 92, "title": "RTOS概念", "goal": "理解实时操作系统原理", "schedule": [{"time": "09:00-12:00","task": "学习RTOS基本概念"},{"time": "14:00-17:00","task": "了解FreeRTOS架构"}], "knowledge": [{"heading": "RTOS", "content": "实时操作系统提供任务调度、资源管理，确保实时响应。FreeRTOS是流行的开源RTOS。", "list": ["任务(Task)：独立执行单元", "调度器：按优先级调度", "抢占式：高优先级立即抢占", "时间片：同优先级轮转", "临界区：关中断保护共享资源"]}], "exercises": [{"type": "choice", "question": "FreeRTOS的调度方式是？", "options": ["协作式", "抢占式", "时间片", "随机"], "answer": 1, "explanation": "FreeRTOS默认采用抢占式优先级调度，高优先级任务就绪立即抢占低优先级任务。"}]},
+              {"id": 93, "title": "任务创建", "goal": "创建多任务并行运行", "schedule": [{"time": "09:00-12:00","task": "学习任务创建API"},{"time": "14:00-17:00","task": "创建LED和传感器任务"}], "knowledge": [{"heading": "任务创建", "content": "使用xTaskCreate创建任务，每个任务有独立栈空间和优先级。", "code": "void LED_Task(void *arg) {\n    while (1) {\n        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);\n        vTaskDelay(500 / portTICK_PERIOD_MS);\n    }\n}\n\nxTaskCreate(LED_Task, \"LED\", 128, NULL, 1, NULL);\nvTaskStartScheduler();"}], "exercises": [{"type": "fill", "question": "FreeRTOS延时函数是vTask____。", "answer": "Delay", "explanation": "vTaskDelay(ticks)是FreeRTOS任务延时函数，会触发调度器切换到其他任务。"}]},
+              {"id": 94, "title": "任务间通信", "goal": "掌握队列、信号量、互斥量", "schedule": [{"time": "09:00-12:00","task": "学习队列与信号量"},{"time": "14:00-17:00","task": "实现任务间数据传递"}], "knowledge": [{"heading": "任务通信", "content": "队列传递数据，信号量同步，互斥量保护共享资源。", "code": "// 队列传递数据\nQueueHandle_t q = xQueueCreate(10, sizeof(int));\nxQueueSend(q, &data, portMAX_DELAY);\nxQueueReceive(q, &recv, portMAX_DELAY);\n\n// 互斥量保护资源\nSemaphoreHandle_t mux = xSemaphoreCreateMutex();\nxSemaphoreTake(mux, portMAX_DELAY);\n// 临界操作\nxSemaphoreGive(mux);"}], "exercises": [{"type": "choice", "question": "保护共享资源不被并发访问应使用？", "options": ["队列", "信号量", "互斥量", "延时"], "answer": 2, "explanation": "互斥量(Mutex)用于保护共享资源，确保同一时刻只有一个任务访问，且有优先级继承机制防止死锁。"}]},
+              {"id": 95, "title": "软件定时器", "goal": "使用FreeRTOS软件定时器", "schedule": [{"time": "09:00-12:00","task": "学习软件定时器"},{"time": "14:00-17:00","task": "实现周期性任务"}], "knowledge": [{"heading": "软件定时器", "content": "FreeRTOS提供软件定时器，无需占用硬件定时器。", "code": "void TimerCallback(TimerHandle_t t) {\n    // 定时回调\n}\n\nTimerHandle_t timer = xTimerCreate(\n    \"Timer\", 1000/portTICK_PERIOD_MS,\n    pdTRUE,  // 自动重载\n    NULL, TimerCallback);\nxTimerStart(timer, 0);"}], "exercises": [{"type": "choice", "question": "FreeRTOS软件定时器的回调在什么上下文执行？", "options": ["中断", "定时器服务任务", "用户任务", "main"], "answer": 1, "explanation": "软件定时器回调在FreeRTOS的Timer Service Task中执行，不是在中断中，因此不能阻塞。"}]},
+              {"id": 96, "title": "中断中的RTOS", "goal": "掌握RTOS中断安全API", "schedule": [{"time": "09:00-12:00","task": "学习FromISR API"},{"time": "14:00-17:00","task": "中断中释放信号量唤醒任务"}], "knowledge": [{"heading": "中断与RTOS", "content": "中断中必须使用FromISR后缀的API，不能调用阻塞API。", "code": "void EXTI0_IRQHandler(void) {\n    BaseType_t hpw = pdFALSE;\n    // 中断中释放信号量\n    xSemaphoreGiveFromISR(sem, &hpw);\n    // 请求切换\n    portYIELD_FROM_ISR(hpw);\n}"}], "exercises": [{"type": "fill", "question": "FreeRTOS中断中使用的API后缀是____。", "answer": "FromISR", "explanation": "中断中不能使用阻塞API，必须使用FromISR后缀版本，如xQueueSendFromISR、xSemaphoreGiveFromISR。"}]},
+              {"id": 97, "title": "任务优化", "goal": "掌握任务栈优化与优先级设计", "schedule": [{"time": "09:00-12:00","task": "学习栈大小优化"},{"time": "14:00-17:00","task": "设计任务优先级"}], "knowledge": [{"heading": "任务优化", "content": "合理分配栈空间和优先级，监控栈使用率防止溢出。", "code": "// 查看任务栈剩余\nUBaseType_t free = uxTaskGetStackHighWaterMark(NULL);\n// free过小说明栈不够\n\n// 优先级设计原则：\n// 高：实时控制(电机PID)\n// 中：数据采集/通信\n// 低：显示/日志"}], "exercises": [{"type": "choice", "question": "查看任务栈剩余空间的函数是？", "options": ["uxTaskGetStackHighWaterMark", "xTaskGetStack", "vTaskStack", "GetStackFree"], "answer": 0, "explanation": "uxTaskGetStackHighWaterMark返回任务栈历史最小剩余量，用于评估栈大小是否合适。"}]},
+              {"id": 98, "title": "第14周总结", "goal": "复习RTOS知识", "schedule": [{"time": "09:00-12:00","task": "复习本周知识点"},{"time": "14:00-17:00","task": "完成综合练习"}], "knowledge": [{"heading": "本周回顾", "content": "本周学习了FreeRTOS：任务创建、队列/信号量/互斥量、软件定时器、中断安全API、任务优化。", "list": ["RTOS概念与抢占调度", "xTaskCreate创建任务", "队列/信号量/互斥量", "软件定时器", "FromISR中断API", "栈优化与优先级设计"]}], "exercises": [{"type": "choice", "question": "FreeRTOS中vTaskDelay的作用是？", "options": ["死循环延时", "让出CPU并延时", "关中断", "停止任务"], "answer": 1, "explanation": "vTaskDelay让任务进入阻塞状态并延时指定tick数，期间CPU调度其他任务，不是忙等延时。"}]}
+            ]
+          },
+          {
+            "id": 15, "title": "第15周", "theme": "综合项目开发", "goal": "综合运用所学知识开发完整项目",
+            "days": [
+              {"id": 99, "title": "项目需求分析", "goal": "完成智能家居终端需求分析", "schedule": [{"time": "09:00-12:00","task": "分析项目需求"},{"time": "14:00-17:00","task": "设计系统架构"}], "knowledge": [{"heading": "项目需求", "content": "智能家居终端：温湿度采集、OLED显示、串口控制、报警输出。", "list": ["温湿度实时采集显示", "阈值超限蜂鸣器报警", "串口命令控制", "按键切换显示模式", "Flash存储阈值参数"]}], "exercises": [{"type": "choice", "question": "项目开发第一步应该是？", "options": ["写代码", "需求分析", "买硬件", "调试"], "answer": 1, "explanation": "项目开发应先做需求分析，明确功能、性能、约束，再设计架构，最后编码实现。"}]},
+              {"id": 100, "title": "系统架构设计", "goal": "设计软件分层架构", "schedule": [{"time": "09:00-12:00","task": "设计分层架构"},{"time": "14:00-17:00","task": "定义模块接口"}], "knowledge": [{"heading": "分层架构", "content": "采用HAL层→驱动层→应用层分层设计，模块解耦。", "list": ["硬件抽象层(HAL)：GPIO/UART/ADC", "驱动层：DHT11/OLED/Flash", "应用层：业务逻辑", "模块间通过接口通信"]}], "exercises": [{"type": "fill", "question": "软件架构中负责硬件细节封装的层叫硬件____层。", "answer": "抽象", "explanation": "硬件抽象层(HAL)封装硬件寄存器细节，为上层提供统一接口，提高可移植性。"}]},
+              {"id": 101, "title": "驱动层开发", "goal": "编写传感器与显示驱动", "schedule": [{"time": "09:00-12:00","task": "实现DHT11驱动"},{"time": "14:00-17:00","task": "实现OLED驱动"}], "knowledge": [{"heading": "驱动开发", "content": "按照驱动接口规范实现各传感器驱动模块，封装硬件细节。", "code": "typedef struct {\n    int temp_int, temp_dec;\n    int humi_int, humi_dec;\n} DHT11_Data;\n\nint DHT11_Read(DHT11_Data *d);\nvoid OLED_ShowTemp(float t);"}], "exercises": [{"type": "choice", "question": "驱动层的主要职责是？", "options": ["业务逻辑", "封装硬件细节", "UI显示", "网络通信"], "answer": 1, "explanation": "驱动层封装传感器硬件操作细节，为应用层提供简洁API接口。"}]},
+              {"id": 102, "title": "应用层开发", "goal": "实现业务逻辑与状态管理", "schedule": [{"time": "09:00-12:00","task": "实现主控逻辑"},{"time": "14:00-17:00","task": "实现报警与模式切换"}], "knowledge": [{"heading": "应用层", "content": "应用层协调各驱动模块，实现业务逻辑。", "code": "void App_Run(void) {\n    DHT11_Data d;\n    while (1) {\n        if (DHT11_Read(&d) == 0) {\n            OLED_ShowTemp(d.temp_int + d.temp_dec*0.1);\n            if (d.temp_int > threshold) {\n                Buzzer_On();\n            }\n        }\n        HAL_Delay(2000);\n    }\n}"}], "exercises": [{"type": "fill", "question": "应用层负责____逻辑，协调各驱动模块。", "answer": "业务", "explanation": "应用层是最高层，负责业务逻辑，调用驱动层接口协调各模块工作。"}]},
+              {"id": 103, "title": "串口控制实现", "goal": "实现串口命令解析与参数配置", "schedule": [{"time": "09:00-12:00","task": "实现命令解析器"},{"time": "14:00-17:00","task": "实现参数配置命令"}], "knowledge": [{"heading": "串口命令", "content": "设计命令格式，解析串口输入控制设备。", "code": "// 命令格式: SET TEMP 30\nvoid Cmd_Parse(char *cmd) {\n    char *token = strtok(cmd, \" \");\n    if (strcmp(token, \"SET\") == 0) {\n        token = strtok(NULL, \" \");\n        if (strcmp(token, \"TEMP\") == 0) {\n            threshold = atoi(strtok(NULL, \" \"));\n        }\n    }\n}"}], "exercises": [{"type": "choice", "question": "串口命令解析常用哪个函数分割字符串？", "options": ["strcmp", "strtok", "strcpy", "strlen"], "answer": 1, "explanation": "strtok按分隔符分割字符串，常用于解析命令参数。"}]},
+              {"id": 104, "title": "Flash参数存储", "goal": "实现参数掉电保存", "schedule": [{"time": "09:00-12:00","task": "实现Flash读写参数"},{"time": "14:00-17:00","task": "实现掉电恢复"}], "knowledge": [{"heading": "参数存储", "content": "将配置参数存入Flash，上电时读取恢复。", "code": "typedef struct {\n    uint32_t magic;\n    int temp_threshold;\n    int humi_threshold;\n} Config;\n\nvoid Config_Save(Config *c) {\n    Flash_Write((uint8_t*)c, sizeof(Config));\n}\nvoid Config_Load(Config *c) {\n    Flash_Read((uint8_t*)c, sizeof(Config));\n    if (c->magic != 0xABCD) {\n        // 首次使用默认值\n        c->temp_threshold = 30;\n        c->magic = 0xABCD;\n    }\n}"}], "exercises": [{"type": "choice", "question": "参数存储使用magic字段的目的是？", "options": ["加密", "判断是否首次使用", "对齐", "校验和"], "answer": 1, "explanation": "magic字段用于判断Flash中是否已有有效数据。首次上电Flash全1，magic不匹配则加载默认值。"}]},
+              {"id": 105, "title": "系统集成测试", "goal": "集成所有模块进行系统测试", "schedule": [{"time": "09:00-12:00","task": "集成所有模块"},{"time": "14:00-17:00","task": "系统功能测试"}], "knowledge": [{"heading": "集成测试", "content": "将驱动层、应用层、通信层集成，测试整体功能。", "list": ["温湿度采集显示正常", "阈值报警触发正确", "串口命令响应正确", "掉电参数恢复正确", "按键模式切换正常"]}], "exercises": [{"type": "choice", "question": "系统集成测试主要验证什么？", "options": ["单个函数", "模块间接口与整体功能", "代码风格", "编译速度"], "answer": 1, "explanation": "集成测试验证各模块组合后的接口正确性和整体功能是否符合需求。"}]}
+            ]
+          },
+          {
+            "id": 16, "title": "第16周", "theme": "项目优化与总结", "goal": "优化代码质量，总结学习成果",
+            "days": [
+              {"id": 106, "title": "代码审查与重构", "goal": "审查代码质量，重构优化", "schedule": [{"time": "09:00-12:00","task": "代码审查发现问题"},{"time": "14:00-17:00","task": "重构优化代码"}], "knowledge": [{"heading": "代码审查", "content": "审查代码规范性、可读性、健壮性，发现潜在问题。", "list": ["命名规范：函数小写_分隔，变量小写", "函数单一职责：一个函数只做一件事", "错误处理：检查返回值", "魔数消除：用宏/枚举代替硬编码", "注释完善：说明Why而非What"]}], "exercises": [{"type": "choice", "question": "代码中直接使用数字30称为？", "options": ["常量", "魔数", "变量", "枚举"], "answer": 1, "explanation": "代码中直接出现的无名称数字称为魔数(Magic Number)，应替换为有意义的宏或常量。"}]},
+              {"id": 107, "title": "性能优化", "goal": "优化系统性能与功耗", "schedule": [{"time": "09:00-12:00","task": "分析性能瓶颈"},{"time": "14:00-17:00","task": "实现低功耗优化"}], "knowledge": [{"heading": "性能优化", "content": "优化CPU占用、内存使用和功耗。", "list": ["用DMA替代CPU搬运", "空闲时进入低功耗模式", "合理使用中断vs轮询", "优化热点函数算法", "减少不必要的全局变量"]}], "exercises": [{"type": "choice", "question": "降低嵌入式系统功耗最有效的方法是？", "options": ["降低时钟", "空闲时休眠", "减少代码", "用汇编"], "answer": 1, "explanation": "空闲时进入低功耗/休眠模式是最有效的降功耗方法，CPU不工作时功耗极低。"}]},
+              {"id": 108, "title": "稳定性测试", "goal": "进行长时间稳定性测试", "schedule": [{"time": "09:00-12:00","task": "设计测试用例"},{"time": "14:00-17:00","task": "执行长时间运行测试"}], "knowledge": [{"heading": "稳定性测试", "content": "长时间运行测试发现内存泄漏、栈溢出等隐患。", "list": ["连续运行24-72小时", "观察内存使用趋势", "模拟异常输入测试", "断电恢复测试", "边界条件测试"]}], "exercises": [{"type": "fill", "question": "长时间运行测试可发现____泄漏问题。", "answer": "内存", "explanation": "长时间运行测试可发现动态内存分配未释放导致的内存泄漏，以及栈使用逐渐增加导致的栈溢出。"}]},
+              {"id": 109, "title": "文档编写", "goal": "编写项目文档与使用说明", "schedule": [{"time": "09:00-12:00","task": "编写技术文档"},{"time": "14:00-17:00","task": "编写使用手册"}], "knowledge": [{"heading": "项目文档", "content": "完整项目需要：需求文档、设计文档、使用手册、源码注释。", "list": ["README：项目简介与快速开始", "架构文档：模块设计与接口", "API文档：函数说明", "使用手册：操作指南", "代码注释：Doxygen风格"]}], "exercises": [{"type": "choice", "question": "项目文档中README的作用是？", "options": ["源码", "项目简介与快速入门", "API手册", "测试用例"], "answer": 1, "explanation": "README是项目入口文档，提供项目简介、安装方法、使用说明，是别人了解项目的第一步。"}]},
+              {"id": 110, "title": "版本管理", "goal": "使用Git进行版本管理与发布", "schedule": [{"time": "09:00-12:00","task": "学习Git版本管理"},{"time": "14:00-17:00","task": "打标签发布版本"}], "knowledge": [{"heading": "Git版本管理", "content": "使用Git管理代码版本，标签标记发布版本。", "code": "git init\ngit add .\ngit commit -m \"智能家居终端v1.0\"\ngit tag v1.0\ngit push origin main --tags"}], "exercises": [{"type": "fill", "question": "Git中标记发布版本的命令是git____。", "answer": "tag", "explanation": "git tag命令创建版本标签，如git tag v1.0标记1.0版本发布点。"}]},
+              {"id": 111, "title": "学习总结与回顾", "goal": "总结4个月学习成果与经验", "schedule": [{"time": "09:00-12:00","task": "回顾4个月学习历程"},{"time": "14:00-17:00","task": "撰写学习总结"}], "knowledge": [{"heading": "学习总结", "content": "回顾4个月从零基础到完成项目的完整学习历程。", "list": ["第1月：C语言基础——环境/数据类型/流程/数组/函数", "第2月：嵌入式C进阶——指针/结构体/volatile/寄存器", "第3月：单片机基础——STM32/GPIO/中断/定时器/串口/ADC", "第4月：项目实战——传感器/RTOS/综合项目/优化"]}], "exercises": [{"type": "choice", "question": "嵌入式学习的核心语言是？", "options": ["Python", "Java", "C语言", "JavaScript"], "answer": 2, "explanation": "C语言是嵌入式开发的核心语言，兼具高级语言易用性和底层硬件操控能力，是单片机开发的首选。"}]},
+              {"id": 112, "title": "毕业项目演示与展望", "goal": "演示毕业项目，规划后续学习方向", "schedule": [{"time": "09:00-12:00","task": "演示毕业项目"},{"time": "14:00-17:00","task": "规划后续学习方向"}], "knowledge": [{"heading": "后续方向", "content": "完成基础学习后的进阶方向。", "list": ["Linux嵌入式开发：内核驱动/设备树", "物联网：MQTT/WiFi/蓝牙", "RTOS深入：uCOS/RT-Thread", "硬件设计：PCB/原理图", "AI边缘计算：TinyML/TensorFlow Lite"]}], "exercises": [{"type": "choice", "question": "以下哪个是物联网通信协议？", "options": ["HTTP", "MQTT", "FTP", "DNS"], "answer": 1, "explanation": "MQTT是轻量级发布/订阅模式物联网通信协议，专为低带宽、不稳定网络设计，广泛用于IoT。"}]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

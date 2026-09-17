@@ -1,0 +1,365 @@
+{
+  "week": 14,
+  "month": 4,
+  "title": "第14周：FreeRTOS进阶",
+  "goal": "掌握信号量、互斥锁、队列、事件标志组等同步机制。",
+  "days": [
+    {
+      "day": 1,
+      "title": "信号量",
+      "goal": "掌握二值信号量和计数信号量的使用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "信号量概念",
+          "content": "信号量用于任务间同步和资源管理。二值信号量：只有0和1，用于事件通知(如中断通知任务)。计数信号量：计数值，用于资源管理(如停车场车位)。创建：xSemaphoreCreateBinary/CreateCounting。获取：xSemaphoreTake(阻塞等待)。释放：xSemaphoreGive。",
+          "codeExample": "/* 信号量类型\n\n二值信号量(Binary):\n  值: 0或1\n  用途: 事件通知\n  如: 中断→任务通知\n\n计数信号量(Counting):\n  值: 0~maxCount\n  用途: 资源管理\n  如: 限制并发访问数\n\n互斥量(Mutex):\n  二值+优先级继承\n  用途: 互斥访问共享资源\n*/"
+        },
+        {
+          "title": "二值信号量使用",
+          "content": "二值信号量常用于中断到任务的通知。中断中xSemaphoreGiveFromISR释放信号量，任务中xSemaphoreTake等待。典型场景：串口接收中断→释放信号量→处理任务唤醒处理数据。避免在中断中做复杂处理。",
+          "codeExample": "SemaphoreHandle_t rxSem;  // 信号量句柄\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_USART1_UART_Init();\n    \n    rxSem = xSemaphoreCreateBinary();  // 创建二值信号量\n    \n    xTaskCreate(RxTask, \"Rx\", 256, NULL, 3, NULL);\n    HAL_UART_Receive_IT(&huart1, &rxByte, 1);\n    vTaskStartScheduler();\n}\n\nvoid HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {\n    BaseType_t xHigherPriorityTaskWoken = pdFALSE;\n    // 中断中释放信号量\n    xSemaphoreGiveFromISR(rxSem, &xHigherPriorityTaskWoken);\n    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);\n    HAL_UART_Receive_IT(&huart1, &rxByte, 1);\n}\n\nvoid RxTask(void* arg) {\n    while (1) {\n        // 等待信号量(阻塞)\n        xSemaphoreTake(rxSem, portMAX_DELAY);\n        // 处理接收数据\n        processRxData(rxByte);\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "二值信号量常用于什么场景？",
+          "options": ["资源计数", "中断到任务通知", "互斥访问", "数据传递"],
+          "answer": 1,
+          "explanation": "二值信号量适合中断到任务的事件通知，如串口接收中断通知处理任务。"
+        },
+        {
+          "type": "choice",
+          "question": "在中断中释放信号量用哪个函数？",
+          "options": ["xSemaphoreGive", "xSemaphoreGiveFromISR", "xSemaphoreRelease", "osSemaphoreRelease"],
+          "answer": 1,
+          "explanation": "中断中必须用FromISR后缀函数，xSemaphoreGiveFromISR是中断版。"
+        },
+        {
+          "type": "fill",
+          "question": "创建二值信号量的函数是____。",
+          "answer": "xSemaphoreCreateBinary",
+          "explanation": "xSemaphoreCreateBinary()创建二值信号量，返回句柄。"
+        },
+        {
+          "type": "code",
+          "question": "写任务中等待信号量rxSem(无限等待)。",
+          "keywords": ["xSemaphoreTake", "rxSem", "portMAX_DELAY"],
+          "explanation": "参考答案：xSemaphoreTake(rxSem, portMAX_DELAY);"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "互斥锁",
+      "goal": "掌握互斥锁的使用和优先级反转",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "互斥锁Mutex",
+          "content": "互斥量(Mutex)用于保护共享资源，同一时间只允许一个任务访问。与二值信号量区别：Mutex有优先级继承，避免优先级反转。Mutex必须谁获取谁释放(同一任务)，信号量可不同任务释放。用xSemaphoreCreateMutex创建。",
+          "codeExample": "/* Mutex vs Binary Semaphore\n\nMutex:\n  - 优先级继承(避免反转)\n  - 谁获取谁释放\n  - 用于资源保护\n\nBinary Semaphore:\n  - 无优先级继承\n  - 可不同任务释放\n  - 用于事件通知\n\n优先级反转：\n  低任务持有锁\n  高任务等锁阻塞\n  中任务抢占低任务\n  → 高任务被中任务阻塞\n\n优先级继承：\n  低任务临时继承高优先级\n  快速执行释放锁\n*/"
+        },
+        {
+          "title": "Mutex保护共享资源",
+          "content": "Mutex保护共享资源(如全局变量、串口、显示)。任务访问前xSemaphoreTake获取，访问后xSemaphoreGive释放。多个任务访问同一资源时，Mutex确保不冲突。如多个任务都printf会混乱，用Mutex保护串口。",
+          "codeExample": "SemaphoreHandle_t uartMutex;\n\nvoid initMutex(void) {\n    uartMutex = xSemaphoreCreateMutex();\n}\n\n// 多任务安全打印\nvoid safePrintf(const char* fmt, ...) {\n    xSemaphoreTake(uartMutex, portMAX_DELAY);\n    // 临界区\n    va_list args;\n    va_start(args, fmt);\n    vprintf(fmt, args);\n    va_end(args);\n    xSemaphoreGive(uartMutex);\n}\n\n// 多任务保护全局变量\nvolatile int counter = 0;\nvoid counterTask(void* arg) {\n    while (1) {\n        xSemaphoreTake(uartMutex, portMAX_DELAY);\n        counter++;  // 保护共享变量\n        xSemaphoreGive(uartMutex);\n        vTaskDelay(100);\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "Mutex相比二值信号量的优势是？",
+          "options": ["更轻量", "优先级继承", "速度更快", "不需要创建"],
+          "answer": 1,
+          "explanation": "Mutex有优先级继承机制，避免优先级反转问题。"
+        },
+        {
+          "type": "choice",
+          "question": "多个任务同时printf会怎样？",
+          "options": ["正常", "输出混乱", "崩溃", "死锁"],
+          "answer": 1,
+          "explanation": "多任务同时printf会导致输出交错混乱，需用Mutex保护串口。"
+        },
+        {
+          "type": "fill",
+          "question": "优先级____问题是低优先级任务阻塞高优先级任务的现象。",
+          "answer": "反转",
+          "explanation": "优先级反转：低任务持有锁，高任务等锁，中任务抢占低任务。"
+        },
+        {
+          "type": "code",
+          "question": "写safePrintf函数用Mutex保护printf。",
+          "keywords": ["xSemaphoreTake", "uartMutex", "portMAX_DELAY", "printf", "xSemaphoreGive", "uartMutex"],
+          "explanation": "参考答案：void safePrintf(char* s){xSemaphoreTake(uartMutex,portMAX_DELAY); printf(s); xSemaphoreGive(uartMutex);}"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "队列",
+      "goal": "掌握队列实现任务间数据传递",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "队列概念",
+          "content": "队列(Queue)是任务间传递数据的FIFO缓冲。特点：1.先进先出；2.固定大小元素；3.多任务安全；4.阻塞读写。生产者任务发送数据，消费者任务接收数据。适合数据采集→处理场景。创建：xQueueCreate(长度, 元素大小)。",
+          "codeExample": "/* 队列(Queue)\n\n特点：\n  - FIFO先进先出\n  - 固定元素大小\n  - 多任务安全\n  - 阻塞读写\n\n创建：xQueueCreate(length, itemSize)\n发送：xQueueSend(queue, &data, timeout)\n接收：xQueueReceive(queue, &data, timeout)\n\n场景：\n  生产者(采集) → 队列 → 消费者(处理)\n  中断 → 队列 → 任务\n*/"
+        },
+        {
+          "title": "队列使用",
+          "content": "队列传递传感器数据：采集任务读取传感器→xQueueSend发送到队列→处理任务xQueueReceive接收处理。队列解耦生产和消费，缓冲数据。中断中用xQueueSendFromISR。可传递结构体等复杂数据。",
+          "codeExample": "// 队列传递传感器数据\ntypedef struct {\n    float temp;\n    float humi;\n} SensorData;\n\nQueueHandle_t dataQueue;\n\nvoid sensorTask(void* arg) {\n    SensorData data;\n    while (1) {\n        // 读取传感器\n        data.temp = readTemp();\n        data.humi = readHumi();\n        // 发送到队列(等待10tick)\n        xQueueSend(dataQueue, &data, 10);\n        vTaskDelay(2000);\n    }\n}\n\nvoid displayTask(void* arg) {\n    SensorData data;\n    while (1) {\n        // 从队列接收(阻塞等待)\n        if (xQueueReceive(dataQueue, &data, portMAX_DELAY)) {\n            // 显示数据\n            printf(\"T:%.1f H:%.1f\\r\\n\", data.temp, data.humi);\n        }\n    }\n}\n\n// 创建队列\ndataQueue = xQueueCreate(10, sizeof(SensorData));"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "队列的数据结构特点是？",
+          "options": ["LIFO后进先出", "FIFO先进先出", "随机访问", "栈"],
+          "answer": 1,
+          "explanation": "队列是FIFO(先进先出)，先发送的数据先被接收。"
+        },
+        {
+          "type": "choice",
+          "question": "队列适合什么场景？",
+          "options": ["事件通知", "任务间数据传递", "互斥访问", "资源计数"],
+          "answer": 1,
+          "explanation": "队列适合任务间数据传递，生产者发送消费者接收。"
+        },
+        {
+          "type": "fill",
+          "question": "创建10个float元素的队列：xQueueCreate(10, sizeof(____))。",
+          "answer": "float",
+          "explanation": "第2参数是元素大小，float元素用sizeof(float)。"
+        },
+        {
+          "type": "code",
+          "question": "写代码创建队列并接收数据(SensorData结构)。",
+          "keywords": ["xQueueCreate", "10", "sizeof", "SensorData", "xQueueReceive", "dataQueue", "&data"],
+          "explanation": "参考答案：dataQueue=xQueueCreate(10,sizeof(SensorData)); xQueueReceive(dataQueue,&data,portMAX_DELAY);"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "事件标志组",
+      "goal": "掌握事件标志组实现多事件同步",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "事件标志组",
+          "content": "事件标志组(EventGroup)提供24个标志位，任务可等待多个事件中的任意一个或全部。xEventGroupCreate创建，xEventGroupSetBits设置标志(中断中用FromISR)，xEventGroupWaitBits等待事件。适合多事件同步，如等待温度和湿度都就绪再处理。",
+          "codeExample": "/* 事件标志组\n\n24个标志位\n  bit0, bit1, ..., bit23\n\n等待模式：\n  OR: 任一事件发生\n  AND: 所有事件都发生\n\nAPI：\n  xEventGroupCreate()\n  xEventGroupSetBits(group, bits)\n  xEventGroupWaitBits(group, bits, clear, waitType, timeout)\n\n场景：\n  多传感器就绪同步\n  多条件触发\n*/"
+        },
+        {
+          "title": "事件标志组使用",
+          "content": "事件标志组用于等待多个事件。如任务需等待温度和湿度都采集完成。两个采集任务分别设置不同标志位，处理任务等待两个标志都置位才执行。也可用OR模式等待任一事件。",
+          "codeExample": "#define BIT_TEMP   (1 << 0)\n#define BIT_HUMI   (1 << 1)\n\nEventGroupHandle_t xEventGroup;\n\nvoid tempTask(void* arg) {\n    while (1) {\n        readTemp();\n        xEventGroupSetBits(xEventGroup, BIT_TEMP);  // 设置温度就绪\n        vTaskDelay(2000);\n    }\n}\n\nvoid humiTask(void* arg) {\n    while (1) {\n        readHumi();\n        xEventGroupSetBits(xEventGroup, BIT_HUMI);  // 设置湿度就绪\n        vTaskDelay(2000);\n    }\n}\n\nvoid processTask(void* arg) {\n    while (1) {\n        // 等待温度和湿度都就绪(AND模式，自动清除)\n        xEventGroupWaitBits(xEventGroup, \n            BIT_TEMP | BIT_HUMI,\n            pdTRUE,    // 退出时清除\n            pdTRUE,    // AND模式(所有位)\n            portMAX_DELAY);\n        // 两个都就绪，处理\n        processData();\n    }\n}\n\n// 创建\nxEventGroup = xEventGroupCreate();"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "事件标志组有多少个标志位？",
+          "options": ["8个", "16个", "24个", "32个"],
+          "answer": 2,
+          "explanation": "FreeRTOS事件标志组有24个标志位(configUSE_16_BIT_TICKS=0时)。"
+        },
+        {
+          "type": "choice",
+          "question": "等待两个事件都发生用哪种模式？",
+          "options": ["OR模式", "AND模式", "XOR模式", "NOT模式"],
+          "answer": 1,
+          "explanation": "AND模式(pdTRUE)等待所有指定位都置位，OR模式(pdFALSE)等待任一位置位。"
+        },
+        {
+          "type": "fill",
+          "question": "设置事件标志用____函数。",
+          "answer": "xEventGroupSetBits",
+          "explanation": "xEventGroupSetBits(group, bits)设置指定位，中断中用FromISR版本。"
+        },
+        {
+          "type": "code",
+          "question": "写等待温度和湿度就绪的代码(AND模式，自动清除)。",
+          "keywords": ["xEventGroupWaitBits", "xEventGroup", "BIT_TEMP", "|", "BIT_HUMI", "pdTRUE", "pdTRUE", "portMAX_DELAY"],
+          "explanation": "参考答案：xEventGroupWaitBits(xEventGroup,BIT_TEMP|BIT_HUMI,pdTRUE,pdTRUE,portMAX_DELAY);"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "软件定时器",
+      "goal": "掌握FreeRTOS软件定时器的使用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "软件定时器概念",
+          "content": "FreeRTOS软件定时器在软件层面实现定时，不占用硬件定时器。分为单次定时(OneShot)和周期定时(Periodic)。创建：xTimerCreate。启动：xTimerStart。回调函数在定时器服务任务中执行，不能阻塞。适合周期性任务、超时管理等。",
+          "codeExample": "/* 软件定时器\n\n类型：\n  OneShot: 单次触发\n  Periodic: 周期触发\n\nAPI：\n  xTimerCreate(name, period, autoReload, id, callback)\n  xTimerStart(timer, timeout)\n  xTimerStop(timer, timeout)\n  xTimerChangePeriod(timer, newPeriod, timeout)\n\n注意：\n  回调在定时器服务任务执行\n  回调不能阻塞\n  不能调用阻塞API\n*/"
+        },
+        {
+          "title": "软件定时器使用",
+          "content": "软件定时器用于周期任务和超时管理。如周期5秒上报数据、10秒无操作超时等。回调函数简洁快速，不能调用vTaskDelay等阻塞函数。需在CubeMX中配置configUSE_TIMERS=1。",
+          "codeExample": "// 软件定时器\nvoid reportCallback(TimerHandle_t xTimer) {\n    // 周期上报数据(回调中不能阻塞)\n    sendReport();\n}\n\nvoid timeoutCallback(TimerHandle_t xTimer) {\n    // 超时处理\n    printf(\"Timeout!\\r\\n\");\n}\n\nint main(void) {\n    // ...\n    // 创建周期定时器(5秒，周期触发)\n    TimerHandle_t reportTimer = xTimerCreate(\n        \"Report\", pdMS_TO_TICKS(5000), pdTRUE, 0, reportCallback);\n    xTimerStart(reportTimer, 0);\n    \n    // 创建单次定时器(10秒超时)\n    TimerHandle_t timeoutTimer = xTimerCreate(\n        \"Timeout\", pdMS_TO_TICKS(10000), pdFALSE, 0, timeoutCallback);\n    xTimerStart(timeoutTimer, 0);\n    \n    vTaskStartScheduler();\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "软件定时器回调函数在哪个任务执行？",
+          "options": ["调用任务", "定时器服务任务", "空闲任务", "中断"],
+          "answer": 1,
+          "explanation": "软件定时器回调在定时器服务任务(Timer Service Task)中执行，优先级较高。"
+        },
+        {
+          "type": "choice",
+          "question": "定时器回调中不能做什么？",
+          "options": ["设置变量", "发送数据", "调用vTaskDelay", "释放信号量"],
+          "answer": 2,
+          "explanation": "回调在服务任务执行，不能调用阻塞函数如vTaskDelay，会导致定时器服务卡住。"
+        },
+        {
+          "type": "fill",
+          "question": "周期触发的定时器类型是____(pdTRUE表示)。",
+          "answer": "Periodic",
+          "explanation": "autoReload=pdTRUE是周期触发，pdFALSE是单次触发(OneShot)。"
+        },
+        {
+          "type": "code",
+          "question": "创建周期5秒的软件定时器并启动。",
+          "keywords": ["xTimerCreate", "\"Timer\"", "pdMS_TO_TICKS", "5000", "pdTRUE", "0", "callback", "xTimerStart"],
+          "explanation": "参考答案：TimerHandle_t t=xTimerCreate(\"Timer\",pdMS_TO_TICKS(5000),pdTRUE,0,callback); xTimerStart(t,0);"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "综合练习：多任务温湿度监测+串口上报",
+      "goal": "综合运用FreeRTOS机制完成多任务系统",
+      "timeAllocation": [
+        {"task": "项目规划", "minutes": 30},
+        {"task": "代码编写", "minutes": 90},
+        {"task": "测试调试", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "项目需求",
+          "content": "综合FreeRTOS机制实现：1.传感器任务采集温湿度→队列传递；2.显示任务从队列接收并显示OLED；3.上报任务定时串口上报；4.串口命令任务通过信号量触发。体现了任务、队列、信号量、软件定时器的综合应用。",
+          "codeExample": "/* 综合项目架构\n\n任务：\n  SensorTask(优先级3)\n    → 采集DHT11\n    → 队列发送数据\n  \n  DisplayTask(优先级2)\n    → 队列接收数据\n    → OLED显示\n  \n  ReportTask(优先级1)\n    → 软件定时器5秒触发\n    → 串口上报数据\n  \n  CmdTask(优先级2)\n    → 串口信号量触发\n    → 解析命令\n\n同步机制：\n  队列：SensorTask→DisplayTask\n  信号量：串口中断→CmdTask\n  软件定时器：周期上报\n*/"
+        },
+        {
+          "title": "项目实现",
+          "content": "完整代码实现：创建队列、信号量、软件定时器，4个任务协作。传感器任务采集数据发队列，显示任务收队列显示，定时器触发上报，串口命令用信号量。这是典型的FreeRTOS应用架构。",
+          "codeExample": "// 综合项目代码\nQueueHandle_t dataQueue;\nSemaphoreHandle_t cmdSem;\nSensorData latestData;\n\nvoid sensorTask(void* arg) {\n    SensorData data;\n    while (1) {\n        dht11Read(&data.temp, &data.humi);\n        xQueueSend(dataQueue, &data, 10);\n        latestData = data;  // 存最新\n        vTaskDelay(2000);\n    }\n}\n\nvoid displayTask(void* arg) {\n    SensorData data;\n    while (1) {\n        if (xQueueReceive(dataQueue, &data, portMAX_DELAY)) {\n            displayTempHumi(data.temp, data.humi);\n        }\n    }\n}\n\nvoid reportCallback(TimerHandle_t timer) {\n    printf(\"Report T:%d H:%d\\r\\n\", latestData.temp, latestData.humi);\n}\n\nvoid cmdTask(void* arg) {\n    while (1) {\n        xSemaphoreTake(cmdSem, portMAX_DELAY);\n        // 处理串口命令\n        processCommand(rxByte);\n    }\n}\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    // ... 初始化外设\n    dataQueue = xQueueCreate(5, sizeof(SensorData));\n    cmdSem = xSemaphoreCreateBinary();\n    TimerHandle_t t = xTimerCreate(\"Report\", pdMS_TO_TICKS(5000), \n                                   pdTRUE, 0, reportCallback);\n    xTimerStart(t, 0);\n    xTaskCreate(sensorTask, \"Sensor\", 256, NULL, 3, NULL);\n    xTaskCreate(displayTask, \"Display\", 256, NULL, 2, NULL);\n    xTaskCreate(cmdTask, \"Cmd\", 256, NULL, 2, NULL);\n    vTaskStartScheduler();\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "本项目中传感器任务用什么机制传递数据给显示任务？",
+          "options": ["信号量", "互斥锁", "队列", "事件标志"],
+          "answer": 2,
+          "explanation": "队列适合任务间数据传递，传感器发送显示接收。"
+        },
+        {
+          "type": "choice",
+          "question": "串口命令触发用哪种同步机制？",
+          "options": ["队列", "二值信号量", "互斥锁", "定时器"],
+          "answer": 1,
+          "explanation": "二值信号量适合中断到任务的事件通知，串口中断释放通知命令任务。"
+        },
+        {
+          "type": "fill",
+          "question": "周期上报用____实现。",
+          "answer": "软件定时器",
+          "explanation": "软件定时器周期触发回调函数，实现定时上报。"
+        },
+        {
+          "type": "code",
+          "question": "写main函数创建所有同步机制和任务并启动调度器。",
+          "keywords": ["xQueueCreate", "xSemaphoreCreateBinary", "xTimerCreate", "xTaskCreate", "vTaskStartScheduler"],
+          "explanation": "参考答案：dataQueue=xQueueCreate(5,sizeof(SensorData)); cmdSem=xSemaphoreCreateBinary(); xTaskCreate(sensorTask,...); xTaskCreate(displayTask,...); vTaskStartScheduler();"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+练习",
+      "goal": "总结本周知识，巩固FreeRTOS进阶",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.信号量(二值/计数)；2.互斥锁(优先级继承)；3.队列(数据传递)；4.事件标志组(多事件同步)；5.软件定时器(周期任务)；6.综合多任务项目。这些是FreeRTOS任务间通信的核心机制，掌握后能开发复杂多任务系统。",
+          "codeExample": "// FreeRTOS同步机制对比\n/*\n信号量(二值):\n  中断→任务通知\n  xSemaphoreGive/Take\n\n互斥量(Mutex):\n  保护共享资源\n  优先级继承\n\n队列(Queue):\n  任务间数据传递\n  FIFO缓冲\n\n事件标志组:\n  多事件同步\n  AND/OR等待\n\n软件定时器:\n  周期/单次定时\n  回调执行\n*/"
+        },
+        {
+          "title": "FreeRTOS最佳实践",
+          "content": "FreeRTOS使用建议：1.合理设优先级，关键任务高优先级；2.任务栈给足，用uxTaskGetStackHighWaterMark检查；3.中断简短，用FromISR函数；4.避免在中断中处理复杂逻辑，用同步机制通知任务；5.Mutex保护共享资源；6.队列传递数据；7.vTaskDelay不用HAL_Delay。",
+          "codeExample": "/* FreeRTOS 最佳实践\n\n1. 优先级分配\n   高：实时控制(电机)\n   中：数据处理(传感器)\n   低：显示/通信\n\n2. 栈大小\n   初始128-256字\n   检查：uxTaskGetStackHighWaterMark\n   剩余<20%需增大\n\n3. 中断处理\n   简短，用FromISR\n   复杂逻辑交给任务\n\n4. 共享资源\n   Mutex保护\n   不用关中断\n\n5. 延时\n   vTaskDelay/osDelay\n   不用HAL_Delay\n\n6. 调试\n   configASSERT开启\n   统计任务CPU占用\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "保护共享资源应使用哪种机制？",
+          "options": ["二值信号量", "互斥量Mutex", "队列", "事件标志"],
+          "answer": 1,
+          "explanation": "Mutex有优先级继承，专用于资源保护。二值信号量用于事件通知。"
+        },
+        {
+          "type": "choice",
+          "question": "中断到任务的数据传递可用？",
+          "options": ["Mutex", "队列+信号量", "vTaskDelay", "软件定时器"],
+          "answer": 1,
+          "explanation": "队列传递数据，信号量通知任务，组合使用实现中断到任务通信。"
+        },
+        {
+          "type": "fill",
+          "question": "检查任务栈剩余的函数是____。",
+          "answer": "uxTaskGetStackHighWaterMark",
+          "explanation": "uxTaskGetStackHighWaterMark返回任务栈历史最小剩余，越小越危险。"
+        },
+        {
+          "type": "code",
+          "question": "写出FreeRTOS 5种同步机制名称。",
+          "keywords": ["信号量", "互斥量", "队列", "事件标志组", "软件定时器"],
+          "explanation": "五种：二值/计数信号量、互斥量、队列、事件标志组、软件定时器。"
+        }
+      ]
+    }
+  ]
+}

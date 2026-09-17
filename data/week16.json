@@ -1,0 +1,365 @@
+{
+  "week": 16,
+  "month": 4,
+  "title": "第16周：综合项目2 + 总结",
+  "goal": "完成智能小车项目，总结4个月学习并规划后续路线。",
+  "days": [
+    {
+      "day": 1,
+      "title": "项目2规划（智能小车）",
+      "goal": "规划智能小车项目需求、硬件和架构",
+      "timeAllocation": [
+        {"task": "需求分析", "minutes": 30},
+        {"task": "硬件设计", "minutes": 60},
+        {"task": "系统设计", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "智能小车功能",
+          "content": "智能小车功能：1.电机驱动(L298N PWM控制)；2.红外避障(红外模块检测障碍)；3.蓝牙控制(HC-05串口遥控)；4.超声波测距(可选)；5.速度调节(PWM占空比)；6.方向控制(左转/右转/前进/后退)。综合运用PWM、串口、GPIO、FreeRTOS。",
+          "codeExample": "/* 智能小车功能\n\n1. 电机驱动\n   L298N + PWM调速\n   前进/后退/左转/右转\n\n2. 红外避障\n   红外模块检测障碍\n   自动转向避障\n\n3. 蓝牙遥控\n   HC-05串口\n   手机APP控制\n\n4. 速度调节\n   PWM占空比\n   0-100%速度\n\n5. 方向控制\n   差速转向\n   原地旋转\n\n6. 超声波(可选)\n   距离检测\n   自动刹车\n*/"
+        },
+        {
+          "title": "硬件清单",
+          "content": "小车硬件：STM32F103最小系统、L298N电机驱动、2个直流电机、2个轮子+万向轮、红外避障模块(2个)、HC-05蓝牙模块、电池(18650)、小车底盘。可扩展：超声波HC-SR04、舵机(雷达扫描)、MPU6050陀螺仪。",
+          "codeExample": "/* 硬件清单\n\n主控：STM32F103C8T6\n驱动：\n  L298N 电机驱动模块\n  2x TT直流减速电机\n  18650电池(2节)\n\n传感器：\n  红外避障模块 x 2\n  超声波 HC-SR04(可选)\n\n通信：\n  HC-05 蓝牙模块\n  (USART2串口)\n\n底盘：\n  亚克力小车底盘\n  2主动轮+1万向轮\n\n引脚分配：\n  PWM: TIM2_CH1/2(PA0/PA1)\n  方向: PB5,PB6(L298N IN1-4)\n  红外: PA11,PA12(输入)\n  蓝牙: USART2(PA2/PA3)\n  超声波: PB10(Trig),PB11(Echo)\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "电机驱动使用什么模块？",
+          "options": ["ULN2003", "L298N", "BTN7970", "TIP120"],
+          "answer": 1,
+          "explanation": "L298N是常用电机驱动模块，双H桥可驱动两个直流电机。"
+        },
+        {
+          "type": "choice",
+          "question": "电机调速使用什么方式？",
+          "options": ["调节电压", "PWM占空比", "改变电流", "串电阻"],
+          "answer": 1,
+          "explanation": "PWM占空比控制电机平均电压实现调速，是标准的电机调速方式。"
+        },
+        {
+          "type": "fill",
+          "question": "蓝牙模块常用____(HC-05)。",
+          "answer": "HC-05",
+          "explanation": "HC-05是常用蓝牙串口模块，通过串口与STM32通信。"
+        },
+        {
+          "type": "code",
+          "question": "写出小车6个功能需求。",
+          "keywords": ["电机驱动", "红外避障", "蓝牙控制", "速度调节", "方向控制", "超声波"],
+          "explanation": "功能：电机驱动、红外避障、蓝牙控制、速度调节、方向控制、超声波测距(可选)。"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "电机驱动",
+      "goal": "实现L298N驱动电机和PWM调速",
+      "timeAllocation": [
+        {"task": "硬件连接", "minutes": 30},
+        {"task": "代码编写", "minutes": 90},
+        {"task": "测试调试", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "L298N驱动原理",
+          "content": "L298N是双H桥电机驱动，IN1/IN2控制左电机方向，IN3/IN4控制右电机，ENA/ENB接PWM调速。IN1=1,IN2=0正转；IN1=0,IN2=1反转；都0停止。PWM占空比控制速度。12V供电，3.3V/5V逻辑。",
+          "codeExample": "/* L298N控制\n\n左电机(ENA PWM, IN1, IN2):\n  IN1=1,IN2=0 → 正转\n  IN1=0,IN2=1 → 反转\n  IN1=0,IN2=0 → 停止\n  ENA PWM → 调速\n\n右电机(ENB PWM, IN3, IN4):\n  同上\n\n方向控制：\n  前进: 左右都正转\n  后退: 左右都反转\n  左转: 左停右正转(或左反右正)\n  右转: 右停左正转\n  原地左转: 左反右正\n*/"
+        },
+        {
+          "title": "电机控制代码",
+          "content": "封装电机控制函数：forward前进、backward后退、turnLeft左转、turnRight右转、stop停止。setSpeed设置PWM占空比。用TIM2产生PWM，L298N方向用GPIO。FreeRTOS任务控制运动。",
+          "codeExample": "// 电机引脚定义\n#define MOTOR_LEFT_IN1   GPIO_PIN_5\n#define MOTOR_LEFT_IN2   GPIO_PIN_6\n#define MOTOR_RIGHT_IN1  GPIO_PIN_7\n#define MOTOR_RIGHT_IN2  GPIO_PIN_8\n#define MOTOR_PORT       GPIOB\n\n// 设置速度(0-100)\nvoid setSpeed(uint8_t speed) {\n    uint16_t ccr = speed * 10;  // 0-1000\n    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, ccr);\n    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, ccr);\n}\n\n// 前进\nvoid moveForward(void) {\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_LEFT_IN1, GPIO_PIN_SET);\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_LEFT_IN2, GPIO_PIN_RESET);\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_RIGHT_IN1, GPIO_PIN_SET);\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_RIGHT_IN2, GPIO_PIN_RESET);\n}\n\n// 左转(差速)\nvoid turnLeft(void) {\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_LEFT_IN1, GPIO_PIN_RESET);\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_LEFT_IN2, GPIO_PIN_RESET);\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_RIGHT_IN1, GPIO_PIN_SET);\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_RIGHT_IN2, GPIO_PIN_RESET);\n}\n\n// 停止\nvoid motorStop(void) {\n    HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_LEFT_IN1| MOTOR_LEFT_IN2|\n                      MOTOR_RIGHT_IN1|MOTOR_RIGHT_IN2, GPIO_PIN_RESET);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "L298N的IN1=1,IN2=0表示电机？",
+          "options": ["停止", "正转", "反转", "刹车"],
+          "answer": 1,
+          "explanation": "IN1=1,IN2=0电机正转，IN1=0,IN2=1反转，都0停止。"
+        },
+        {
+          "type": "choice",
+          "question": "电机调速通过哪个引脚？",
+          "options": ["IN1", "IN2", "ENA(PWM)", "GND"],
+          "answer": 2,
+          "explanation": "ENA/ENB接PWM信号，占空比控制平均电压实现调速。"
+        },
+        {
+          "type": "fill",
+          "question": "小车左转用____方式(左轮停右轮正转)。",
+          "answer": "差速",
+          "explanation": "差速转向：左右轮速度不同实现转向，左停右转则左转。"
+        },
+        {
+          "type": "code",
+          "question": "写moveForward函数让小车前进。",
+          "keywords": ["HAL_GPIO_WritePin", "MOTOR_LEFT_IN1", "SET", "MOTOR_LEFT_IN2", "RESET", "MOTOR_RIGHT_IN1", "SET"],
+          "explanation": "参考答案：void moveForward(){HAL_GPIO_WritePin(GPIOB,MOTOR_LEFT_IN1,SET); HAL_GPIO_WritePin(GPIOB,MOTOR_LEFT_IN2,RESET); HAL_GPIO_WritePin(GPIOB,MOTOR_RIGHT_IN1,SET); HAL_GPIO_WritePin(GPIOB,MOTOR_RIGHT_IN2,RESET);}"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "红外避障模块",
+      "goal": "使用红外模块检测障碍物实现自动避障",
+      "timeAllocation": [
+        {"task": "硬件连接", "minutes": 30},
+        {"task": "代码编写", "minutes": 90},
+        {"task": "测试调试", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "红外避障原理",
+          "content": "红外避障模块发射红外线，遇到障碍反射回来接收，输出低电平(检测到)。两个模块分别装在左右前方。检测策略：左检测到障碍→右转避障；右检测到→左转避障；两边都有→后退转向。无障碍→前进。",
+          "codeExample": "/* 红外避障\n\n模块特性：\n  检测到障碍：输出低(0)\n  无障碍：输出高(1)\n  检测距离可调(电位器)\n\n安装：\n  左红外 → PA11\n  右红外 → PA12\n\n避障策略：\n  左有障碍 → 右转\n  右有障碍 → 左转\n  两边有   → 后退+转向\n  无障碍   → 前进\n*/"
+        },
+        {
+          "title": "避障任务实现",
+          "content": "FreeRTOS避障任务读取红外模块状态，决定运动方向。优先级较高确保安全。可加延时确保动作完成。也可用中断方式检测障碍立即响应。",
+          "codeExample": "#define IR_LEFT  GPIO_PIN_11\n#define IR_RIGHT GPIO_PIN_12\n#define IR_PORT  GPIOA\n\nvoid avoidTask(void* arg) {\n    while (1) {\n        uint8_t left  = HAL_GPIO_ReadPin(IR_PORT, IR_LEFT)  == GPIO_PIN_RESET;\n        uint8_t right = HAL_GPIO_ReadPin(IR_PORT, IR_RIGHT) == GPIO_PIN_RESET;\n        \n        if (!left && !right) {\n            moveForward();  // 无障碍前进\n        } else if (left && !right) {\n            turnRight();    // 左有障碍，右转\n            vTaskDelay(500);\n        } else if (!left && right) {\n            turnLeft();     // 右有障碍，左转\n            vTaskDelay(500);\n        } else {\n            moveBackward(); // 都有障碍，后退\n            vTaskDelay(300);\n            turnRight();    // 转向\n            vTaskDelay(500);\n        }\n        vTaskDelay(50);  // 检测周期\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "红外模块检测到障碍时输出？",
+          "options": ["高电平", "低电平", "不变", "脉冲"],
+          "answer": 1,
+          "explanation": "红外避障模块检测到障碍输出低电平，无障碍高电平。"
+        },
+        {
+          "type": "choice",
+          "question": "两边都有障碍应如何处理？",
+          "options": ["继续前进", "停止", "后退转向", "原地旋转"],
+          "answer": 2,
+          "explanation": "两边都有障碍应后退再转向，寻找新路径。"
+        },
+        {
+          "type": "fill",
+          "question": "避障任务优先级应较____确保安全。",
+          "answer": "高",
+          "explanation": "避障是安全关键功能，优先级要高，及时响应。"
+        },
+        {
+          "type": "code",
+          "question": "写避障逻辑：左有障碍右转，右有障碍左转。",
+          "keywords": ["if", "left", "turnRight", "else", "if", "right", "turnLeft"],
+          "explanation": "参考答案：if(left){turnRight();} else if(right){turnLeft();} else{moveForward();}"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "蓝牙串口通信控制",
+      "goal": "实现蓝牙遥控小车",
+      "timeAllocation": [
+        {"task": "蓝牙配置", "minutes": 30},
+        {"task": "代码编写", "minutes": 90},
+        {"task": "测试调试", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "HC-05蓝牙模块",
+          "content": "HC-05是蓝牙转串口模块，与STM32用USART通信。手机蓝牙串口助手发送命令字符。命令定义：'F'前进、'B'后退、'L'左转、'R'右转、'S'停止、'0'-'9'调速。手机连接HC-05后可遥控小车。",
+          "codeExample": "/* HC-05蓝牙\n\n通信：USART2(PA2 TX, PA3 RX)\n波特率：9600(默认)或38400\nAT模式：配置参数\n\n手机APP：\n  蓝牙串口助手\n  连接HC-05\n  发送命令字符\n\n命令定义：\n  'F' → 前进\n  'B' → 后退\n  'L' → 左转\n  'R' → 右转\n  'S' → 停止\n  '0'-'9' → 速度0-100%\n*/"
+        },
+        {
+          "title": "蓝牙控制实现",
+          "content": "蓝牙控制任务接收串口命令并执行。串口中断接收字符，信号量通知控制任务。控制模式切换：蓝牙模式和自动避障模式，按键切换。两种模式可共存(蓝牙优先)。",
+          "codeExample": "uint8_t btCmd;\nSemaphoreHandle_t btSem;\nuint8_t mode = 0;  // 0:避障 1:蓝牙\n\nvoid HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {\n    if (huart->Instance == USART2) {\n        BaseType_t xWoken = pdFALSE;\n        xSemaphoreGiveFromISR(btSem, &xWoken);\n        portYIELD_FROM_ISR(xWoken);\n        HAL_UART_Receive_IT(&huart2, &btCmd, 1);\n    }\n}\n\nvoid btControlTask(void* arg) {\n    while (1) {\n        xSemaphoreTake(btSem, portMAX_DELAY);\n        if (mode == 1) {  // 蓝牙模式\n            switch (btCmd) {\n                case 'F': moveForward(); break;\n                case 'B': moveBackward(); break;\n                case 'L': turnLeft(); vTaskDelay(300); motorStop(); break;\n                case 'R': turnRight(); vTaskDelay(300); motorStop(); break;\n                case 'S': motorStop(); break;\n                case '0': setSpeed(0); break;\n                case '9': setSpeed(90); break;\n            }\n        }\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "HC-05与STM32通信方式是？",
+          "options": ["I2C", "SPI", "UART串口", "蓝牙直连"],
+          "answer": 2,
+          "explanation": "HC-05是蓝牙转串口模块，与STM32用UART串口通信。"
+        },
+        {
+          "type": "choice",
+          "question": "手机控制小车的流程是？",
+          "options": ["手机→蓝牙→HC-05→STM32", "手机→WiFi→STM32", "手机→红外→STM32", "手机→USB→STM32"],
+          "answer": 0,
+          "explanation": "手机蓝牙发送命令→HC-05接收转串口→STM32解析执行。"
+        },
+        {
+          "type": "fill",
+          "question": "蓝牙模式切换用____(按键EXTI中断)。",
+          "answer": "按键",
+          "explanation": "按键外部中断切换mode变量，0避障1蓝牙。"
+        },
+        {
+          "type": "code",
+          "question": "写蓝牙命令解析switch代码。",
+          "keywords": ["switch", "btCmd", "case", "'F'", "moveForward", "case", "'S'", "motorStop"],
+          "explanation": "参考答案：switch(btCmd){case 'F':moveForward();break; case 'B':moveBackward();break; case 'S':motorStop();break;}"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "系统联调（FreeRTOS多任务整合）",
+      "goal": "整合所有任务完成完整小车系统",
+      "timeAllocation": [
+        {"task": "代码整合", "minutes": 30},
+        {"task": "系统调试", "minutes": 90},
+        {"task": "问题修复", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "系统架构",
+          "content": "小车系统FreeRTOS任务：1.避障任务(高优先级，检测红外)；2.蓝牙控制任务(中优先级，处理命令)；3.速度管理任务(低优先级，PWM调速)；4.状态上报任务(低优先级，串口上报)。用信号量协调蓝牙和避障模式。",
+          "codeExample": "/* 智能小车系统\n\nFreeRTOS任务：\n  avoidTask   (优先级4) 避障检测\n  btTask      (优先级3) 蓝牙控制\n  speedTask   (优先级2) 速度管理\n  reportTask  (优先级1) 状态上报\n\n同步机制：\n  btSem      蓝牙命令信号量\n  modeMutex  模式切换Mutex\n  dataQueue  状态数据队列\n\n模式：\n  0:自动避障\n  1:蓝牙遥控\n  按键切换\n*/"
+        },
+        {
+          "title": "完整系统代码",
+          "content": "整合所有模块：电机驱动、红外避障、蓝牙控制、PWM调速。主函数初始化所有外设、创建任务和同步机制、启动调度器。任务间通过信号量和全局变量(加Mutex)通信。",
+          "codeExample": "// 完整小车系统\nSemaphoreHandle_t btSem;\nSemaphoreHandle_t modeMutex;\nuint8_t mode = 0;\nuint8_t currentSpeed = 50;\n\nvoid avoidTask(void* arg) {\n    while (1) {\n        xSemaphoreTake(modeMutex, portMAX_DELAY);\n        uint8_t m = mode;\n        xSemaphoreGive(modeMutex);\n        if (m == 0) {  // 避障模式\n            // 避障逻辑...\n        }\n        vTaskDelay(50);\n    }\n}\n\nvoid btTask(void* arg) {\n    while (1) {\n        xSemaphoreTake(btSem, portMAX_DELAY);\n        xSemaphoreTake(modeMutex, portMAX_DELAY);\n        uint8_t m = mode;\n        xSemaphoreGive(modeMutex);\n        if (m == 1) {  // 蓝牙模式\n            // 蓝牙命令处理...\n        }\n    }\n}\n\nvoid HAL_GPIO_EXTI_Callback(uint16_t pin) {\n    if (pin == GPIO_PIN_0) {  // 按键\n        xSemaphoreTake(modeMutex, portMAX_DELAY);\n        mode = !mode;\n        xSemaphoreGive(modeMutex);\n    }\n}\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    MX_TIM2_Init();  // PWM\n    MX_USART2_Init();  // 蓝牙\n    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);\n    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);\n    HAL_UART_Receive_IT(&huart2, &btCmd, 1);\n    \n    btSem = xSemaphoreCreateBinary();\n    modeMutex = xSemaphoreCreateMutex();\n    \n    xTaskCreate(avoidTask, \"Avoid\", 256, NULL, 4, NULL);\n    xTaskCreate(btTask, \"BT\", 256, NULL, 3, NULL);\n    \n    vTaskStartScheduler();\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "小车系统中避障任务优先级应？",
+          "options": ["最低", "最高", "中等", "任意"],
+          "answer": 1,
+          "explanation": "避障是安全功能，优先级最高确保及时检测和响应。"
+        },
+        {
+          "type": "choice",
+          "question": "模式切换用Mutex保护mode变量的原因是？",
+          "options": ["提高速度", "避免数据竞争", "节省内存", "便于调试"],
+          "answer": 1,
+          "explanation": "mode变量在中断和任务中访问，Mutex保护避免数据竞争。"
+        },
+        {
+          "type": "fill",
+          "question": "小车有____种工作模式(避障/蓝牙)。",
+          "answer": "2",
+          "explanation": "两种模式：自动避障模式和蓝牙遥控模式，按键切换。"
+        },
+        {
+          "type": "code",
+          "question": "写main函数初始化外设并创建任务启动调度器。",
+          "keywords": ["MX_TIM2_Init", "MX_USART2_Init", "xTaskCreate", "avoidTask", "btTask", "vTaskStartScheduler"],
+          "explanation": "参考答案：MX_TIM2_Init(); MX_USART2_Init(); xTaskCreate(avoidTask,\"A\",256,NULL,4,NULL); xTaskCreate(btTask,\"B\",256,NULL,3,NULL); vTaskStartScheduler();"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "项目优化与文档",
+      "goal": "优化系统性能，编写项目文档",
+      "timeAllocation": [
+        {"task": "系统优化", "minutes": 30},
+        {"task": "文档编写", "minutes": 90},
+        {"task": "代码整理", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "系统优化",
+          "content": "优化方向：1.PID速度闭环(加编码器反馈)；2.超声波测距精确避障；3.路径规划算法；4.手机APP界面美化；5.低功耗(空闲时睡眠)；6.参数EEPROM存储。优化使小车更智能。",
+          "codeExample": "/* 优化方向\n\n1. PID速度闭环\n   编码器测速 → PID计算 → PWM输出\n   速度精确控制\n\n2. 超声波精确避障\n   HC-SR04测距\n   距离<10cm刹车\n\n3. 路径规划\n   记录路径\n   最短路径算法\n\n4. 手机APP\n   图形界面\n   摇杆控制\n\n5. 低功耗\n   空闲WFI\n   电机待机\n\n6. 参数存储\n   EEPROM存速度等\n*/"
+        },
+        {
+          "title": "项目文档",
+          "content": "小车项目文档：1.需求说明；2.硬件设计(原理图/BOM)；3.软件设计(任务架构/流程图)；4.蓝牙协议；5.测试报告；6.组装说明；7.代码说明。完整文档便于复现和改进。",
+          "codeExample": "/* 小车项目文档\n\n1. 需求说明\n   - 功能需求\n   - 性能指标\n\n2. 硬件设计\n   - 原理图\n   - BOM清单\n   - 组装图\n\n3. 软件设计\n   - 任务架构图\n   - 程序流程图\n   - 关键算法\n\n4. 蓝牙协议\n   - 命令定义\n   - 数据格式\n\n5. 测试报告\n   - 功能测试\n   - 性能测试\n\n6. 组装说明\n   - 接线图\n   - 步骤说明\n\n7. 代码说明\n   - 模块说明\n   - 函数说明\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "PID速度闭环需要什么反馈？",
+          "options": ["超声波", "编码器", "红外", "陀螺仪"],
+          "answer": 1,
+          "explanation": "编码器测速提供速度反馈，PID算法精确控制速度。"
+        },
+        {
+          "type": "choice",
+          "question": "低功耗优化用什么机制？",
+          "options": ["关电机", "空闲任务WFI", "降低电压", "减少任务"],
+          "answer": 1,
+          "explanation": "FreeRTOS空闲钩子中调用__WFI进入低功耗，有任务时唤醒。"
+        },
+        {
+          "type": "fill",
+          "question": "参数存储用____芯片。",
+          "answer": "EEPROM",
+          "explanation": "EEPROM掉电保存，用于存储速度等配置参数。"
+        },
+        {
+          "type": "code",
+          "question": "写出小车项目文档的7个部分。",
+          "keywords": ["需求", "硬件", "软件", "协议", "测试", "组装", "代码"],
+          "explanation": "7部分：需求说明、硬件设计、软件设计、蓝牙协议、测试报告、组装说明、代码说明。"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "课程总结+后续学习路线建议",
+      "goal": "总结4个月学习，规划后续发展",
+      "timeAllocation": [
+        {"task": "知识总结", "minutes": 30},
+        {"task": "路线规划", "minutes": 60},
+        {"task": "项目整理", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "4个月学习总结",
+          "content": "4个月学习总结：第1月C语言基础(变量/控制流/函数/数组/指针/结构体/位运算)；第2月STM32入门(GPIO/中断/串口)；第3月外设驱动(定时器/PWM/ADC/I2C/SPI/OLED/传感器)；第4月FreeRTOS和综合项目。从零基础到完成两个综合项目，具备了嵌入式开发的基本能力。",
+          "codeExample": "/* 4个月学习总结\n\n第1月：C语言基础\n  第1周：变量、数据类型、运算符、输入输出\n  第2周：控制流(if/for/while/switch)\n  第3周：函数、数组、字符串\n  第4周：指针、结构体、位运算\n\n第2月：STM32入门\n  第5周：嵌入式概念、开发环境\n  第6周：GPIO输出(LED/流水灯)\n  第7周：GPIO输入(按键/外部中断)\n  第8周：UART串口通信\n\n第3月：外设驱动\n  第9周：定时器、PWM\n  第10周：ADC、DAC\n  第11周：I2C、SPI通信\n  第12周：OLED显示、传感器\n\n第4月：FreeRTOS+项目\n  第13周：FreeRTOS基础\n  第14周：FreeRTOS进阶\n  第15周：环境监测站项目\n  第16周：智能小车项目\n*/"
+        },
+        {
+          "title": "后续学习路线",
+          "content": "后续学习建议：1.深入RTOS(Linux RT/ThreadX)；2.嵌入式Linux(树莓派/IMX6)；3.物联网(MQTT/HTTP/CoAP)；4.AI边缘计算(TensorFlow Lite)；5.电机控制(PID/FOC)；6.通信协议(CAN/Modbus/LoRa)；7.GUI( LVGL)；8.PCB设计。选择兴趣方向深入。",
+          "codeExample": "/* 后续学习路线\n\n1. 深入RTOS\n   - Linux实时\n   - ThreadX/RT-Thread\n   - Zephyr\n\n2. 嵌入式Linux\n   - 树莓派/IMX6\n   - 驱动开发\n   - Yocto\n\n3. 物联网\n   - MQTT/HTTP\n   - ESP32开发\n   - 云平台对接\n\n4. AI边缘\n   - TensorFlow Lite\n   - 语音识别\n   - 图像识别\n\n5. 电机控制\n   - PID控制\n   - FOC无刷电机\n   - 编码器反馈\n\n6. 通信协议\n   - CAN总线\n   - Modbus RTU\n   - LoRa/NB-IoT\n\n7. GUI开发\n   - LVGL\n   - emWin\n\n8. 硬件设计\n   - PCB设计(Altium)\n   - 原理图\n   - 焊接调试\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "4个月学习顺序正确的是？",
+          "options": ["C语言→FreeRTOS→STM32→外设", "C语言→STM32→外设→FreeRTOS", "STM32→C语言→外设→FreeRTOS", "FreeRTOS→STM32→C语言→外设"],
+          "answer": 1,
+          "explanation": "正确顺序：C语言基础→STM32入门→外设驱动→FreeRTOS和项目，由浅入深。"
+        },
+        {
+          "type": "choice",
+          "question": "物联网开发应学习的协议是？",
+          "options": ["CAN", "MQTT", "I2C", "SPI"],
+          "answer": 1,
+          "explanation": "MQTT是物联网常用应用层协议，适合设备到云通信。"
+        },
+        {
+          "type": "fill",
+          "question": "电机精确控制常用____算法(比例积分微分)。",
+          "answer": "PID",
+          "explanation": "PID(比例积分微分)控制是电机精确控制的核心算法。"
+        },
+        {
+          "type": "code",
+          "question": "写出4个月每月学习主题。",
+          "keywords": ["C语言基础", "STM32入门", "外设驱动", "FreeRTOS项目"],
+          "explanation": "4个月主题：1.C语言基础 2.STM32入门 3.外设驱动 4.FreeRTOS和综合项目。"
+        }
+      ]
+    }
+  ]
+}

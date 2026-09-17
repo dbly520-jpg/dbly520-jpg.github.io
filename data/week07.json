@@ -1,0 +1,365 @@
+{
+  "week": 7,
+  "month": 2,
+  "title": "第7周：GPIO输入、外部中断",
+  "goal": "掌握GPIO输入模式、按键检测、按键消抖和外部中断。",
+  "days": [
+    {
+      "day": 1,
+      "title": "GPIO输入模式",
+      "goal": "理解上拉、下拉、浮空输入模式",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "三种输入模式",
+          "content": "GPIO输入模式有三种：1.浮空输入(GPIO_NOPULL)：引脚电平由外部决定，悬空时电平不确定；2.上拉输入(GPIO_PULLUP)：内部上拉电阻，无外部信号时为高电平；3.下拉输入(GPIO_PULLDOWN)：内部下拉电阻，无外部信号时为低电平。按键检测常用上拉输入：按键接地，按下时引脚为低电平。",
+          "codeExample": "/* GPIO输入模式\n\n1. 浮空输入\n   引脚悬空 → 电平不确定\n   用于：I2C SDA/SCL(外部上拉)\n\n2. 上拉输入\n   引脚默认 → 高电平\n   用于：按键接地(按下读低)\n\n3. 下拉输入\n   引脚默认 → 低电平\n   用于：按键接VCC(按下读高)\n*/"
+        },
+        {
+          "title": "输入配置和读取",
+          "content": "CubeMX配置引脚为GPIO_Input，选择Pull模式。HAL_GPIO_ReadPin函数读取引脚电平，返回GPIO_PIN_SET或GPIO_PIN_RESET。按键一端接GPIO，另一端接GND(用上拉)或3V3(用下拉)。上拉模式下按键接地，按下时读到低电平。",
+          "codeExample": "// GPIO输入配置和读取\n// CubeMX: PA0配置为GPIO_Input, Pull: Pull-Up\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    \n    while (1) {\n        // 读取PA0按键状态(上拉,按下为低)\n        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET) {\n            // 按键按下\n            HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);  // 点亮LED\n        } else {\n            HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);    // 熄灭LED\n        }\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "按键一端接GPIO一端接GND，应使用哪种输入模式？",
+          "options": ["浮空输入", "上拉输入", "下拉输入", "模拟功能"],
+          "answer": 1,
+          "explanation": "按键接地，用上拉输入：默认高电平，按下时引脚被拉低为低电平。"
+        },
+        {
+          "type": "choice",
+          "question": "上拉输入模式下按键未按下时引脚电平是？",
+          "options": ["高电平", "低电平", "不确定", "零"],
+          "answer": 0,
+          "explanation": "上拉输入有内部上拉电阻，未按下时引脚为高电平。"
+        },
+        {
+          "type": "fill",
+          "question": "读取GPIO输入电平的HAL函数是____。",
+          "answer": "HAL_GPIO_ReadPin",
+          "explanation": "HAL_GPIO_ReadPin(GPIOx,GPIO_PIN_x)返回GPIO_PinState枚举。"
+        },
+        {
+          "type": "code",
+          "question": "写代码读取PA0按键，按下时点亮PC13 LED，松开时熄灭。",
+          "keywords": ["HAL_GPIO_ReadPin", "GPIOA", "GPIO_PIN_0", "GPIO_PIN_RESET", "HAL_GPIO_WritePin", "GPIOC", "GPIO_PIN_13"],
+          "explanation": "参考答案：if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET)HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_RESET); else HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_SET);"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "按键检测",
+      "goal": "掌握轮询方式读取按键状态",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "轮询检测按键",
+          "content": "轮询方式在主循环中不断读取按键状态。检测到按键按下后执行相应操作。简单但占用CPU，不适合实时响应。按键检测需考虑：1.按下触发；2.松开触发；3.长按检测；4.连击检测。常在主循环中周期性检测。",
+          "codeExample": "// 按键控制LED开关\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    \n    uint8_t ledState = 0;\n    \n    while (1) {\n        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET) {\n            HAL_Delay(20);  // 消抖延时\n            if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET) {\n                ledState = !ledState;  // 切换状态\n                HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, \n                    ledState ? GPIO_PIN_RESET : GPIO_PIN_SET);\n                // 等待按键释放\n                while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET);\n            }\n        }\n    }\n}"
+        },
+        {
+          "title": "按键触发模式",
+          "content": "按键检测有三种触发模式：1.按下触发(检测到低电平立即执行)；2.松开触发(等待按键释放后执行，更稳定)；3.边沿触发(用中断)。松开触发最常用，避免一次按下多次触发。需等待按键释放。",
+          "codeExample": "/* 按键触发模式\n\n1. 按下触发\n   if(按键按下) 执行操作\n   优点：响应快\n   缺点：可能抖动误触发\n\n2. 松开触发\n   if(按键按下){\n     while(按键按下); // 等释放\n     执行操作\n   }\n   优点：稳定\n   缺点：阻塞等待释放\n\n3. 边沿触发(中断)\n   下降沿中断中执行\n   优点：实时不阻塞\n   缺点：需配置中断\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "轮询方式检测按键的缺点是？",
+          "options": ["实时性差", "响应快", "不占CPU", "代码复杂"],
+          "answer": 0,
+          "explanation": "轮询在主循环检测，如果程序忙碌会错过按键，实时性差。"
+        },
+        {
+          "type": "choice",
+          "question": "松开触发相比按下触发的优点是？",
+          "options": ["响应更快", "更稳定避免误触", "代码更短", "不耗电"],
+          "answer": 1,
+          "explanation": "松开触发等按键释放再执行，避免抖动导致多次触发。"
+        },
+        {
+          "type": "fill",
+          "question": "检测按键按下后等待释放的语句是____(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET);。",
+          "answer": "while",
+          "explanation": "while循环等待按键释放(读到高电平)才退出。"
+        },
+        {
+          "type": "code",
+          "question": "写按键单次触发控制LED开关的代码(松开触发)。",
+          "keywords": ["if", "ReadPin", "RESET", "HAL_Delay", "while", "ReadPin", "RESET", "TogglePin"],
+          "explanation": "参考答案：if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET){HAL_Delay(20);while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET);HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);}"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "按键消抖",
+      "goal": "理解机械抖动，实现软件消抖",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "机械抖动",
+          "content": "机械按键在按下和释放瞬间会产生抖动(bounce)，电平在几ms内快速跳变。抖动时间通常5-20ms。不消抖会导致一次按下被识别为多次。软件消抖方法：检测到电平变化后延时10-20ms再次检测，如果仍为按下状态则确认有效。",
+          "codeExample": "/* 机械抖动波形\n\n理想:  ___________|~~~~~~~~~|___________\n实际:  ____|~~|_~~|~~~~|~~|~~~~|________\n         抖动   稳定    抖动\n\n消抖方法：\n1. 检测到按下\n2. 延时10-20ms\n3. 再次检测\n4. 仍为按下 → 确认有效\n5. 否则 → 抖动忽略\n*/"
+        },
+        {
+          "title": "软件消抖实现",
+          "content": "软件消抖常用延时法：检测到电平变化后延时再确认。也有定时器消抖法：在定时器中断中周期性检测按键状态，用状态机判断。延时法简单但阻塞，定时器法不阻塞但复杂。",
+          "codeExample": "// 延时消抖法\nuint8_t readKey(void) {\n    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET) {\n        HAL_Delay(20);  // 消抖延时\n        if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET) {\n            // 确认按下\n            while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET);\n            return 1;  // 返回按下\n        }\n    }\n    return 0;  // 未按下\n}\n\n// 使用\nif (readKey()) {\n    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "机械按键抖动的时间通常是多少？",
+          "options": ["1ns", "5-20ms", "1秒", "100ms"],
+          "answer": 1,
+          "explanation": "机械抖动时间通常5-20ms，消抖延时常取10-20ms。"
+        },
+        {
+          "type": "choice",
+          "question": "不消抖会导致什么问题？",
+          "options": ["按键失灵", "一次按下识别为多次", "LED损坏", "程序崩溃"],
+          "answer": 1,
+          "explanation": "抖动会使电平快速跳变，一次按下被识别为多次，导致误操作。"
+        },
+        {
+          "type": "fill",
+          "question": "软件消抖最简单的方法是检测后____再确认。",
+          "answer": "延时",
+          "explanation": "延时10-20ms后再次检测，确认电平稳定。"
+        },
+        {
+          "type": "code",
+          "question": "写一个带消抖的按键读取函数readKey()，返回1表示按下。",
+          "keywords": ["HAL_GPIO_ReadPin", "RESET", "HAL_Delay", "20", "while", "return", "1"],
+          "explanation": "参考答案：uint8_t readKey(){if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET){HAL_Delay(20);if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET){while(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET);return 1;}}return 0;}"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "外部中断概念",
+      "goal": "理解EXTI线和NVIC的作用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "EXTI外部中断",
+          "content": "EXTI(外部中断/事件控制器)用于检测GPIO引脚的电平变化。STM32F103有19条EXTI线：EXTI0-15对应GPIO的0-15号引脚(如PA0、PB0、PC0共用EXTI0)，EXTI16-PVD，EXTI17-RTC闹钟，EXTI18-USB唤醒。触发方式可选上升沿、下降沿、双沿。中断方式不占用CPU轮询，实时性好。",
+          "codeExample": "/* EXTI线与GPIO映射\nEXTI0  ← PA0/PB0/PC0/PD0/PE0\nEXTI1  ← PA1/PB1/PC1/...\n...\nEXTI15 ← PA15/PB15/...\n\n注意：同一EXTI线只能选一个端口\n如EXTI0只能用PA0或PB0，不能同时\n\n触发方式：\n  上升沿  ：低→高时触发\n  下降沿  ：高→低时触发\n  双沿    ：变化即触发\n*/"
+        },
+        {
+          "title": "NVIC中断控制器",
+          "content": "NVIC(嵌套向量中断控制器)管理所有中断。功能：1.中断优先级(抢占/响应)；2.中断使能/禁止；3.中断向量表。STM32有16个优先级(0最高)。CubeMX中配置中断优先级。中断处理函数在stm32f1xx_it.c中。HAL库提供回调函数机制简化中断处理。",
+          "codeExample": "/* NVIC概念\n\n中断优先级：\n  抢占优先级(PreemptionPriority)：可打断低优先级中断\n  响应优先级(SubPriority)：同时到达时先后顺序\n\n优先级分组(STM32F1默认NVIC_PRIORITYGROUP_4)：\n  4位抢占，0位响应(共16级抢占)\n\n中断处理流程：\n1. 引脚电平变化\n2. EXTI检测到边沿\n3. NVIC发送中断请求\n4. CPU跳转到中断服务函数\n5. 执行回调函数\n6. 返回主程序\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "EXTI0可以连接哪些引脚？",
+          "options": ["PA0", "PB0", "PA0/PB0/PC0", "任意引脚"],
+          "answer": 2,
+          "explanation": "EXTI0对应所有端口的0号引脚(PA0/PB0/PC0等)，但同一时间只能选一个。"
+        },
+        {
+          "type": "choice",
+          "question": "按键接地用上拉输入，应配置什么触发方式？",
+          "options": ["上升沿", "下降沿", "双沿", "任意"],
+          "answer": 1,
+          "explanation": "上拉输入按下时电平由高变低，用下降沿触发。"
+        },
+        {
+          "type": "fill",
+          "question": "STM32中断控制器简称____。",
+          "answer": "NVIC",
+          "explanation": "NVIC是Nested Vectored Interrupt Controller(嵌套向量中断控制器)。"
+        },
+        {
+          "type": "code",
+          "question": "写出EXTI线与GPIO引脚的映射关系(EXTI0-EXTI15)。",
+          "keywords": ["EXTI0", "PA0", "PB0", "EXTI1", "PA1", "EXTI15"],
+          "explanation": "EXTI0对应PA0/PB0/PC0等0号引脚，EXTI1对应1号引脚，以此类推到EXTI15。"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "外部中断配置",
+      "goal": "在CubeMX中配置外部中断并生成代码",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX配置EXTI",
+          "content": "在CubeMX中配置外部中断步骤：1.选择引脚(如PA0)；2.选择GPIO_EXTI0模式；3.在GPIO设置中选触发方式(Falling Edge下降沿)；4.在NVIC设置中使能EXTI0中断；5.生成代码。CubeMX自动配置NVIC和初始化EXTI。",
+          "codeExample": "/* CubeMX配置EXTI步骤\n1. 点击PA0引脚\n2. 选择 GPIO_EXTI0\n3. GPIO设置：\n   - GPIO mode: External Interrupt Mode with Falling edge trigger\n   - GPIO Pull-up/Pull-down: Pull-up\n4. NVIC设置：\n   - 勾选 EXTI line0 interrupt\n   - 抢占优先级设为6\n5. 生成代码\n\nCubeMX自动生成：\n   - MX_GPIO_Init()中EXTI配置\n   - stm32f1xx_it.c中EXTI0_IRQHandler\n   - HAL_GPIO_EXTI_Callback回调函数\n*/"
+        },
+        {
+          "title": "中断服务函数和回调",
+          "content": "CubeMX生成EXTI0_IRQHandler调用HAL_GPIO_EXTI_IRQHandler，HAL库内部清除中断标志并调用HAL_GPIO_EXTI_Callback回调。用户在回调中编写处理逻辑。弱定义(weak)的回调函数可被用户重写。注意中断处理要简短快速，不要在中断中调用HAL_Delay等阻塞函数。",
+          "codeExample": "// stm32f1xx_it.c (CubeMX生成)\nvoid EXTI0_IRQHandler(void) {\n    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);\n}\n\n// 用户代码 main.c\n// 重写回调函数\nvoid HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {\n    if (GPIO_Pin == GPIO_PIN_0) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);  // 翻转LED\n    }\n    // 可处理多个引脚\n    else if (GPIO_Pin == GPIO_PIN_1) {\n        // PA1中断处理\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "CubeMX配置EXTI中断需要在哪个设置中使能？",
+          "options": ["GPIO设置", "NVIC设置", "时钟设置", "调试设置"],
+          "answer": 1,
+          "explanation": "在NVIC设置中勾选对应EXTI中断使能，否则中断不会触发。"
+        },
+        {
+          "type": "choice",
+          "question": "用户处理EXTI中断应重写哪个函数？",
+          "options": ["EXTI0_IRQHandler", "HAL_GPIO_EXTI_IRQHandler", "HAL_GPIO_EXTI_Callback", "HAL_GPIO_Init"],
+          "answer": 2,
+          "explanation": "HAL_GPIO_EXTI_Callback是弱定义回调，用户重写它处理中断逻辑。"
+        },
+        {
+          "type": "fill",
+          "question": "在中断处理函数中不应调用____等阻塞函数。",
+          "answer": "HAL_Delay",
+          "explanation": "HAL_Delay基于中断，在中断中调用会死锁，且中断应快速返回。"
+        },
+        {
+          "type": "code",
+          "question": "重写HAL_GPIO_EXTI_Callback，当PA0中断触发时翻转PC13 LED。",
+          "keywords": ["void", "HAL_GPIO_EXTI_Callback", "uint16_t", "GPIO_Pin", "GPIO_PIN_0", "HAL_GPIO_TogglePin", "GPIOC", "GPIO_PIN_13"],
+          "explanation": "参考答案：void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){if(GPIO_Pin==GPIO_PIN_0)HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);}"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "中断服务函数（按键中断控制LED）",
+      "goal": "实现按键中断控制LED的完整程序",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "完整中断程序",
+          "content": "完整的外部中断程序：1.CubeMX配置PA0为EXTI0下降沿触发上拉输入；2.PC13为推挽输出；3.使能EXTI0中断；4.重写HAL_GPIO_EXTI_Callback翻转LED。中断方式相比轮询，CPU不必持续检测按键，效率更高。",
+          "codeExample": "#include \"main.h\"\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();  // CubeMX生成，含EXTI配置\n    \n    while (1) {\n        // 主循环可做其他事\n        // 按键由中断处理\n    }\n}\n\n// 中断回调函数\nvoid HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {\n    if (GPIO_Pin == GPIO_PIN_0) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n    }\n}"
+        },
+        {
+          "title": "中断vs轮询对比",
+          "content": "轮询方式：CPU持续检测按键，简单但效率低，适合按键少、实时性要求不高场景。中断方式：CPU只在按键事件时处理，效率高、实时性好，适合多任务、实时性要求高场景。实际开发中按键常用中断方式，但消抖需用定时器或软件延时(注意不能在中断中HAL_Delay)。",
+          "codeExample": "/* 轮询 vs 中断\n\n轮询：\n  while(1){\n    if(按键) 处理;\n    其他任务;\n  }\n  优点：简单\n  缺点：可能错过\n\n中断：\n  while(1){ 其他任务; }\n  void 回调(){ 处理按键; }\n  优点：不错过\n  缺点：需消抖\n\n中断中消抖方案：\n  设置标志位→主循环延时确认\n  或用定时器消抖\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "中断方式相比轮询方式的主要优点是？",
+          "options": ["代码更简单", "CPU效率更高", "不需消抖", "响应更慢"],
+          "answer": 1,
+          "explanation": "中断方式CPU只在事件发生时处理，平时可做其他事，效率更高。"
+        },
+        {
+          "type": "choice",
+          "question": "在中断中消抖的推荐方法是？",
+          "options": ["在中断中HAL_Delay", "设置标志位主循环处理", "在中断中while循环", "不消抖"],
+          "answer": 1,
+          "explanation": "中断中不能阻塞延时，应设置标志位，主循环中延时确认。"
+        },
+        {
+          "type": "fill",
+          "question": "外部中断EXTI0的中断服务函数名是____。",
+          "answer": "EXTI0_IRQHandler",
+          "explanation": "EXTI0_IRQHandler是EXTI0的中断服务函数，CubeMX自动生成。"
+        },
+        {
+          "type": "code",
+          "question": "写完整的按键中断控制LED程序（main循环+回调函数）。",
+          "keywords": ["main", "while", "1", "HAL_GPIO_EXTI_Callback", "GPIO_PIN_0", "HAL_GPIO_TogglePin"],
+          "explanation": "参考答案：int main(){...while(1){}} void HAL_GPIO_EXTI_Callback(uint16_t p){if(p==GPIO_PIN_0)HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);}"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+练习",
+      "goal": "总结本周知识，巩固GPIO输入和中断",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.GPIO输入模式(上拉/下拉/浮空)；2.按键检测(轮询方式)；3.按键消抖(软件延时法)；4.外部中断概念(EXTI/NVIC)；5.CubeMX配置EXTI；6.中断服务函数和回调。中断是嵌入式开发的核心概念，后续定时器、串口、ADC等都基于中断机制。",
+          "codeExample": "// 综合示例：按键计数器\n#include \"main.h\"\nvolatile int count = 0;\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    while (1) {\n        // count在中断中递增\n        // 可通过串口显示count\n    }\n}\n\nvoid HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {\n    if (GPIO_Pin == GPIO_PIN_0) {\n        count++;\n    }\n}"
+        },
+        {
+          "title": "中断使用要点",
+          "content": "中断使用要点：1.中断处理函数要简短快速；2.不在中断中调用阻塞函数(HAL_Delay)；3.共享变量用volatile修饰；4.中断中修改的变量是临界资源，需保护；5.合理设置优先级；6.使能/禁止中断用HAL_NVIC。volatile告诉编译器不优化该变量。",
+          "codeExample": "/* 中断使用注意事项\n\n1. 简短快速\n   ✓ 翻转LED、设标志位、计数\n   ✗ 打印、延时、复杂计算\n\n2. volatile变量\n   中断修改的变量：volatile int flag = 0;\n\n3. 临界区保护\n   __disable_irq();  // 关中断\n   // 操作共享变量\n   __enable_irq();   // 开中断\n\n4. 优先级\n   高优先级可打断低优先级\n   不要所有中断同优先级\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "在中断中修改的全局变量应加什么修饰符？",
+          "options": ["const", "static", "volatile", "extern"],
+          "answer": 2,
+          "explanation": "volatile防止编译器优化，确保每次从内存读取变量值。"
+        },
+        {
+          "type": "choice",
+          "question": "以下哪个操作适合在中断中执行？",
+          "options": ["HAL_Delay(1000)", "printf打印", "翻转LED", "复杂计算"],
+          "answer": 2,
+          "explanation": "中断应快速返回，翻转LED是简单操作。延时、打印、计算都不适合。"
+        },
+        {
+          "type": "fill",
+          "question": "关闭中断的函数是____。",
+          "answer": "__disable_irq",
+          "explanation": "__disable_irq()关闭全局中断，__enable_irq()开启，用于保护临界区。"
+        },
+        {
+          "type": "code",
+          "question": "写代码：在中断回调中递增volatile变量count，并在主循环中判断count值。",
+          "keywords": ["volatile", "int", "count", "HAL_GPIO_EXTI_Callback", "count++", "if", "count"],
+          "explanation": "参考答案：volatile int count=0; void HAL_GPIO_EXTI_Callback(uint16_t p){if(p==GPIO_PIN_0)count++;} 主循环：if(count>0){count--;...}"
+        }
+      ]
+    }
+  ]
+}

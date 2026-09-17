@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="嵌入式英语">
+  <meta name="theme-color" content="#10b981">
+  <meta name="description" content="嵌入式英语零基础学习 - 词汇、句型、测验">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon-192.svg">
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
+  <link rel="stylesheet" href="./css/style.css">
+  <title>嵌入式英语学习 - 嵌入式学习之旅</title>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-title">
+      <a href="./english.html" id="back-to-level" class="btn btn-secondary" style="min-height:36px;padding:0 12px;font-size:14px;">&larr; 英语</a>
+    </div>
+    <div class="navbar-actions">
+      <span id="english-nav-title" style="font-weight:700;font-size:16px;">嵌入式英语</span>
+    </div>
+  </nav>
+
+  <!-- 主体内容 -->
+  <main class="container" id="main-content">
+    <div class="loading">加载英语学习内容...</div>
+  </main>
+
+  <!-- 底部导航栏 -->
+  <nav class="bottom-nav">
+    <a class="bottom-nav-item" href="./index.html">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首页</span>
+    </a>
+    <a class="bottom-nav-item" href="./day.html?week=1&day=1">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">学习</span>
+    </a>
+    <a class="bottom-nav-item active" href="./english.html">
+      <span class="nav-icon">🔤</span>
+      <span class="nav-label">英语</span>
+    </a>
+    <a class="bottom-nav-item" href="./index.html#months-container">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">课程</span>
+    </a>
+  </nav>
+
+  <!-- 引入JS文件 -->
+  <script src="./js/feynman.js"></script>
+  <script src="./js/reminder.js"></script>
+  <script src="./js/english.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      document.addEventListener('DOMContentLoaded', function () {
+        EnglishApp.render();
+      });
+    })();
+  </script>
+</body>
+</html>

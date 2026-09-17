@@ -1,0 +1,365 @@
+{
+  "week": 5,
+  "month": 2,
+  "title": "第5周：嵌入式概念、STM32介绍、开发环境搭建",
+  "goal": "了解嵌入式系统，熟悉STM32芯片，搭建开发环境。",
+  "days": [
+    {
+      "day": 1,
+      "title": "什么是嵌入式系统",
+      "goal": "理解嵌入式系统的概念、应用领域和与PC的区别",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "嵌入式系统定义",
+          "content": "嵌入式系统是以应用为中心、以计算机技术为基础、软硬件可裁剪、对功能、可靠性、成本、体积、功耗有严格要求的专用计算机系统。它通常嵌入在设备内部，控制设备的运行。典型应用：家电控制、汽车电子、工业控制、物联网设备、医疗设备等。",
+          "codeExample": "// 嵌入式系统典型结构\n// 1. 微控制器(MCU)：CPU+存储器+外设\n// 2. 传感器：采集外部信息\n// 3. 执行器：控制外部设备\n// 4. 通信接口：与外部交互\n// 示例：智能温控器\n// 温度传感器 → STM32处理 → 控制继电器 → 加热器\n//        ↑                          ↓\n//        └──── 显示+按键 ←──────┘"
+        },
+        {
+          "title": "嵌入式与PC的区别",
+          "content": "嵌入式系统与PC的主要区别：1.资源有限（内存小、存储少）；2.实时性要求高；3.功耗低；4.专用性强；5.通常无操作系统或使用RTOS；6.直接控制硬件。PC资源丰富、通用性强、使用桌面操作系统。",
+          "codeExample": "/* 嵌入式 vs PC 对比\n特性        嵌入式           PC\nRAM         KB-MB            GB级\nFlash       KB-MB            GB-TB\nCPU主频     MHz              GHz\n功耗        mW-W              W以上\n操作系统    无/RTOS          Windows/Linux\n用途        专用              通用\n实时性      高要求            一般\n成本        低                高\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "以下哪个是嵌入式系统的典型特征？",
+          "options": ["资源丰富", "专用性强", "通用性好", "功耗高"],
+          "answer": 1,
+          "explanation": "嵌入式系统是专用的，针对特定应用设计，资源有限，功耗低。"
+        },
+        {
+          "type": "choice",
+          "question": "以下哪个不是嵌入式系统的应用领域？",
+          "options": ["汽车电子", "工业控制", "桌面办公", "智能家居"],
+          "answer": 2,
+          "explanation": "桌面办公是PC的领域，嵌入式系统是嵌入设备内部的专用系统。"
+        },
+        {
+          "type": "fill",
+          "question": "嵌入式系统的英文缩写是____。",
+          "answer": "Embedded System",
+          "explanation": "嵌入式系统(Embedded System)，有时也指Embedded Computer。"
+        },
+        {
+          "type": "code",
+          "question": "用C语言写一个简单的嵌入式系统主循环框架（while(1)循环）。",
+          "keywords": ["int", "main", "while", "1", "传感器读取", "处理", "控制输出"],
+          "explanation": "参考答案：int main(){while(1){readSensor();process();controlOutput();} return 0;}"
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "STM32芯片介绍",
+      "goal": "了解STM32芯片系列、Cortex-M内核和F103蓝pill",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "STM32与Cortex-M",
+          "content": "STM32是意法半导体(ST)基于ARM Cortex-M内核的32位微控制器系列。Cortex-M系列包括M0/M0+/M3/M4/M7/M33等，性能递增。STM32系列包括：F1(主流)、F4(高性能)、F0(入门)、L(低功耗)、H7(超高性能)等。STM32F103C8T6（蓝pill）是学习入门最常用的型号。",
+          "codeExample": "/* STM32F103C8T6 蓝pill 参数\n内核:     Cortex-M3\n主频:     72MHz\nFlash:    64KB\nSRAM:     20KB\n引脚:     48个\nGPIO:     PA,PB,PC,PD\n定时器:   3个通用+1个高级\nADC:      2个12位,10通道\n通信接口: 3个USART,2个I2C,2个SPI\nUSB:      USB2.0 FS\nCAN:      1个\n*/"
+        },
+        {
+          "title": "STM32最小系统",
+          "content": "STM32最小系统包含：1.芯片本身；2.供电电路(3.3V)；3.时钟电路(外部8MHz晶振+32.768kHz RTC晶振)；4.复位电路；5.启动配置(BOOT0/BOOT1)；6.调试接口(SWD)。蓝pill板已集成这些，可直接使用。",
+          "codeExample": "/* STM32启动模式配置\nBOOT1 BOOT0 启动模式\n  0     0   用户Flash（正常运行）\n  0     1   系统存储器（串口ISP下载）\n  1     1   SRAM（调试用）\n\n正常使用：BOOT0接0(跳线接GND)\n串口下载：BOOT0接1(跳线接3.3V)\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32F103的内核是？",
+          "options": ["Cortex-M0", "Cortex-M3", "Cortex-M4", "Cortex-A7"],
+          "answer": 1,
+          "explanation": "STM32F1系列基于Cortex-M3内核，72MHz主频。M0用于F0系列，M4用于F4系列。"
+        },
+        {
+          "type": "choice",
+          "question": "STM32F103C8T6的Flash大小是？",
+          "options": ["32KB", "64KB", "128KB", "256KB"],
+          "answer": 1,
+          "explanation": "STM32F103C8T6中C8表示64KB Flash。CB表示128KB。"
+        },
+        {
+          "type": "fill",
+          "question": "STM32F103的最大主频是____MHz。",
+          "answer": "72",
+          "explanation": "STM32F103系列最高72MHz，使用外部8MHz晶振经PLL倍频到72MHz。"
+        },
+        {
+          "type": "code",
+          "question": "写出STM32最小系统的五个组成部分。",
+          "keywords": ["供电", "时钟", "复位", "启动配置", "调试接口"],
+          "explanation": "STM32最小系统包括：1.芯片2.供电电路3.时钟电路4.复位电路5.启动配置6.调试接口。"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "开发环境搭建",
+      "goal": "下载安装STM32CubeIDE，熟悉开发工具",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "STM32CubeIDE介绍",
+          "content": "STM32CubeIDE是ST官方IDE，集成了CubeMX图形化配置工具和TrueSTUDIO开发环境。基于Eclipse，支持代码编辑、编译、调试。内置CubeMX可直接配置外设生成代码。免费、跨平台、一站式开发。也可使用Keil MDK+CubeMX组合。",
+          "codeExample": "/* STM32CubeIDE特点\n1. 集成CubeMX：图形化配置外设\n2. 代码生成：自动生成初始化代码\n3. GCC编译器：免费\n4. 调试支持：ST-Link集成\n5. 插件丰富：基于Eclipse\n\n安装步骤：\n1. 官网下载STM32CubeIDE\n2. 注册ST账号\n3. 运行安装程序\n4. 安装ST-Link驱动\n5. 创建第一个工程\n*/"
+        },
+        {
+          "title": "其他开发工具",
+          "content": "除CubeIDE外，常见的STM32开发工具：1.Keil MDK(商业，免费版限32KB)；2.IAR EWARM(商业)；3.VSCode+PlatformIO(开源)；4.CubeMX+Makefile+GCC命令行。初学者推荐CubeIDE一站式，熟悉后可尝试其他。还需要ST-Link/V2调试器用于下载和调试。",
+          "codeExample": "/* 开发工具链对比\n工具             优势         劣势\nCubeIDE          官方免费集成   体积大\nKeil MDK         工程师熟悉     收费/32K限制\nPlatformIO       开源轻量       配置复杂\nMakefile+GCC     灵活         学习曲线陡\n\n推荐初学：CubeIDE\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32CubeIDE集成了哪个图形化配置工具？",
+          "options": ["Keil", "CubeMX", "PlatformIO", "Eclipse"],
+          "answer": 1,
+          "explanation": "CubeIDE集成了STM32CubeMX，可直接在IDE内配置外设生成代码。"
+        },
+        {
+          "type": "choice",
+          "question": "以下哪个工具是ST官方免费的？",
+          "options": ["Keil MDK", "IAR", "STM32CubeIDE", "PlatformIO"],
+          "answer": 2,
+          "explanation": "STM32CubeIDE是ST官方免费IDE，Keil和IAR是商业软件。"
+        },
+        {
+          "type": "fill",
+          "question": "下载STM32程序到Flash需要使用____调试器。",
+          "answer": "ST-Link",
+          "explanation": "ST-Link是ST官方调试器，通过SWD接口下载和调试程序。"
+        },
+        {
+          "type": "code",
+          "question": "写出STM32CubeIDE的三个主要功能。",
+          "keywords": ["代码编辑", "编译", "调试"],
+          "explanation": "STM32CubeIDE主要功能：代码编辑、编译、调试，还集成了CubeMX配置外设。"
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "STM32CubeMX入门",
+      "goal": "学会使用CubeMX新建工程、配置引脚",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "CubeMX工程创建",
+          "content": "STM32CubeMX新建工程步骤：1.选择芯片型号(F103C8T6)；2.配置时钟(72MHz)；3.配置外设(GPIO/UART等)；4.配置工程(IDE/堆栈)；5.生成代码。CubeMX生成main.c、外设初始化文件、HAL库文件等。用户代码写在USER CODE BEGIN/END注释之间，重新生成不会覆盖。",
+          "codeExample": "/* CubeMX生成代码结构\nCore/\n  Src/\n    main.c          主程序\n    stm32f1xx_it.c  中断处理\n  Inc/\n    main.h\n    stm32f1xx_hal_conf.h\nDrivers/\n  CMSIS/             内核相关\n  STM32F1xx_HAL_Driver/  HAL库\n\n用户代码区域：\n  /* USER CODE BEGIN xxx */\n  // 你的代码写在这里\n  /* USER CODE END xxx */\n*/"
+        },
+        {
+          "title": "GPIO配置",
+          "content": "在CubeMX中配置GPIO：点击引脚选择模式(Output Push-Pull等)，设置标签(可读名称)，配置速度。配置后生成代码自动初始化。GPIO模式：输出(推挽/开漏)、输入(浮空/上拉/下拉)、复用功能、模拟功能。",
+          "codeExample": "/* CubeMX配置GPIO输出\n1. 点击PC13引脚\n2. 选择 GPIO_Output\n3. 右键设置用户标签 LED\n4. 生成代码后自动出现：\n*/\n\n// CubeMX自动生成的初始化代码\nvoid MX_GPIO_Init(void) {\n    GPIO_InitTypeDef GPIO_InitStruct = {0};\n    __HAL_RCC_GPIOC_CLK_ENABLE();\n    GPIO_InitStruct.Pin = GPIO_PIN_13;\n    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;\n    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;\n    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);\n    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "CubeMX生成的用户代码应写在哪个区域？",
+          "options": ["文件开头", "函数外", "USER CODE BEGIN/END之间", "任意位置"],
+          "answer": 2,
+          "explanation": "USER CODE BEGIN/END之间的代码重新生成时保留，其他区域会被覆盖。"
+        },
+        {
+          "type": "choice",
+          "question": "GPIO输出模式中，能输出高低电平的是？",
+          "options": ["开漏输出", "推挽输出", "浮空输入", "模拟功能"],
+          "answer": 1,
+          "explanation": "推挽输出(Push-Pull)能直接输出高低电平，开漏输出需外接上拉电阻才能输出高。"
+        },
+        {
+          "type": "fill",
+          "question": "在CubeMX中为PC13配置输出模式，应选择____。",
+          "answer": "GPIO_Output",
+          "explanation": "点击引脚后选择GPIO_Output即可配置为输出模式。"
+        },
+        {
+          "type": "code",
+          "question": "写出CubeMX配置GPIO的基本步骤（4步）。",
+          "keywords": ["选择引脚", "选择模式", "设置标签", "生成代码"],
+          "explanation": "步骤：1.点击引脚2.选择模式(如GPIO_Output)3.右键设置用户标签4.生成代码。"
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "工程结构解析",
+      "goal": "理解main.c、HAL库、启动文件的作用",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "main.c结构",
+          "content": "main.c是程序入口，包含初始化函数和主循环。典型结构：1.头文件包含；2.变量定义；3.函数声明；4.main函数(初始化+while循环)；5.用户函数。HAL库函数以HAL_开头，CubeMX自动生成初始化调用。",
+          "codeExample": "/* main.c 典型结构 */\n#include \"main.h\"\n\nint main(void) {\n    HAL_Init();              // HAL库初始化\n    SystemClock_Config();   // 系统时钟配置\n    MX_GPIO_Init();          // GPIO初始化(CubeMX生成)\n    MX_USART1_UART_Init();   // USART初始化\n    \n    while (1) {\n        /* USER CODE BEGIN WHILE */\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n        HAL_Delay(500);\n        /* USER CODE END WHILE */\n    }\n}"
+        },
+        {
+          "title": "HAL库和启动文件",
+          "content": "HAL(硬件抽象层)库是ST提供的驱动库，封装寄存器操作。优点：跨芯片、易移植、文档全。启动文件startup_stm32f1xx.s是汇编代码，负责堆栈初始化、中断向量表、跳转到main。系统初始化在SystemInit中完成。",
+          "codeExample": "/* HAL库函数命名规则\nHAL_Pppp_Xxx()：外设操作函数\n  HAL_GPIO_WritePin()    写引脚\n  HAL_Delay()           延时\n  HAL_UART_Transmit()   串口发送\n\n启动文件startup_stm32f1xx.s：\n  定义堆栈大小\n  中断向量表\n  Reset_Handler→SystemInit→__main→main\n*/"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32程序的入口函数是？",
+          "options": ["SystemInit", "main", "Reset_Handler", "HAL_Init"],
+          "answer": 1,
+          "explanation": "main是C程序入口，SystemInit和HAL_Init在main之前调用，Reset_Handler是上电复位入口。"
+        },
+        {
+          "type": "choice",
+          "question": "HAL库函数的前缀是？",
+          "options": ["stm32_", "HAL_", "GPIO_", "MX_"],
+          "answer": 1,
+          "explanation": "HAL库函数以HAL_开头，如HAL_GPIO_WritePin。MX_是CubeMX生成的初始化函数。"
+        },
+        {
+          "type": "fill",
+          "question": "CubeMX生成的初始化函数前缀是____。",
+          "answer": "MX_",
+          "explanation": "MX_GPIO_Init、MX_USART1_UART_Init等，MX表示CubeMX生成。"
+        },
+        {
+          "type": "code",
+          "question": "写出STM32 main函数中必须调用的两个初始化函数。",
+          "keywords": ["HAL_Init", "SystemClock_Config"],
+          "explanation": "main函数中必须先调用HAL_Init()初始化HAL库，再调用SystemClock_Config()配置系统时钟。"
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "title": "编译和下载",
+      "goal": "学会配置ST-Link，完成第一次烧录",
+      "timeAllocation": [
+        {"task": "知识点学习", "minutes": 30},
+        {"task": "代码练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "ST-Link配置",
+          "content": "ST-Link通过SWD接口连接STM32。连接需要4根线：SWDIO(数据)、SWCLK(时钟)、GND(地)、3V3(供电)。在CubeIDE中配置Debug选项为ST-Link GDB Server。ST-Link/V2是最常用的调试器，蓝pill板也有自带ST-Link接口(需跳线)。",
+          "codeExample": "/* ST-Link SWD连接\nSTM32引脚   ST-Link引脚\nSWDIO  ←→  SWDIO\nSWCLK  ←→  SWCLK\nGND    ←→  GND\n3V3    ←→  3.3V\n\nCubeIDE配置：\n1. Run→Debug Configurations\n2. 选择ST-Link GDB Server\n3. Interface: SWD\n4. Port: 61234\n*/"
+        },
+        {
+          "title": "编译下载和调试",
+          "content": "编译：Project→Build(快捷键Ctrl+B)。下载：Run→Debug(快捷键F11)。调试支持：断点、单步、变量监视、寄存器查看、内存查看。HAL_Delay实现毫秒级延时，基于SysTick定时器。第一次烧录后可看到LED闪烁效果。",
+          "codeExample": "// 第一个程序：LED闪烁\n#include \"main.h\"\n\nint main(void) {\n    HAL_Init();\n    SystemClock_Config();\n    MX_GPIO_Init();\n    \n    while (1) {\n        HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);  // 翻转LED\n        HAL_Delay(500);  // 延时500ms\n    }\n}"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "ST-Link通过什么接口与STM32通信？",
+          "options": ["JTAG", "SWD", "UART", "USB"],
+          "answer": 1,
+          "explanation": "ST-Link通常使用SWD(串行线调试)接口，只需SWDIO和SWCLK两根线，比JTAG节省引脚。"
+        },
+        {
+          "type": "choice",
+          "question": "HAL_Delay(500)的延时时间是？",
+          "options": ["500秒", "500毫秒", "500微秒", "500纳秒"],
+          "answer": 1,
+          "explanation": "HAL_Delay参数单位是毫秒，500表示500ms即半秒。"
+        },
+        {
+          "type": "fill",
+          "question": "ST-Link连接STM32至少需要____根线。",
+          "answer": "4",
+          "explanation": "SWDIO、SWCLK、GND、3V3共4根线，其中GND和3V3用于供电。"
+        },
+        {
+          "type": "code",
+          "question": "写出让PC13引脚LED闪烁(500ms间隔)的main循环代码。",
+          "keywords": ["HAL_GPIO_TogglePin", "GPIOC", "GPIO_PIN_13", "HAL_Delay", "500"],
+          "explanation": "参考答案：while(1){HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13); HAL_Delay(500);}"
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "title": "周总结+开发环境熟悉",
+      "goal": "总结本周知识，熟悉开发环境",
+      "timeAllocation": [
+        {"task": "知识点复习", "minutes": 30},
+        {"task": "综合练习", "minutes": 60},
+        {"task": "练习题", "minutes": 30},
+        {"task": "笔记总结+打卡", "minutes": 15}
+      ],
+      "knowledgePoints": [
+        {
+          "title": "本周知识回顾",
+          "content": "本周学习了：1.嵌入式系统概念与应用；2.STM32芯片与Cortex-M内核；3.开发环境搭建(CubeIDE)；4.CubeMX工程创建与GPIO配置；5.工程结构(main.c/HAL库/启动文件)；6.编译下载与调试。下周将正式编写STM32程序，点亮LED。",
+          "codeExample": "// 综合复习：STM32开发流程\n/* 1. CubeMX选芯片\n   2. 配置时钟和外设\n   3. 生成代码\n   4. 在USER CODE区域写逻辑\n   5. 编译(Build)\n   6. ST-Link下载(Debug)\n   7. 观察运行结果\n*/\n\n// 标准LED闪烁程序\nwhile (1) {\n    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);\n    HAL_Delay(500);\n}"
+        },
+        {
+          "title": "开发环境熟悉练习",
+          "content": "练习使用CubeIDE：1.创建新工程；2.配置PC13为输出；3.生成代码；4.在while循环写TogglePin+Delay；5.编译；6.下载运行；7.设置断点调试；8.查看变量。这些是后续开发的基础操作，要熟练。",
+          "codeExample": "// 调试技巧\n// 1. 设置断点：双击代码行左侧\n// 2. 单步执行：F5(Step Into) F6(Step Over)\n// 3. 查看变量：Variables窗口\n// 4. 查看寄存器：Registers窗口\n// 5. 查看内存：Memory窗口\n// 6. 暂停/继续：F8\n\n// printf调试(需配置串口重定向)\nprintf(\"count = %d\\n\", count);"
+        }
+      ],
+      "exercises": [
+        {
+          "type": "choice",
+          "question": "STM32开发的完整流程顺序是？",
+          "options": ["配置→生成→写代码→编译→下载", "写代码→配置→生成→下载→编译", "下载→编译→写代码→配置→生成", "编译→下载→配置→生成→写代码"],
+          "answer": 0,
+          "explanation": "正确流程：CubeMX配置→生成代码→写用户逻辑→编译→ST-Link下载运行。"
+        },
+        {
+          "type": "choice",
+          "question": "调试时单步执行（Step Over）的快捷键是？",
+          "options": ["F5", "F6", "F7", "F8"],
+          "answer": 1,
+          "explanation": "F5是Step Into(进入函数)，F6是Step Over(跳过函数)，F8是继续运行。"
+        },
+        {
+          "type": "fill",
+          "question": "设置断点的方式是在代码行左侧____。",
+          "answer": "双击",
+          "explanation": "在代码编辑器左侧标尺栏双击可设置/取消断点。"
+        },
+        {
+          "type": "code",
+          "question": "写出STM32开发的标准7步流程。",
+          "keywords": ["CubeMX配置", "生成代码", "写逻辑", "编译", "下载", "调试", "验证"],
+          "explanation": "1.CubeMX配置芯片和外设 2.生成代码 3.USER CODE区写逻辑 4.编译 5.ST-Link下载 6.调试 7.观察验证结果。"
+        }
+      ]
+    }
+  ]
+}
